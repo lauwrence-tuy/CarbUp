@@ -29,16 +29,18 @@ Current slices:
    cp .env.example .env
    ```
 
-3. Create a Strava API app at [https://www.strava.com/settings/api](https://www.strava.com/settings/api).
+3. Create a Postgres database, for example with [Neon](https://neon.com/).
 
-4. Set these values in `.env`:
+4. Create a Strava API app at [https://www.strava.com/settings/api](https://www.strava.com/settings/api).
+
+5. Set these values in `.env`:
 
    ```bash
    STRAVA_CLIENT_ID="your_numeric_strava_client_id"
    STRAVA_CLIENT_SECRET="your_strava_client_secret"
    STRAVA_REDIRECT_URI="http://localhost:3000/api/strava/callback"
    APP_URL="http://localhost:3000"
-   DATABASE_URL="file:./dev.db"
+   DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE?sslmode=require"
    TOKEN_ENCRYPTION_KEY="generate_a_long_random_secret"
    SESSION_SECRET="generate_a_different_long_random_secret"
    ```
@@ -51,20 +53,20 @@ Current slices:
    app. If it is still a placeholder or copied from a different app, Strava will
    reject the token exchange after login.
 
-5. Prepare Prisma:
+6. Prepare Prisma:
 
    ```bash
    pnpm prisma:generate
-   pnpm prisma:migrate --name init
+   pnpm prisma:migrate
    ```
 
-6. Start the app:
+7. Start the app:
 
    ```bash
    pnpm dev
    ```
 
-7. Open [http://localhost:3000](http://localhost:3000).
+8. Open [http://localhost:3000](http://localhost:3000).
 
 ## Settings
 
@@ -124,4 +126,4 @@ TOKEN_ENCRYPTION_KEY="long_random_secret"
 SESSION_SECRET="different_long_random_secret"
 ```
 
-The current Prisma datasource is SQLite, which is good for local development. For production, either deploy on infrastructure with a persistent disk for SQLite or migrate the Prisma datasource to a hosted database such as Postgres before deploying to a serverless host.
+The Prisma datasource is Postgres for production-friendly deployment on hosts such as Vercel. Use a hosted Postgres database such as Neon for the live app.

@@ -26,7 +26,7 @@ jobs:
       - name: Generate Prisma client
         run: pnpm prisma:generate
         env:
-          DATABASE_URL: file:./dev.db
+          DATABASE_URL: postgresql://user:password@localhost:5432/carbup?schema=public
 
       - name: Lint
         run: pnpm lint
@@ -34,7 +34,7 @@ jobs:
       - name: Build
         run: pnpm build
         env:
-          DATABASE_URL: file:./dev.db
+          DATABASE_URL: postgresql://user:password@localhost:5432/carbup?schema=public
           STRAVA_CLIENT_ID: "123456"
           STRAVA_CLIENT_SECRET: ci_strava_client_secret
           STRAVA_REDIRECT_URI: http://localhost:3000/api/strava/callback
