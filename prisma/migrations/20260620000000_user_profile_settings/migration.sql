@@ -1,0 +1,3 @@
+ALTER TABLE "User" ADD COLUMN "everydayActivity" TEXT NOT NULL DEFAULT 'active';
+ALTER TABLE "User" ADD COLUMN "weight" REAL;
+ALTER TABLE "User" ADD COLUMN "units" TEXT NOT NULL DEFAULT 'imperial';

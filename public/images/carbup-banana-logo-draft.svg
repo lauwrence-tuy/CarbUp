@@ -1,0 +1,47 @@
+<svg width="1200" height="420" viewBox="0 0 1200 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="420" rx="36" fill="#000000"/>
+  <rect x="72" y="72" width="276" height="276" rx="64" fill="#17181C"/>
+  <rect x="72.5" y="72.5" width="275" height="275" rx="63.5" stroke="white" stroke-opacity="0.1"/>
+  <g filter="url(#glow)">
+    <path
+      d="M286 151C274 212 225 262 157 270C147 271 139 264 140 254C142 239 153 229 168 227C214 220 246 187 253 142C255 128 268 119 281 124C291 128 289 141 286 151Z"
+      stroke="#FFDD00"
+      stroke-width="16"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M252 139C262 130 272 124 284 121"
+      stroke="#FFDD00"
+      stroke-width="16"
+      stroke-linecap="round"
+    />
+    <path
+      d="M142 255C132 258 125 265 122 276"
+      stroke="#FFDD00"
+      stroke-width="16"
+      stroke-linecap="round"
+    />
+    <path
+      d="M175 240C212 231 239 202 251 165"
+      stroke="#FFE766"
+      stroke-width="8"
+      stroke-linecap="round"
+      stroke-opacity="0.75"
+    />
+  </g>
+  <text x="402" y="231" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="104" font-weight="800" letter-spacing="0">Carb</text>
+  <text x="612" y="231" fill="#FFDD00" font-family="Inter, Arial, sans-serif" font-size="104" font-weight="800" letter-spacing="0">Up</text>
+  <defs>
+    <filter id="glow" x="80" y="80" width="250" height="240" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="12"/>
+      <feGaussianBlur stdDeviation="18"/>
+      <feComposite in2="hardAlpha" operator="out"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.866667 0 0 0 0 0 0 0 0 0.38 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
+    </filter>
+  </defs>
+</svg>

@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String     @id @default(cuid())
+  stravaId            String     @unique
+  accessToken         String
+  refreshToken        String
+  tokenExpiresAt      DateTime
+  maintenanceCalories Int?
+  goalType            String     @default("maintain")
+  goalAdjustment      Int        @default(0)
+  everydayActivity    String     @default("active")
+  weight              Float?
+  units               String     @default("imperial")
+  activities          Activity[]
+  foodLogs            FoodLog[]
+  savedMeals          SavedMeal[]
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+}
+
+model Activity {
+  id               String   @id @default(cuid())
+  userId           String
+  stravaActivityId String   @unique
+  name             String
+  type             String
+  startDate        DateTime
+  distance         Float?
+  movingTime       Int?
+  calories         Float?
+  sufferScore      Float?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startDate])
+}
+
+model FoodLog {
+  id        String   @id @default(cuid())
+  userId    String
+  dateKey   String
+  meal      String
+  source    String   @default("food")
+  foodId    String?
+  name      String
+  brand     String?
+  serving   String
+  baseGrams Float
+  grams     Float
+  calories  Int
+  protein   Int
+  carbs     Int
+  fat       Int
+  itemsJson String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, dateKey])
+}
+
+model SavedMeal {
+  id              String   @id @default(cuid())
+  userId          String
+  name            String
+  ingredientsJson String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --bg-primary: #000000;
+  --bg-secondary: #111111;
+  --card-bg: #17181c;
+  --card-hover: #1e2025;
+  --green: #FFDD00;
+  --green-soft: #FFE766;
+  --orange: #f97316;
+  --red: #ef4444;
+  --purple: #a855f7;
+  --blue: #60a5fa;
+  --yellow: #FFDD00;
+  --text-primary: #ffffff;
+  --text-secondary: #b5b5b5;
+  --text-muted: #777777;
+  --border: rgba(255, 255, 255, 0.06);
+  --background: var(--bg-primary);
+  --foreground: var(--text-primary);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Inter, "SF Pro Display", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-feature-settings: "ss01" on, "cv01" on;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(255, 221, 0, 0.35);
+  color: var(--text-primary);
+}
+
+@keyframes fill-progress {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-rise-in {
+  animation: rise-in 420ms ease both;
+}
