@@ -12,9 +12,13 @@ type StravaActivity = {
   suffer_score?: number;
 };
 
+const SYNC_WINDOW_DAYS = 183;
+const ACTIVITIES_PER_PAGE = 200;
+const DETAIL_BATCH_SIZE = 10;
+
 function getSyncWindowStart() {
   const date = new Date();
-  date.setUTCDate(date.getUTCDate() - 8);
+  date.setUTCDate(date.getUTCDate() - SYNC_WINDOW_DAYS);
 
   return Math.floor(date.getTime() / 1000);
 }
@@ -41,32 +45,60 @@ export async function syncRecentStravaActivities({
   accessToken: string;
   userId: string;
 }) {
-  const activitiesUrl = new URL(
-    "https://www.strava.com/api/v3/athlete/activities"
-  );
-  activitiesUrl.searchParams.set("per_page", "100");
-  activitiesUrl.searchParams.set("after", String(getSyncWindowStart()));
+  const activitySummaries: StravaActivity[] = [];
+  let page = 1;
 
-  const response = await fetch(activitiesUrl, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    },
-    cache: "no-store"
-  });
+  while (true) {
+    const activitiesUrl = new URL(
+      "https://www.strava.com/api/v3/athlete/activities"
+    );
+    activitiesUrl.searchParams.set("per_page", String(ACTIVITIES_PER_PAGE));
+    activitiesUrl.searchParams.set("after", String(getSyncWindowStart()));
+    activitiesUrl.searchParams.set("page", String(page));
 
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`Strava activity sync failed: ${response.status} ${body}`);
+    const response = await fetch(activitiesUrl, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      },
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`Strava activity sync failed: ${response.status} ${body}`);
+    }
+
+    const pageSummaries = (await response.json()) as StravaActivity[];
+    activitySummaries.push(...pageSummaries);
+
+    if (pageSummaries.length < ACTIVITIES_PER_PAGE) {
+      break;
+    }
+
+    page += 1;
   }
 
-  const activitySummaries = (await response.json()) as StravaActivity[];
-  const activities = await Promise.all(
-    activitySummaries.map(async (activity) => {
-      const detail = await fetchActivityDetail(accessToken, activity.id);
+  const activities: StravaActivity[] = [];
 
-      return detail ?? activity;
-    })
-  );
+  for (
+    let startIndex = 0;
+    startIndex < activitySummaries.length;
+    startIndex += DETAIL_BATCH_SIZE
+  ) {
+    const batch = activitySummaries.slice(
+      startIndex,
+      startIndex + DETAIL_BATCH_SIZE
+    );
+    const detailedBatch = await Promise.all(
+      batch.map(async (activity) => {
+        const detail = await fetchActivityDetail(accessToken, activity.id);
+
+        return detail ?? activity;
+      })
+    );
+
+    activities.push(...detailedBatch);
+  }
 
   await Promise.all(
     activities.map((activity) =>

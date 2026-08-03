@@ -1,9 +1,11 @@
 import { WorkoutsPage, type WorkoutListItem } from "@/components/dashboard/workouts-page";
+import { StravaLoginRequiredPage } from "@/components/dashboard/strava-login-required-page";
 import { getActivitySlug } from "@/lib/activity-slug";
 import { APP_TIMEZONE, formatActivityTime, getLocalDateKey } from "@/lib/date";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
-import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 type ActivityRow = {
   id: string;
@@ -88,7 +90,7 @@ export default async function WorkoutsRoute() {
     : null;
 
   if (!user) {
-    redirect("/");
+    return <StravaLoginRequiredPage pageName="Workouts" />;
   }
 
   const activities = (user?.activities ?? []) as ActivityRow[];

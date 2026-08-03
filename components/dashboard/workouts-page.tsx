@@ -16,6 +16,7 @@ import {
   Timer
 } from "lucide-react";
 import { MetricCard } from "./metric-card";
+import { FloatingActionButton } from "./floating-action-button";
 import { StatusBadge } from "./status-badge";
 import { SyncStravaButton } from "./sync-strava-button";
 
@@ -403,6 +404,7 @@ export function WorkoutsPage({ workouts, isConnected }: WorkoutsPageProps) {
           )}
         </section>
       </div>
+      {isConnected ? <FloatingActionButton href="/nutrition" /> : null}
     </main>
   );
 }

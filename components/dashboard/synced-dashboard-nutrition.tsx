@@ -26,6 +26,7 @@ function getMacroTargets(targetCalories: number) {
 export function SyncedDashboardSummary({
   baseCalories,
   activityCalories,
+  dateKey,
   dateLabel,
   goalAdjustment,
   totals
@@ -134,6 +135,7 @@ export function SyncedDashboardSummary({
       </div>
 
       <ProgressBar
+        key={`${dateKey}-calories`}
         value={calorieProgress}
         color={overTargetCalories > 0 ? "red" : "green"}
         height="base"
@@ -152,6 +154,7 @@ export function SyncedDashboardSummary({
               </span>
             </div>
             <ProgressBar
+              key={`${dateKey}-${macro.label}`}
               value={(macro.eaten / Math.max(macro.target, 1)) * 100}
               color={macro.color}
             />

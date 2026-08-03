@@ -18,6 +18,7 @@ import {
   TrendingUp
 } from "lucide-react";
 import { MetricCard } from "./metric-card";
+import { FloatingActionButton } from "./floating-action-button";
 
 type TrendPoint = {
   label: string;
@@ -971,6 +972,7 @@ export function TrendsPage({
           </aside>
         </section>
       </div>
+      {isConnected ? <FloatingActionButton href="/nutrition" /> : null}
     </main>
   );
 }

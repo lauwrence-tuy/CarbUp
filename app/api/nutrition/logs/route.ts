@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 
@@ -37,6 +38,9 @@ export async function POST(request: NextRequest) {
     }
   });
 
+  revalidatePath("/dashboard");
+  revalidatePath("/nutrition");
+
   return NextResponse.json({ id: row.id });
 }
 
@@ -60,6 +64,9 @@ export async function DELETE(request: NextRequest) {
       userId
     }
   });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/nutrition");
 
   return NextResponse.json({ ok: true });
 }

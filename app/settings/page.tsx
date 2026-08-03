@@ -4,7 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 import { saveUserSettings } from "./actions";
 import { SettingsForm } from "@/components/settings/settings-form";
+import { FloatingActionButton } from "@/components/dashboard/floating-action-button";
 import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 const defaultSettings = {
   maintenanceCalories: 2400,
@@ -72,6 +75,7 @@ export default async function SettingsPage() {
           />
         </div>
       </div>
+      <FloatingActionButton href="/nutrition" />
     </main>
   );
 }

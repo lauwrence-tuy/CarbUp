@@ -178,19 +178,19 @@ export function DashboardHome({
             {[
               {
                 label: "Dashboard",
-                href: isConnected ? "/dashboard" : "/"
+                href: "/dashboard"
               },
               {
                 label: "Nutrition",
-                href: isConnected ? "/nutrition" : "/"
+                href: "/nutrition"
               },
               {
                 label: "Workouts",
-                href: isConnected ? "/workouts" : "/"
+                href: "/workouts"
               },
               {
                 label: "Trends",
-                href: isConnected ? "/trends" : "/"
+                href: "/trends"
               }
             ].map((item) => (
               <Link

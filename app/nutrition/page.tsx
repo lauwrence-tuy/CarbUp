@@ -1,9 +1,11 @@
 import { NutritionPage } from "@/components/dashboard/nutrition-page";
+import { StravaLoginRequiredPage } from "@/components/dashboard/strava-login-required-page";
 import { getLocalDateKey } from "@/lib/date";
 import { groupFoodLogsByDate, savedMealRowToRecord } from "@/lib/nutrition-db";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
-import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 type ActivityRow = {
   startDate: Date;
@@ -34,7 +36,7 @@ export default async function NutritionRoute() {
     : null;
 
   if (!user) {
-    redirect("/");
+    return <StravaLoginRequiredPage pageName="Nutrition" />;
   }
 
   const activities = (user?.activities ?? []) as ActivityRow[];

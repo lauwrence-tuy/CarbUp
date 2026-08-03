@@ -1,8 +1,10 @@
 import { TrendsPage } from "@/components/dashboard/trends-page";
+import { StravaLoginRequiredPage } from "@/components/dashboard/strava-login-required-page";
 import { APP_TIMEZONE, getLocalDateKey } from "@/lib/date";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
-import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 type ActivityMetric = {
   stravaActivityId: string;
@@ -171,7 +173,7 @@ export default async function TrendsRoute() {
     : null;
 
   if (!user) {
-    redirect("/");
+    return <StravaLoginRequiredPage pageName="Trends" />;
   }
 
   const activities = (user?.activities ?? []) as ActivityMetric[];

@@ -1,4 +1,5 @@
 import { AppDashboard } from "@/components/dashboard/app-dashboard";
+import { StravaLoginRequiredPage } from "@/components/dashboard/strava-login-required-page";
 import type { Workout } from "@/components/dashboard/workout-history-card";
 import { getActivitySlug } from "@/lib/activity-slug";
 import {
@@ -9,7 +10,8 @@ import {
 } from "@/lib/date";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
-import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 type DashboardPageProps = {
   searchParams: Promise<{
@@ -135,7 +137,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     : null;
 
   if (!user) {
-    redirect("/");
+    return <StravaLoginRequiredPage pageName="Dashboard" />;
   }
 
   const activities = (user?.activities ?? []) as ActivityRow[];
