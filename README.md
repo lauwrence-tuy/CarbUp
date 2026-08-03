@@ -2,18 +2,19 @@
 
 CarbUp connects to a user's Strava account and adds today's activity calories on top of their maintenance calories to produce a daily nutrition target.
 
-Current slices:
+Live app: [https://carb-up-lilac.vercel.app/](https://carb-up-lilac.vercel.app/)
+
+Core features:
 
 - Landing page at `/`
-- Strava OAuth start route at `/api/strava/auth`
-- Strava OAuth callback route at `/api/strava/callback`
-- Strava activity sync route at `/api/strava/sync`
 - Dashboard page at `/dashboard`
+- Nutrition logging page at `/nutrition`
+- Workout history and trends pages at `/workouts` and `/trends`
 - User settings page at `/settings`
+- Strava OAuth and six-month activity sync
 - Encrypted Strava token storage
 - Signed app session cookie
-- Prisma schema for `User` and `Activity`
-- Local development setup files
+- Prisma schema for users, activities, food logs, and saved meals
 
 ## Local setup
 
@@ -53,11 +54,14 @@ Current slices:
    app. If it is still a placeholder or copied from a different app, Strava will
    reject the token exchange after login.
 
-6. Prepare Prisma:
+   For the deployed app, configure the Strava callback URL as
+   `https://carb-up-lilac.vercel.app/api/strava/callback`.
+
+6. Prepare Prisma for local development:
 
    ```bash
    pnpm prisma:generate
-   pnpm prisma:migrate
+   pnpm prisma:migrate:dev
    ```
 
 7. Start the app:
@@ -82,7 +86,7 @@ The `/settings` page lets a connected user save:
   - Lose steady saves `-500`
   - Lose fast saves `-750`
 
-Settings are saved locally in SQLite on the authenticated `User` record.
+Settings are saved in Postgres on the authenticated `User` record.
 
 ## Dashboard
 
@@ -93,7 +97,7 @@ The `/dashboard` page shows:
 - Workouts card synced from Strava
 - Training load indicator card
 
-Use the Sync Strava button on the workouts card to fetch recent activities. If
+Use the Sync Strava button on the workouts page to fetch recent activities. If
 Strava does not provide calories for an activity, the dashboard shows
 `Calories unavailable` and does not invent a calorie number.
 
@@ -111,6 +115,7 @@ Before publishing the repository:
 - Rotate any Strava client secret that was ever stored in a tracked or shared file.
 - Keep `.env` local and commit only `.env.example`.
 - Run `pnpm lint` and `pnpm build`.
+- Run `pnpm prisma:migrate` against the production database during deployment.
 - Commit `pnpm-lock.yaml` and all Prisma migrations.
 - Do not commit local build or data artifacts such as `.next`, `node_modules`, `tmp`, `output`, or `prisma/dev.db`.
 
@@ -120,8 +125,8 @@ For a live deployment, configure these production environment variables:
 DATABASE_URL="..."
 STRAVA_CLIENT_ID="..."
 STRAVA_CLIENT_SECRET="..."
-STRAVA_REDIRECT_URI="https://your-domain.example/api/strava/callback"
-APP_URL="https://your-domain.example"
+STRAVA_REDIRECT_URI="https://carb-up-lilac.vercel.app/api/strava/callback"
+APP_URL="https://carb-up-lilac.vercel.app"
 TOKEN_ENCRYPTION_KEY="long_random_secret"
 SESSION_SECRET="different_long_random_secret"
 ```
