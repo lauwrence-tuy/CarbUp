@@ -1,5 +1,9 @@
 import { TrendsPage } from "@/components/dashboard/trends-page";
 import { StravaLoginRequiredPage } from "@/components/dashboard/strava-login-required-page";
+import {
+  getActivityCalories,
+  getActivityWeightKg
+} from "@/lib/activity-calories";
 import { APP_TIMEZONE, getLocalDateKey } from "@/lib/date";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
@@ -182,12 +186,21 @@ export default async function TrendsRoute() {
     activities,
     referenceDate
   );
+  const weightKg = getActivityWeightKg({
+    units: user.units,
+    weight: user.weight
+  });
   const trendActivities = activities.map((activity) => ({
     stravaActivityId: activity.stravaActivityId,
     name: activity.name,
     type: activity.type,
     dateKey: getLocalDateKey(activity.startDate),
-    calories: Math.round(activity.calories ?? 0),
+    calories: getActivityCalories({
+      calories: activity.calories,
+      movingTime: activity.movingTime,
+      type: activity.type,
+      weightKg
+    }),
     durationMinutes: Math.round((activity.movingTime ?? 0) / 60),
     distanceMiles: (activity.distance ?? 0) / 1609.344,
     load: calculateActivityLoad(activity)
