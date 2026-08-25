@@ -5,6 +5,7 @@ import { ArrowRight, Flame } from "lucide-react";
 import { CountUp } from "./count-up";
 import type { NutritionTotals } from "./nutrition-diary-storage";
 import { ProgressBar } from "./progress-bar";
+import { getMacroTargets, resolveBaseCalories } from "@/lib/nutrition-targets";
 
 type SyncedDashboardNutritionProps = {
   baseCalories: number;
@@ -15,14 +16,6 @@ type SyncedDashboardNutritionProps = {
   totals: NutritionTotals;
 };
 
-function getMacroTargets(targetCalories: number) {
-  return {
-    protein: Math.round((Math.max(targetCalories, 0) * 0.18) / 4),
-    carbs: Math.round((Math.max(targetCalories, 0) * 0.52) / 4),
-    fat: Math.round((Math.max(targetCalories, 0) * 0.3) / 9)
-  };
-}
-
 export function SyncedDashboardSummary({
   baseCalories,
   activityCalories,
@@ -31,7 +24,8 @@ export function SyncedDashboardSummary({
   goalAdjustment,
   totals
 }: SyncedDashboardNutritionProps) {
-  const targetCalories = baseCalories + activityCalories + goalAdjustment;
+  const fallbackBaseCalories = resolveBaseCalories(baseCalories);
+  const targetCalories = fallbackBaseCalories + activityCalories + goalAdjustment;
   const remainingCalories = Math.max(targetCalories - totals.calories, 0);
   const overTargetCalories = Math.max(totals.calories - targetCalories, 0);
   const calorieProgress =
@@ -117,7 +111,7 @@ export function SyncedDashboardSummary({
           <SummaryStat
             label="Target"
             value={targetCalories}
-            detail={`${baseCalories.toLocaleString()} base ${
+            detail={`${fallbackBaseCalories.toLocaleString()} base ${
               goalAdjustment === 0
                 ? ""
                 : `${goalAdjustment > 0 ? "+" : "-"} ${Math.abs(
