@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { getLocalDateKey } from "@/lib/date";
 
 const weekdayLetters = ["S", "M", "T", "W", "T", "F", "S"];
 const dayOffsets = [-3, -2, -1, 0, 1, 2, 3];
@@ -23,19 +24,11 @@ export function addDays(date: Date, days: number) {
 }
 
 function isSameDate(first: Date, second: Date) {
-  return (
-    first.getFullYear() === second.getFullYear() &&
-    first.getMonth() === second.getMonth() &&
-    first.getDate() === second.getDate()
-  );
+  return formatDateKey(first) === formatDateKey(second);
 }
 
 export function formatDateKey(date: Date) {
-  return [
-    date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, "0"),
-    String(date.getDate()).padStart(2, "0")
-  ].join("-");
+  return getLocalDateKey(date);
 }
 
 export function DaySpreadWidget({
