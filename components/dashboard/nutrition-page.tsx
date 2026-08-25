@@ -31,6 +31,7 @@ import {
   legacyLogStorageKey,
   type MealName
 } from "./nutrition-diary-storage";
+import { getMacroTargets, resolveBaseCalories } from "@/lib/nutrition-targets";
 import { ProgressBar } from "./progress-bar";
 import { StatusBadge } from "./status-badge";
 
@@ -277,14 +278,6 @@ function createMealLogEntry(
   };
 }
 
-function getMacroTargets(targetCalories: number) {
-  return {
-    protein: Math.round((Math.max(targetCalories, 0) * 0.18) / 4),
-    carbs: Math.round((Math.max(targetCalories, 0) * 0.52) / 4),
-    fat: Math.round((Math.max(targetCalories, 0) * 0.3) / 9)
-  };
-}
-
 function readLocalStorageLogsForMigration(todayKey: string) {
   const savedLogs = window.localStorage.getItem(dailyLogsStorageKey);
 
@@ -339,7 +332,7 @@ export function NutritionPage({
   goalAdjustment,
   isConnected
 }: NutritionPageProps) {
-  const fallbackBaseCalories = baseCalories > 0 ? baseCalories : 2400;
+  const fallbackBaseCalories = resolveBaseCalories(baseCalories);
   const initialToday = useMemo(() => createLocalNoonDate(), []);
   const todayKey = useMemo(() => formatDateKey(initialToday), [initialToday]);
   const [selectedDate, setSelectedDate] = useState(initialToday);
