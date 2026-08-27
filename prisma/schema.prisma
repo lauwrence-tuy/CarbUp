@@ -8,22 +8,23 @@ datasource db {
 }
 
 model User {
-  id                  String     @id @default(cuid())
-  stravaId            String     @unique
+  id                  String      @id @default(cuid())
+  stravaId            String      @unique
   accessToken         String
   refreshToken        String
   tokenExpiresAt      DateTime
   maintenanceCalories Int?
-  goalType            String     @default("maintain")
-  goalAdjustment      Int        @default(0)
-  everydayActivity    String     @default("active")
+  goalType            String      @default("maintain")
+  goalAdjustment      Int         @default(0)
+  everydayActivity    String      @default("active")
   weight              Float?
-  units               String     @default("imperial")
+  units               String      @default("imperial")
   activities          Activity[]
   foodLogs            FoodLog[]
   savedMeals          SavedMeal[]
-  createdAt           DateTime   @default(now())
-  updatedAt           DateTime   @updatedAt
+  customFoods         Food[]
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
 }
 
 model Activity {
@@ -57,10 +58,10 @@ model FoodLog {
   serving   String
   baseGrams Float
   grams     Float
-  calories  Int
-  protein   Int
-  carbs     Int
-  fat       Int
+  calories  Float
+  protein   Float
+  carbs     Float
+  fat       Float
   itemsJson String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -68,6 +69,53 @@ model FoodLog {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, dateKey])
+}
+
+/// Canonical food catalog. Grows over time: seeded USDA generic foods,
+/// cache-through inserts from external providers, and user custom foods.
+/// FoodLog stays denormalized and does NOT reference this table, so
+/// editing or deleting a Food never mutates historical diary entries.
+model Food {
+  id                  String        @id @default(cuid())
+  source              String // "usda" | "off" | "custom" | "seed"
+  externalId          String? // FDC id, or GTIN/barcode for Open Food Facts
+  name                String
+  brand               String?
+  barcode             String?
+  caloriesPer100g     Float
+  proteinPer100g      Float
+  carbsPer100g        Float
+  fatPer100g          Float
+  defaultServingGrams Float         @default(100)
+  defaultServingLabel String        @default("100 g")
+  createdBy           String? // userId for custom foods; null = public
+  verified            Boolean       @default(false)
+  usageCount          Int           @default(0)
+  servings            FoodServing[]
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  creator User? @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@unique([source, externalId])
+  @@index([createdBy])
+  @@index([barcode])
+  @@index([name])
+}
+
+/// Named portions for a Food (e.g. "1 cup (240 g)", "1 slice (28 g)").
+/// Every Food has at least a "100 g" serving.
+model FoodServing {
+  id        String   @id @default(cuid())
+  foodId    String
+  label     String
+  grams     Float
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  food Food @relation(fields: [foodId], references: [id], onDelete: Cascade)
+
+  @@index([foodId])
 }
 
 model SavedMeal {
