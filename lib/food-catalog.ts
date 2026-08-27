@@ -1,42 +1,31 @@
 import type { Food, FoodServing } from "@prisma/client";
+import type {
+  CatalogFood,
+  CatalogServing
+} from "@/components/dashboard/nutrition-diary-storage";
 import { prisma } from "./prisma";
 import { searchExternalFoods, type NormalizedFood } from "./food-sources";
 
-export type CatalogServing = {
-  id?: string;
-  label: string;
-  grams: number;
-  isDefault: boolean;
-};
+export type { CatalogFood, CatalogServing };
 
-/**
- * Shape returned by the food search API. A superset of the client's existing
- * `Food` type: `calories`/`protein`/`carbs`/`fat` are scaled to `baseGrams`
- * (the default serving) so current client math keeps working, while `per100g`
- * and `servings` support the richer serving picker.
- */
-export type CatalogFood = {
-  id: string;
+type FoodWithServings = Food & { servings: FoodServing[] };
+
+/** Minimal food-log row shape needed to derive a recent-foods list. */
+type RecentFoodLogRow = {
+  foodId: string | null;
   name: string;
-  brand: string;
-  source: string;
-  verified: boolean;
+  brand: string | null;
   serving: string;
   baseGrams: number;
+  grams: number;
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
-  per100g: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-  };
-  servings: CatalogServing[];
+  source: string;
 };
 
-type FoodWithServings = Food & { servings: FoodServing[] };
+const RECENT_FOODS_LIMIT = 20;
 
 const LOCAL_RESULTS_CONSIDERED_ENOUGH = 8;
 const MAX_LIMIT = 50;
@@ -102,6 +91,73 @@ export function projectFood(row: FoodWithServings): CatalogFood {
     },
     servings
   };
+}
+
+/**
+ * Distinct foods the user has logged, most recent first, as CatalogFood so the
+ * search UI can show them before anything is typed. Composite "meal" entries
+ * are skipped -- they aren't single foods. Per-100g values are backed out of
+ * the stored (already portion-scaled) macros.
+ */
+export function recentFoodsFromLogs(
+  logs: RecentFoodLogRow[]
+): CatalogFood[] {
+  const seen = new Set<string>();
+  const recent: CatalogFood[] = [];
+
+  // Callers pass logs oldest-first; walk backwards for most-recent-first.
+  for (let index = logs.length - 1; index >= 0; index -= 1) {
+    const log = logs[index];
+
+    if (log.source === "meal") {
+      continue;
+    }
+
+    const key = (
+      log.foodId ?? `${log.name}|${log.brand ?? ""}`
+    ).toLowerCase();
+
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+
+    const grams = log.grams > 0 ? log.grams : log.baseGrams || 100;
+    const portionGrams = Math.round(grams);
+    const per100 = (value: number) => round((value / grams) * 100, 1);
+    const servingLabel = log.serving || `${portionGrams} g`;
+
+    recent.push({
+      id: log.foodId ?? `recent-${key}`,
+      name: log.name,
+      brand: log.brand ?? "Recent",
+      source: "recent",
+      verified: false,
+      serving: servingLabel,
+      baseGrams: portionGrams,
+      calories: Math.round(log.calories),
+      protein: Math.round(log.protein),
+      carbs: Math.round(log.carbs),
+      fat: Math.round(log.fat),
+      per100g: {
+        calories: Math.round(per100(log.calories)),
+        protein: per100(log.protein),
+        carbs: per100(log.carbs),
+        fat: per100(log.fat)
+      },
+      servings: [
+        { label: servingLabel, grams: portionGrams, isDefault: true },
+        { label: "100 g", grams: 100, isDefault: false }
+      ]
+    });
+
+    if (recent.length >= RECENT_FOODS_LIMIT) {
+      break;
+    }
+  }
+
+  return recent;
 }
 
 /**
