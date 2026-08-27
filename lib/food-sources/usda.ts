@@ -30,14 +30,18 @@ const NUTRIENT_NUMBER = {
 
 const KJ_PER_KCAL = 4.184;
 
-type UsdaNutrient = {
+// `/foods/search` uses nutrientId/nutrientNumber + `value`; the abridged
+// `/foods/list` payload uses `number` + `amount`. Accept either.
+export type UsdaNutrient = {
   nutrientId?: number;
   nutrientNumber?: string;
+  number?: string;
   unitName?: string;
   value?: number;
+  amount?: number;
 };
 
-type UsdaFood = {
+export type UsdaFood = {
   fdcId?: number;
   description?: string;
   dataType?: string;
@@ -54,6 +58,14 @@ type UsdaSearchResponse = {
   foods?: UsdaFood[];
 };
 
+function nutrientAmount(nutrient: UsdaNutrient): number | null {
+  if (typeof nutrient.value === "number") {
+    return nutrient.value;
+  }
+
+  return typeof nutrient.amount === "number" ? nutrient.amount : null;
+}
+
 function getApiKey(): string {
   const key = process.env.USDA_FDC_API_KEY?.trim();
 
@@ -68,10 +80,12 @@ function readNutrient(
 ): number | null {
   const match = nutrients.find(
     (nutrient) =>
-      nutrient.nutrientId === id || nutrient.nutrientNumber === number
+      nutrient.nutrientId === id ||
+      nutrient.nutrientNumber === number ||
+      nutrient.number === number
   );
 
-  return typeof match?.value === "number" ? match.value : null;
+  return match ? nutrientAmount(match) : null;
 }
 
 function readEnergyKcal(nutrients: UsdaNutrient[]): number | null {
@@ -86,11 +100,14 @@ function readEnergyKcal(nutrients: UsdaNutrient[]): number | null {
   }
 
   // Some Foundation foods only report energy in kilojoules.
-  const kj = nutrients.find(
-    (nutrient) => nutrient.nutrientNumber === NUTRIENT_NUMBER.energyKj
-  )?.value;
+  const kjNutrient = nutrients.find(
+    (nutrient) =>
+      nutrient.nutrientNumber === NUTRIENT_NUMBER.energyKj ||
+      nutrient.number === NUTRIENT_NUMBER.energyKj
+  );
+  const kj = kjNutrient ? nutrientAmount(kjNutrient) : null;
 
-  return typeof kj === "number" && kj > 0 ? kj / KJ_PER_KCAL : null;
+  return kj != null && kj > 0 ? kj / KJ_PER_KCAL : null;
 }
 
 /** USDA branded descriptions are frequently ALL CAPS. */
@@ -171,7 +188,7 @@ function buildServings(
   ];
 }
 
-function normalizeUsdaFood(food: UsdaFood): NormalizedFood | null {
+export function normalizeUsdaFood(food: UsdaFood): NormalizedFood | null {
   const description = food.description?.trim();
 
   if (!description || !food.fdcId) {

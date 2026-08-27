@@ -234,6 +234,17 @@ function dedupeByIdentity(foods: CatalogFood[]): CatalogFood[] {
   });
 }
 
+function queryTokens(query: string): string[] {
+  return query.toLowerCase().split(/\s+/).filter(Boolean);
+}
+
+function wordRegex(term: string): RegExp {
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  // Tolerate a singular query matching a plural name ("apple" -> "apples").
+  return new RegExp(`\\b${escaped}s?\\b`);
+}
+
 /** Higher is better. Rewards close name matches before falling back to flags. */
 function matchScore(name: string, query: string): number {
   const haystack = name.toLowerCase();
@@ -243,18 +254,32 @@ function matchScore(name: string, query: string): number {
     return EXACT_MATCH_SCORE;
   }
 
-  if (haystack.startsWith(needle)) {
+  // Whole-word prefix ("egg" -> "Egg, yolk"), not mid-word ("egg" -> "Eggnog").
+  if (new RegExp(`^${needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}s?\\b`).test(haystack)) {
     return PREFIX_MATCH_SCORE;
   }
 
-  const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-  if (new RegExp(`\\b${escaped}\\b`).test(haystack)) {
+  if (wordRegex(needle).test(haystack)) {
     return WORD_MATCH_SCORE;
+  }
+
+  // Multi-word query whose every word appears in the name, any order
+  // ("broccoli raw" -> "Broccoli, raw").
+  const tokens = queryTokens(needle);
+
+  if (tokens.length > 1 && tokens.every((token) => wordRegex(token).test(haystack))) {
+    return WORD_MATCH_SCORE - 5;
   }
 
   if (haystack.includes(needle)) {
     return SUBSTRING_MATCH_SCORE;
+  }
+
+  // Partial token coverage.
+  const covered = tokens.filter((token) => haystack.includes(token)).length;
+
+  if (covered > 0) {
+    return Math.round((covered / tokens.length) * SUBSTRING_MATCH_SCORE);
   }
 
   return 0;
@@ -315,11 +340,15 @@ export async function searchFoodCatalog(options: {
 
   const ranker = makeRanker(query);
 
-  // Pull a wide candidate set and rank in JS -- the DB `name` index can't
-  // express "closest match first", only alphabetical.
+  // Match every query word against the name (any order), so "broccoli raw"
+  // finds "Broccoli, raw". Pull a wide candidate set and rank in JS -- the
+  // DB `name` index can't express "closest match first", only alphabetical.
+  const words = queryTokens(query);
   const local = await prisma.food.findMany({
     where: {
-      name: { contains: query, mode: "insensitive" },
+      AND: words.map((word) => ({
+        name: { contains: word, mode: "insensitive" as const }
+      })),
       OR: [{ createdBy: null }, { createdBy: options.userId }]
     },
     orderBy: [{ verified: "desc" }, { usageCount: "desc" }],
@@ -327,9 +356,9 @@ export async function searchFoodCatalog(options: {
     include: { servings: true }
   });
 
-  const localFoods = local.map(projectFood).sort(ranker);
+  const localFoods = dedupeByIdentity(local.map(projectFood).sort(ranker));
   const strongLocalMatches = localFoods.filter(
-    (food) => matchScore(food.name, query) >= WORD_MATCH_SCORE
+    (food) => matchScore(food.name, query) >= WORD_MATCH_SCORE - 5
   ).length;
 
   if (strongLocalMatches >= LOCAL_RESULTS_CONSIDERED_ENOUGH) {

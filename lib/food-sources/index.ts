@@ -6,7 +6,12 @@ export type {
   NormalizedFood,
   NormalizedServing
 } from "./types";
-export { searchUsdaFoods } from "./usda";
+export {
+  normalizeUsdaFood,
+  searchUsdaFoods,
+  type UsdaFood,
+  type UsdaNutrient
+} from "./usda";
 
 /**
  * Fan out to every external food provider in parallel and merge the results.

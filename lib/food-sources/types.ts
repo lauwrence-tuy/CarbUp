@@ -1,4 +1,4 @@
-export type FoodSourceName = "usda" | "off";
+export type FoodSourceName = "usda" | "off" | "seed" | "custom";
 
 export type NormalizedServing = {
   label: string;
