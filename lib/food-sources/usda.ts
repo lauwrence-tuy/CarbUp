@@ -7,6 +7,10 @@ const MAX_RESULTS = 25;
 const MIN_QUERY_LENGTH = 2;
 // A food that is 100% fat is ~900 kcal / 100 g; anything above this is bad data.
 const MAX_SANE_KCAL_PER_100G = 1000;
+// Stated calories vs. Atwater estimate (4/4/9). Loose enough to allow fiber,
+// sugar alcohols and rounding; tight enough to drop clearly broken rows.
+const ATWATER_TOLERANCE = 0.4;
+const ATWATER_MIN_KCAL = 40;
 
 // USDA identifies nutrients by a numeric `nutrientId` and a legacy string
 // `nutrientNumber`. Different dataTypes populate one or the other, so match both.
@@ -102,6 +106,31 @@ function normalizeName(description: string): string {
   return titleCaseIfShouting(description.replace(/\s+/g, " ").trim());
 }
 
+function normalizeBrand(brand: string | undefined): string | undefined {
+  if (!brand) {
+    return undefined;
+  }
+
+  return titleCaseIfShouting(brand.replace(/\s+/g, " ").trim()) || undefined;
+}
+
+/** Stated kcal is grossly inconsistent with the macro breakdown. */
+function failsAtwaterCheck(
+  calories: number,
+  protein: number,
+  carbs: number,
+  fat: number
+): boolean {
+  const estimate = 4 * protein + 4 * carbs + 9 * fat;
+
+  if (calories < ATWATER_MIN_KCAL || estimate < ATWATER_MIN_KCAL) {
+    return false;
+  }
+
+  return Math.abs(calories - estimate) / Math.max(calories, estimate) >
+    ATWATER_TOLERANCE;
+}
+
 function round(value: number, decimals: number): number {
   const factor = 10 ** decimals;
 
@@ -166,6 +195,10 @@ function normalizeUsdaFood(food: UsdaFood): NormalizedFood | null {
     return null;
   }
 
+  if (failsAtwaterCheck(calories, protein, carbs, fat)) {
+    return null;
+  }
+
   const servingGrams = servingGramsFor(food);
   const servingLabel =
     food.householdServingFullText?.trim() ||
@@ -177,7 +210,7 @@ function normalizeUsdaFood(food: UsdaFood): NormalizedFood | null {
     source: "usda",
     externalId: String(food.fdcId),
     name: normalizeName(description),
-    brand: food.brandName?.trim() || food.brandOwner?.trim() || undefined,
+    brand: normalizeBrand(food.brandName?.trim() || food.brandOwner?.trim()),
     barcode: food.gtinUpc?.trim() || undefined,
     caloriesPer100g: Math.round(calories),
     proteinPer100g: round(protein, 2),
