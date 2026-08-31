@@ -22,6 +22,31 @@ export type FoodLogEntry = Food & {
   source?: "food" | "meal" | "quick";
 };
 
+export type CatalogServing = {
+  id?: string;
+  label: string;
+  grams: number;
+  isDefault: boolean;
+};
+
+/**
+ * A food returned by the search API or derived from log history. Superset of
+ * `Food`: `calories`/`protein`/`carbs`/`fat` are scaled to `baseGrams` (the
+ * default serving) so `getFoodPortion` works unchanged, while `per100g` and
+ * `servings` drive the serving picker.
+ */
+export type CatalogFood = Food & {
+  source: string;
+  verified: boolean;
+  per100g: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
+  servings: CatalogServing[];
+};
+
 export type NutritionTotals = {
   calories: number;
   protein: number;

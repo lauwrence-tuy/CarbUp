@@ -9,6 +9,7 @@ import {
   Coffee,
   Cookie,
   Flame,
+  Pencil,
   Plus,
   Search,
   Settings,
@@ -16,14 +17,16 @@ import {
   Trash2,
   Utensils
 } from "lucide-react";
+import { BarcodeScanner } from "./barcode-scanner";
 import { CountUp } from "./count-up";
+import { CustomFoodForm } from "./custom-food-form";
 import {
   createLocalNoonDate,
   DaySpreadWidget,
   formatDateKey
 } from "./day-spread-widget";
-import { usdaCommonFoods } from "./food-calorie-library";
 import {
+  type CatalogFood,
   createNutritionTotals,
   dailyLogsStorageKey,
   type Food,
@@ -40,9 +43,23 @@ type NutritionPageProps = {
   activityCaloriesByDate: Record<string, number>;
   initialLogsByDate: Record<string, FoodLogEntry[]>;
   initialSavedMeals: SavedMeal[];
+  initialRecentFoods: CatalogFood[];
+  initialFrequentFoods: CatalogFood[];
+  initialCustomFoods: CatalogFood[];
   goalAdjustment: number;
   isConnected: boolean;
 };
+
+type BrowseTab = "recent" | "frequent" | "mine";
+
+const BROWSE_TAB_LABELS: Record<BrowseTab, string> = {
+  recent: "Recent foods",
+  frequent: "Frequent foods",
+  mine: "My foods"
+};
+
+const SEARCH_DEBOUNCE_MS = 300;
+const MIN_SEARCH_LENGTH = 2;
 
 const meals: Array<{
   name: MealName;
@@ -53,120 +70,6 @@ const meals: Array<{
   { name: "Lunch", icon: Soup, accent: "bg-app-green text-black" },
   { name: "Dinner", icon: Utensils, accent: "bg-app-orange text-white" },
   { name: "Snacks", icon: Cookie, accent: "bg-app-purple text-white" }
-];
-
-const foodLibrary: Food[] = [
-  {
-    id: "banana",
-    name: "Banana",
-    brand: "Fresh fruit",
-    serving: "1 medium",
-    baseGrams: 118,
-    calories: 105,
-    protein: 1,
-    carbs: 27,
-    fat: 0
-  },
-  {
-    id: "oats",
-    name: "Oatmeal with berries",
-    brand: "Homemade",
-    serving: "1 bowl",
-    baseGrams: 320,
-    calories: 318,
-    protein: 11,
-    carbs: 57,
-    fat: 6
-  },
-  {
-    id: "eggs-toast",
-    name: "Eggs and sourdough toast",
-    brand: "Homemade",
-    serving: "2 eggs, 1 slice",
-    baseGrams: 150,
-    calories: 325,
-    protein: 20,
-    carbs: 28,
-    fat: 15
-  },
-  {
-    id: "chicken-rice",
-    name: "Chicken rice bowl",
-    brand: "Meal prep",
-    serving: "1 bowl",
-    baseGrams: 450,
-    calories: 612,
-    protein: 48,
-    carbs: 72,
-    fat: 14
-  },
-  {
-    id: "burrito",
-    name: "Steak burrito",
-    brand: "Fast casual",
-    serving: "1 burrito",
-    baseGrams: 450,
-    calories: 785,
-    protein: 42,
-    carbs: 92,
-    fat: 29
-  },
-  {
-    id: "yogurt",
-    name: "Greek yogurt and granola",
-    brand: "Recovery snack",
-    serving: "1 cup",
-    baseGrams: 245,
-    calories: 285,
-    protein: 24,
-    carbs: 34,
-    fat: 7
-  },
-  {
-    id: "shake",
-    name: "Protein shake",
-    brand: "Whey blend",
-    serving: "1 bottle",
-    baseGrams: 330,
-    calories: 210,
-    protein: 32,
-    carbs: 12,
-    fat: 4
-  },
-  {
-    id: "salmon",
-    name: "Salmon, potatoes, greens",
-    brand: "Homemade",
-    serving: "1 plate",
-    baseGrams: 430,
-    calories: 690,
-    protein: 46,
-    carbs: 64,
-    fat: 27
-  },
-  {
-    id: "rice",
-    name: "White rice",
-    brand: "Cooked",
-    serving: "1 cup",
-    baseGrams: 158,
-    calories: 205,
-    protein: 4,
-    carbs: 45,
-    fat: 0
-  },
-  {
-    id: "bar",
-    name: "Carb bar",
-    brand: "Ride fuel",
-    serving: "1 bar",
-    baseGrams: 60,
-    calories: 240,
-    protein: 6,
-    carbs: 43,
-    fat: 5
-  },
-  ...usdaCommonFoods
 ];
 
 type AddMode = "food" | "meal";
@@ -329,6 +232,9 @@ export function NutritionPage({
   activityCaloriesByDate,
   initialLogsByDate,
   initialSavedMeals,
+  initialRecentFoods,
+  initialFrequentFoods,
+  initialCustomFoods,
   goalAdjustment,
   isConnected
 }: NutritionPageProps) {
@@ -339,9 +245,24 @@ export function NutritionPage({
   const [selectedMeal, setSelectedMeal] = useState<MealName>("Breakfast");
   const [addMode, setAddMode] = useState<AddMode>("food");
   const [query, setQuery] = useState("");
-  const [selectedFood, setSelectedFood] = useState<Food>(foodLibrary[0]);
+  const [searchResults, setSearchResults] = useState<CatalogFood[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [browseTab, setBrowseTab] = useState<BrowseTab>(
+    initialRecentFoods.length === 0 && initialFrequentFoods.length > 0
+      ? "frequent"
+      : "recent"
+  );
+  const [customFoods, setCustomFoods] =
+    useState<CatalogFood[]>(initialCustomFoods);
+  const [editingCustomFood, setEditingCustomFood] = useState<CatalogFood | null>(
+    null
+  );
+  const [selectedFood, setSelectedFood] = useState<CatalogFood | null>(
+    initialRecentFoods[0] ?? null
+  );
   const [selectedFoodGrams, setSelectedFoodGrams] = useState(
-    String(foodLibrary[0].baseGrams)
+    initialRecentFoods[0] ? String(initialRecentFoods[0].baseGrams) : "100"
   );
   const [savedMeals, setSavedMeals] = useState<SavedMeal[]>(initialSavedMeals);
   const [selectedSavedMealId, setSelectedSavedMealId] = useState(
@@ -359,6 +280,53 @@ export function NutritionPage({
   const [allLogs, setAllLogs] = useState<Record<string, FoodLogEntry[]>>(
     initialLogsByDate
   );
+
+  const trimmedQuery = query.trim();
+  const isSearchActive = trimmedQuery.length >= MIN_SEARCH_LENGTH;
+
+  useEffect(() => {
+    if (trimmedQuery.length < MIN_SEARCH_LENGTH) {
+      setSearchResults([]);
+      setIsSearching(false);
+      setSearchError(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    setIsSearching(true);
+
+    const timer = setTimeout(() => {
+      fetch(`/api/nutrition/foods/search?q=${encodeURIComponent(trimmedQuery)}`, {
+        signal: controller.signal
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Search failed: ${response.status}`);
+          }
+
+          return response.json() as Promise<{ foods: CatalogFood[] }>;
+        })
+        .then((data) => {
+          setSearchResults(data.foods ?? []);
+          setSearchError(null);
+          setIsSearching(false);
+        })
+        .catch(() => {
+          if (controller.signal.aborted) {
+            return;
+          }
+
+          setSearchResults([]);
+          setSearchError("Couldn't load foods. Check your connection and retry.");
+          setIsSearching(false);
+        });
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [trimmedQuery]);
 
   useEffect(() => {
     if (window.localStorage.getItem(localStorageMigrationKey) === "true") {
@@ -515,15 +483,30 @@ export function NutritionPage({
     targetCalories > 0 ? (totals.calories / targetCalories) * 100 : 0;
   const diaryStatus =
     remainingCalories === 0 ? "Complete" : totals.calories > 0 ? "Active" : "Ready";
-  const filteredFoods = foodLibrary.filter((food) => {
-    const searchable = `${food.name} ${food.brand} ${food.serving}`.toLowerCase();
-
-    return searchable.includes(query.trim().toLowerCase());
-  });
-  const selectedFoodPreview = getFoodPortion(
-    selectedFood,
-    Number(selectedFoodGrams) || 0
-  );
+  const browseTabs: BrowseTab[] = [
+    "recent",
+    "frequent",
+    ...(customFoods.length > 0 ? (["mine"] as const) : [])
+  ];
+  const activeBrowseTab = browseTabs.includes(browseTab) ? browseTab : "recent";
+  const browseFoods =
+    activeBrowseTab === "frequent"
+      ? initialFrequentFoods
+      : activeBrowseTab === "mine"
+        ? customFoods
+        : initialRecentFoods;
+  const displayedFoods = isSearchActive ? searchResults : browseFoods;
+  const showRecentFoods = !isSearchActive;
+  const browseLabel = BROWSE_TAB_LABELS[activeBrowseTab];
+  const hasBrowseHistory =
+    initialRecentFoods.length > 0 ||
+    initialFrequentFoods.length > 0 ||
+    customFoods.length > 0;
+  const noSearchMatches =
+    isSearchActive && !isSearching && !searchError && searchResults.length === 0;
+  const selectedFoodPreview = selectedFood
+    ? getFoodPortion(selectedFood, Number(selectedFoodGrams) || 0)
+    : null;
   const selectedSavedMeal = savedMeals.find(
     (meal) => meal.id === selectedSavedMealId
   );
@@ -587,6 +570,13 @@ export function NutritionPage({
     }
   }
 
+  function defaultServingGrams(food: CatalogFood) {
+    return (
+      food.servings.find((serving) => serving.isDefault)?.grams ??
+      food.baseGrams
+    );
+  }
+
   function addFood(
     food: Food,
     meal = selectedMeal,
@@ -601,24 +591,64 @@ export function NutritionPage({
     void addLogEntry(createFoodLogEntry(food, safeGrams, meal));
   }
 
-  function selectFood(food: Food) {
+  function selectFood(food: CatalogFood) {
     setSelectedFood(food);
-    setSelectedFoodGrams(String(food.baseGrams));
+    setSelectedFoodGrams(String(defaultServingGrams(food)));
+  }
+
+  function handleScannedFood(food: CatalogFood) {
+    setAddMode("food");
+    selectFood(food);
+  }
+
+  function handleSavedCustomFood(food: CatalogFood) {
+    setCustomFoods((current) => [
+      food,
+      ...current.filter((item) => item.id !== food.id)
+    ]);
+    setEditingCustomFood(null);
+    setBrowseTab("mine");
+    selectFood(food);
+  }
+
+  function deleteCustomFood(food: CatalogFood) {
+    setCustomFoods((current) => current.filter((item) => item.id !== food.id));
+
+    if (selectedFood?.id === food.id) {
+      setSelectedFood(null);
+    }
+
+    if (editingCustomFood?.id === food.id) {
+      setEditingCustomFood(null);
+    }
+
+    void fetch("/api/nutrition/foods", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: food.id })
+    });
   }
 
   function addSelectedFood() {
+    if (!selectedFood) {
+      return;
+    }
+
     addFood(selectedFood, selectedMeal, Number(selectedFoodGrams));
   }
 
-  function addFoodFromLibrary(food: Food) {
-    const grams = selectedFood.id === food.id ? Number(selectedFoodGrams) : food.baseGrams;
+  function addFoodFromLibrary(food: CatalogFood) {
+    const grams =
+      selectedFood?.id === food.id
+        ? Number(selectedFoodGrams)
+        : defaultServingGrams(food);
 
     setSelectedFood(food);
     setSelectedFoodGrams(String(grams));
     addFood(food, selectedMeal, grams);
   }
 
-  function addFoodToMealBuilder(food: Food) {
+  function addFoodToMealBuilder(food: CatalogFood) {
     setMealBuilderIngredients((current) => [
       ...current,
       {
@@ -1115,9 +1145,70 @@ export function NutritionPage({
 
             {addMode === "food" ? (
               <>
-                <div className="mt-4 max-h-[260px] space-y-2 overflow-y-auto pr-1">
-                  {filteredFoods.map((food) => {
-                    const selected = selectedFood.id === food.id;
+                <BarcodeScanner onFoodFound={handleScannedFood} />
+                <CustomFoodForm
+                  key={editingCustomFood?.id ?? "new"}
+                  editing={editingCustomFood}
+                  onSaved={handleSavedCustomFood}
+                  onCancelEdit={() => setEditingCustomFood(null)}
+                />
+
+                <div className="mt-4 flex items-center justify-between gap-2">
+                  <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-app-secondary">
+                    {showRecentFoods ? browseLabel : "Search results"}
+                  </p>
+                  {isSearching ? (
+                    <span className="text-xs font-semibold text-app-muted">
+                      Searching...
+                    </span>
+                  ) : null}
+                </div>
+
+                {showRecentFoods && hasBrowseHistory ? (
+                  <div
+                    className={`mt-2 grid gap-2 rounded-full bg-black/28 p-1 ${
+                      browseTabs.length === 3 ? "grid-cols-3" : "grid-cols-2"
+                    }`}
+                  >
+                    {browseTabs.map((tab) => (
+                      <button
+                        key={tab}
+                        type="button"
+                        aria-pressed={activeBrowseTab === tab}
+                        className={`min-h-9 rounded-full text-xs font-bold capitalize transition ${
+                          activeBrowseTab === tab
+                            ? "bg-app-green text-black"
+                            : "text-app-secondary hover:bg-app-green/10 hover:text-app-green"
+                        }`}
+                        onClick={() => setBrowseTab(tab)}
+                      >
+                        {tab === "mine" ? "Mine" : tab}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+
+                <div className="mt-2 max-h-[260px] space-y-2 overflow-y-auto pr-1">
+                  {showRecentFoods && displayedFoods.length === 0 ? (
+                    <p className="rounded-[20px] bg-black/24 px-4 py-4 text-sm text-app-muted">
+                      Search for a food to add. Foods you log will show up here.
+                    </p>
+                  ) : null}
+
+                  {searchError ? (
+                    <p className="rounded-[20px] bg-app-red/10 px-4 py-4 text-sm font-semibold text-app-red">
+                      {searchError}
+                    </p>
+                  ) : null}
+
+                  {noSearchMatches ? (
+                    <p className="rounded-[20px] bg-black/24 px-4 py-4 text-sm text-app-muted">
+                      No foods found for &ldquo;{trimmedQuery}&rdquo;.
+                    </p>
+                  ) : null}
+
+                  {displayedFoods.map((food) => {
+                    const selected = selectedFood?.id === food.id;
 
                     return (
                       <div
@@ -1152,59 +1243,143 @@ export function NutritionPage({
                             {food.carbs}g / F {food.fat}g
                           </p>
                         </button>
-                        <button
-                          className={`flex size-10 shrink-0 items-center justify-center rounded-full transition hover:-translate-y-0.5 ${
-                            selected
-                              ? "bg-black text-white"
-                              : "bg-white text-black"
-                          }`}
-                          type="button"
-                          aria-label={`Add ${food.name} to ${selectedMeal}`}
-                          onClick={() => addFoodFromLibrary(food)}
-                        >
-                          <Plus className="size-5" aria-hidden="true" />
-                        </button>
+                        <div className="flex shrink-0 items-center gap-1.5">
+                          {food.source === "custom" ? (
+                            <>
+                              <button
+                                type="button"
+                                aria-label={`Edit ${food.name}`}
+                                onClick={() => {
+                                  setBrowseTab("mine");
+                                  setEditingCustomFood(food);
+                                }}
+                                className={`flex size-8 items-center justify-center rounded-full transition ${
+                                  selected
+                                    ? "bg-black/15 text-black"
+                                    : "bg-white/[0.06] text-app-muted hover:text-white"
+                                }`}
+                              >
+                                <Pencil className="size-4" aria-hidden="true" />
+                              </button>
+                              <button
+                                type="button"
+                                aria-label={`Delete ${food.name}`}
+                                onClick={() => deleteCustomFood(food)}
+                                className={`flex size-8 items-center justify-center rounded-full transition ${
+                                  selected
+                                    ? "bg-black/15 text-black"
+                                    : "bg-white/[0.06] text-app-muted hover:bg-app-red/20 hover:text-app-red"
+                                }`}
+                              >
+                                <Trash2 className="size-4" aria-hidden="true" />
+                              </button>
+                            </>
+                          ) : null}
+                          <button
+                            className={`flex size-10 items-center justify-center rounded-full transition hover:-translate-y-0.5 ${
+                              selected
+                                ? "bg-black text-white"
+                                : "bg-white text-black"
+                            }`}
+                            type="button"
+                            aria-label={`Add ${food.name} to ${selectedMeal}`}
+                            onClick={() => addFoodFromLibrary(food)}
+                          >
+                            <Plus className="size-5" aria-hidden="true" />
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
                 </div>
 
                 <section className="mt-5 border-t border-white/[0.06] pt-5">
-                  <div className="rounded-[24px] bg-black/24 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-bold text-white">
-                          {selectedFood.name}
-                        </p>
-                        <p className="mt-1 text-xs font-semibold text-app-muted">
-                          {selectedFood.calories} kcal per{" "}
-                          {selectedFood.baseGrams}g
-                        </p>
+                  {selectedFood && selectedFoodPreview ? (
+                    <div className="rounded-[24px] bg-black/24 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-white">
+                            {selectedFood.name}
+                          </p>
+                          <p className="mt-1 text-xs font-semibold text-app-muted">
+                            {selectedFood.per100g.calories} kcal per 100 g
+                            {selectedFood.brand ? ` - ${selectedFood.brand}` : ""}
+                          </p>
+                        </div>
+                        <MacroInput
+                          label="Grams"
+                          value={selectedFoodGrams}
+                          onChange={setSelectedFoodGrams}
+                        />
                       </div>
-                      <MacroInput
-                        label="Grams"
-                        value={selectedFoodGrams}
-                        onChange={setSelectedFoodGrams}
+
+                      {selectedFood.servings.length > 1 ? (
+                        <label className="mt-3 block">
+                          <span className="sr-only">Serving size</span>
+                          <select
+                            className="min-h-11 w-full rounded-full border border-white/[0.06] bg-black/28 px-4 text-sm font-semibold text-white outline-none focus:border-app-green/60"
+                            value={
+                              selectedFood.servings.find(
+                                (serving) =>
+                                  String(serving.grams) === selectedFoodGrams
+                              )
+                                ? selectedFoodGrams
+                                : "custom"
+                            }
+                            onChange={(event) => {
+                              if (event.target.value !== "custom") {
+                                setSelectedFoodGrams(event.target.value);
+                              }
+                            }}
+                          >
+                            {selectedFood.servings.map((serving) => (
+                              <option
+                                key={`${serving.label}-${serving.grams}`}
+                                value={String(serving.grams)}
+                              >
+                                {serving.label} ({serving.grams} g)
+                              </option>
+                            ))}
+                            <option value="custom">Custom amount</option>
+                          </select>
+                        </label>
+                      ) : null}
+
+                      <NutritionPreview
+                        calories={selectedFoodPreview.calories}
+                        protein={selectedFoodPreview.protein}
+                        carbs={selectedFoodPreview.carbs}
+                        fat={selectedFoodPreview.fat}
                       />
+
+                      <button
+                        className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-app-green px-5 text-sm font-bold text-black shadow-glow transition hover:-translate-y-0.5"
+                        type="button"
+                        onClick={addSelectedFood}
+                      >
+                        <Plus className="size-5" aria-hidden="true" />
+                        Add to {selectedMeal}
+                      </button>
                     </div>
-
-                    <NutritionPreview
-                      calories={selectedFoodPreview.calories}
-                      protein={selectedFoodPreview.protein}
-                      carbs={selectedFoodPreview.carbs}
-                      fat={selectedFoodPreview.fat}
-                    />
-
-                    <button
-                      className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-app-green px-5 text-sm font-bold text-black shadow-glow transition hover:-translate-y-0.5"
-                      type="button"
-                      onClick={addSelectedFood}
-                    >
-                      <Plus className="size-5" aria-hidden="true" />
-                      Add to {selectedMeal}
-                    </button>
-                  </div>
+                  ) : (
+                    <p className="rounded-[24px] bg-black/24 px-4 py-5 text-sm text-app-muted">
+                      Pick a food above to set a portion and add it.
+                    </p>
+                  )}
                 </section>
+
+                <p className="mt-4 text-[0.65rem] leading-4 text-app-muted">
+                  Food data from USDA FoodData Central (public domain) and{" "}
+                  <a
+                    className="underline hover:text-app-secondary"
+                    href="https://world.openfoodfacts.org"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open Food Facts
+                  </a>{" "}
+                  (ODbL).
+                </p>
               </>
             ) : (
               <>
@@ -1313,8 +1488,21 @@ export function NutritionPage({
                     value={mealBuilderName}
                   />
 
-                  <div className="mt-4 max-h-[190px] space-y-2 overflow-y-auto pr-1">
-                    {filteredFoods.map((food) => (
+                  <p className="mt-4 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-app-secondary">
+                    {showRecentFoods ? browseLabel : "Search results"}
+                    {isSearching ? " - searching..." : ""}
+                  </p>
+
+                  <div className="mt-2 max-h-[190px] space-y-2 overflow-y-auto pr-1">
+                    {displayedFoods.length === 0 ? (
+                      <p className="rounded-[18px] bg-black/24 px-3 py-3 text-xs font-semibold text-app-muted">
+                        {showRecentFoods
+                          ? "Search above to find foods for this meal."
+                          : searchError ?? `No foods found for "${trimmedQuery}".`}
+                      </p>
+                    ) : null}
+
+                    {displayedFoods.map((food) => (
                       <div
                         key={food.id}
                         className="flex items-center justify-between gap-3 rounded-[18px] bg-black/24 p-3"
@@ -1324,7 +1512,7 @@ export function NutritionPage({
                             {food.name}
                           </p>
                           <p className="mt-1 text-xs font-semibold text-app-muted">
-                            {food.calories} kcal / {food.baseGrams}g
+                            {food.per100g.calories} kcal / 100 g
                           </p>
                         </div>
                         <button
