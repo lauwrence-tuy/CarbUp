@@ -9,6 +9,7 @@ import {
   Coffee,
   Cookie,
   Flame,
+  Pencil,
   Plus,
   Search,
   Settings,
@@ -18,6 +19,7 @@ import {
 } from "lucide-react";
 import { BarcodeScanner } from "./barcode-scanner";
 import { CountUp } from "./count-up";
+import { CustomFoodForm } from "./custom-food-form";
 import {
   createLocalNoonDate,
   DaySpreadWidget,
@@ -43,11 +45,18 @@ type NutritionPageProps = {
   initialSavedMeals: SavedMeal[];
   initialRecentFoods: CatalogFood[];
   initialFrequentFoods: CatalogFood[];
+  initialCustomFoods: CatalogFood[];
   goalAdjustment: number;
   isConnected: boolean;
 };
 
-type BrowseTab = "recent" | "frequent";
+type BrowseTab = "recent" | "frequent" | "mine";
+
+const BROWSE_TAB_LABELS: Record<BrowseTab, string> = {
+  recent: "Recent foods",
+  frequent: "Frequent foods",
+  mine: "My foods"
+};
 
 const SEARCH_DEBOUNCE_MS = 300;
 const MIN_SEARCH_LENGTH = 2;
@@ -225,6 +234,7 @@ export function NutritionPage({
   initialSavedMeals,
   initialRecentFoods,
   initialFrequentFoods,
+  initialCustomFoods,
   goalAdjustment,
   isConnected
 }: NutritionPageProps) {
@@ -242,6 +252,11 @@ export function NutritionPage({
     initialRecentFoods.length === 0 && initialFrequentFoods.length > 0
       ? "frequent"
       : "recent"
+  );
+  const [customFoods, setCustomFoods] =
+    useState<CatalogFood[]>(initialCustomFoods);
+  const [editingCustomFood, setEditingCustomFood] = useState<CatalogFood | null>(
+    null
   );
   const [selectedFood, setSelectedFood] = useState<CatalogFood | null>(
     initialRecentFoods[0] ?? null
@@ -468,13 +483,25 @@ export function NutritionPage({
     targetCalories > 0 ? (totals.calories / targetCalories) * 100 : 0;
   const diaryStatus =
     remainingCalories === 0 ? "Complete" : totals.calories > 0 ? "Active" : "Ready";
+  const browseTabs: BrowseTab[] = [
+    "recent",
+    "frequent",
+    ...(customFoods.length > 0 ? (["mine"] as const) : [])
+  ];
+  const activeBrowseTab = browseTabs.includes(browseTab) ? browseTab : "recent";
   const browseFoods =
-    browseTab === "frequent" ? initialFrequentFoods : initialRecentFoods;
+    activeBrowseTab === "frequent"
+      ? initialFrequentFoods
+      : activeBrowseTab === "mine"
+        ? customFoods
+        : initialRecentFoods;
   const displayedFoods = isSearchActive ? searchResults : browseFoods;
   const showRecentFoods = !isSearchActive;
-  const browseLabel = browseTab === "frequent" ? "Frequent foods" : "Recent foods";
+  const browseLabel = BROWSE_TAB_LABELS[activeBrowseTab];
   const hasBrowseHistory =
-    initialRecentFoods.length > 0 || initialFrequentFoods.length > 0;
+    initialRecentFoods.length > 0 ||
+    initialFrequentFoods.length > 0 ||
+    customFoods.length > 0;
   const noSearchMatches =
     isSearchActive && !isSearching && !searchError && searchResults.length === 0;
   const selectedFoodPreview = selectedFood
@@ -572,6 +599,34 @@ export function NutritionPage({
   function handleScannedFood(food: CatalogFood) {
     setAddMode("food");
     selectFood(food);
+  }
+
+  function handleSavedCustomFood(food: CatalogFood) {
+    setCustomFoods((current) => [
+      food,
+      ...current.filter((item) => item.id !== food.id)
+    ]);
+    setEditingCustomFood(null);
+    setBrowseTab("mine");
+    selectFood(food);
+  }
+
+  function deleteCustomFood(food: CatalogFood) {
+    setCustomFoods((current) => current.filter((item) => item.id !== food.id));
+
+    if (selectedFood?.id === food.id) {
+      setSelectedFood(null);
+    }
+
+    if (editingCustomFood?.id === food.id) {
+      setEditingCustomFood(null);
+    }
+
+    void fetch("/api/nutrition/foods", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: food.id })
+    });
   }
 
   function addSelectedFood() {
@@ -1091,6 +1146,12 @@ export function NutritionPage({
             {addMode === "food" ? (
               <>
                 <BarcodeScanner onFoodFound={handleScannedFood} />
+                <CustomFoodForm
+                  key={editingCustomFood?.id ?? "new"}
+                  editing={editingCustomFood}
+                  onSaved={handleSavedCustomFood}
+                  onCancelEdit={() => setEditingCustomFood(null)}
+                />
 
                 <div className="mt-4 flex items-center justify-between gap-2">
                   <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-app-secondary">
@@ -1104,20 +1165,24 @@ export function NutritionPage({
                 </div>
 
                 {showRecentFoods && hasBrowseHistory ? (
-                  <div className="mt-2 grid grid-cols-2 gap-2 rounded-full bg-black/28 p-1">
-                    {(["recent", "frequent"] as const).map((tab) => (
+                  <div
+                    className={`mt-2 grid gap-2 rounded-full bg-black/28 p-1 ${
+                      browseTabs.length === 3 ? "grid-cols-3" : "grid-cols-2"
+                    }`}
+                  >
+                    {browseTabs.map((tab) => (
                       <button
                         key={tab}
                         type="button"
-                        aria-pressed={browseTab === tab}
+                        aria-pressed={activeBrowseTab === tab}
                         className={`min-h-9 rounded-full text-xs font-bold capitalize transition ${
-                          browseTab === tab
+                          activeBrowseTab === tab
                             ? "bg-app-green text-black"
                             : "text-app-secondary hover:bg-app-green/10 hover:text-app-green"
                         }`}
                         onClick={() => setBrowseTab(tab)}
                       >
-                        {tab}
+                        {tab === "mine" ? "Mine" : tab}
                       </button>
                     ))}
                   </div>
@@ -1178,18 +1243,51 @@ export function NutritionPage({
                             {food.carbs}g / F {food.fat}g
                           </p>
                         </button>
-                        <button
-                          className={`flex size-10 shrink-0 items-center justify-center rounded-full transition hover:-translate-y-0.5 ${
-                            selected
-                              ? "bg-black text-white"
-                              : "bg-white text-black"
-                          }`}
-                          type="button"
-                          aria-label={`Add ${food.name} to ${selectedMeal}`}
-                          onClick={() => addFoodFromLibrary(food)}
-                        >
-                          <Plus className="size-5" aria-hidden="true" />
-                        </button>
+                        <div className="flex shrink-0 items-center gap-1.5">
+                          {food.source === "custom" ? (
+                            <>
+                              <button
+                                type="button"
+                                aria-label={`Edit ${food.name}`}
+                                onClick={() => {
+                                  setBrowseTab("mine");
+                                  setEditingCustomFood(food);
+                                }}
+                                className={`flex size-8 items-center justify-center rounded-full transition ${
+                                  selected
+                                    ? "bg-black/15 text-black"
+                                    : "bg-white/[0.06] text-app-muted hover:text-white"
+                                }`}
+                              >
+                                <Pencil className="size-4" aria-hidden="true" />
+                              </button>
+                              <button
+                                type="button"
+                                aria-label={`Delete ${food.name}`}
+                                onClick={() => deleteCustomFood(food)}
+                                className={`flex size-8 items-center justify-center rounded-full transition ${
+                                  selected
+                                    ? "bg-black/15 text-black"
+                                    : "bg-white/[0.06] text-app-muted hover:bg-app-red/20 hover:text-app-red"
+                                }`}
+                              >
+                                <Trash2 className="size-4" aria-hidden="true" />
+                              </button>
+                            </>
+                          ) : null}
+                          <button
+                            className={`flex size-10 items-center justify-center rounded-full transition hover:-translate-y-0.5 ${
+                              selected
+                                ? "bg-black text-white"
+                                : "bg-white text-black"
+                            }`}
+                            type="button"
+                            aria-label={`Add ${food.name} to ${selectedMeal}`}
+                            onClick={() => addFoodFromLibrary(food)}
+                          >
+                            <Plus className="size-5" aria-hidden="true" />
+                          </button>
+                        </div>
                       </div>
                     );
                   })}

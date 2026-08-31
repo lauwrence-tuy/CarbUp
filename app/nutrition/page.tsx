@@ -3,6 +3,7 @@ import { StravaLoginRequiredPage } from "@/components/dashboard/strava-login-req
 import { getLocalDateKey } from "@/lib/date";
 import {
   frequentFoodsFromLogs,
+  projectFood,
   recentFoodsFromLogs
 } from "@/lib/food-catalog";
 import { groupFoodLogsByDate, savedMealRowToRecord } from "@/lib/nutrition-db";
@@ -34,6 +35,10 @@ export default async function NutritionRoute() {
           },
           savedMeals: {
             orderBy: { createdAt: "desc" }
+          },
+          customFoods: {
+            orderBy: { updatedAt: "desc" },
+            include: { servings: true }
           }
         }
       })
@@ -64,6 +69,7 @@ export default async function NutritionRoute() {
       initialSavedMeals={savedMeals.map(savedMealRowToRecord)}
       initialRecentFoods={recentFoodsFromLogs(foodLogs)}
       initialFrequentFoods={frequentFoodsFromLogs(foodLogs)}
+      initialCustomFoods={(user.customFoods ?? []).map(projectFood)}
       goalAdjustment={user?.maintenanceCalories == null ? 0 : user.goalAdjustment}
       isConnected={Boolean(user)}
     />
