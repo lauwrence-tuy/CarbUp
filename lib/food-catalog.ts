@@ -353,6 +353,53 @@ function makeRanker(query: string) {
   };
 }
 
+// Below this word_similarity, a trigram "match" is just noise.
+const TRGM_SIMILARITY_FLOOR = 0.2;
+
+/**
+ * Candidate foods for a query: substring hits on all words first, then
+ * trigram-similar names (typo tolerance). Ranked roughly in SQL; the JS
+ * ranker does the fine ordering. Backed by the pg_trgm GIN index on name.
+ */
+async function fetchLocalCandidates(
+  query: string,
+  userId: string,
+  take: number
+): Promise<FoodWithServings[]> {
+  const likeAllWords = `%${queryTokens(query).join("%")}%`;
+
+  const ranked = await prisma.$queryRaw<{ id: string }[]>`
+    SELECT id
+    FROM "Food"
+    WHERE ("createdBy" IS NULL OR "createdBy" = ${userId})
+      AND (
+        name ILIKE ${likeAllWords}
+        OR word_similarity(${query}, name) >= ${TRGM_SIMILARITY_FLOOR}
+      )
+    ORDER BY
+      (name ILIKE ${likeAllWords}) DESC,
+      word_similarity(${query}, name) DESC,
+      "verified" DESC,
+      "usageCount" DESC
+    LIMIT ${take}
+  `;
+
+  if (ranked.length === 0) {
+    return [];
+  }
+
+  const ids = ranked.map((row) => row.id);
+  const rows = await prisma.food.findMany({
+    where: { id: { in: ids } },
+    include: { servings: true }
+  });
+  const byId = new Map(rows.map((row) => [row.id, row]));
+
+  return ids
+    .map((id) => byId.get(id))
+    .filter((row): row is FoodWithServings => row !== undefined);
+}
+
 async function readExternal(query: string): Promise<NormalizedFood[]> {
   const key = query.toLowerCase();
   const cached = externalCache.get(key);
@@ -384,21 +431,13 @@ export async function searchFoodCatalog(options: {
 
   const ranker = makeRanker(query);
 
-  // Match every query word against the name (any order), so "broccoli raw"
-  // finds "Broccoli, raw". Pull a wide candidate set and rank in JS -- the
-  // DB `name` index can't express "closest match first", only alphabetical.
-  const words = queryTokens(query);
-  const local = await prisma.food.findMany({
-    where: {
-      AND: words.map((word) => ({
-        name: { contains: word, mode: "insensitive" as const }
-      })),
-      OR: [{ createdBy: null }, { createdBy: options.userId }]
-    },
-    orderBy: [{ verified: "desc" }, { usageCount: "desc" }],
-    take: Math.min(limit * 4, 120),
-    include: { servings: true }
-  });
+  // Trigram + substring retrieval (typo tolerant); final ordering is the JS
+  // ranker, which knows exact/prefix/word tiers the SQL sort can't express.
+  const local = await fetchLocalCandidates(
+    query,
+    options.userId,
+    Math.min(limit * 4, 120)
+  );
 
   const localFoods = dedupeByIdentity(local.map(projectFood).sort(ranker));
   const strongLocalMatches = localFoods.filter(
