@@ -4,7 +4,11 @@ import type {
   CatalogServing
 } from "@/components/dashboard/nutrition-diary-storage";
 import { prisma } from "./prisma";
-import { searchExternalFoods, type NormalizedFood } from "./food-sources";
+import {
+  lookupOffBarcode,
+  searchExternalFoods,
+  type NormalizedFood
+} from "./food-sources";
 
 export type { CatalogFood, CatalogServing };
 
@@ -428,4 +432,48 @@ export async function searchFoodCatalog(options: {
   ).slice(0, limit);
 
   return { foods: merged, usedExternal: true };
+}
+
+/**
+ * Resolve a scanned/entered barcode to a single food: local catalog first
+ * (by `barcode`), then Open Food Facts with cache-through. Returns null when
+ * nothing matches.
+ */
+export async function lookupFoodByBarcode(options: {
+  code: string;
+  userId: string;
+}): Promise<CatalogFood | null> {
+  const code = options.code.trim();
+
+  if (!/^\d{6,14}$/.test(code)) {
+    return null;
+  }
+
+  const local = await prisma.food.findFirst({
+    where: {
+      barcode: code,
+      OR: [{ createdBy: null }, { createdBy: options.userId }]
+    },
+    include: { servings: true }
+  });
+
+  if (local) {
+    return projectFood(local);
+  }
+
+  let external: NormalizedFood | null = null;
+
+  try {
+    external = await lookupOffBarcode(code);
+  } catch {
+    external = null;
+  }
+
+  if (!external) {
+    return null;
+  }
+
+  const cached = await cacheExternalFood(external);
+
+  return cached ? projectFood(cached) : null;
 }

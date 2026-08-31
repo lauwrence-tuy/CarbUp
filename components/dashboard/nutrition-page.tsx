@@ -16,6 +16,7 @@ import {
   Trash2,
   Utensils
 } from "lucide-react";
+import { BarcodeScanner } from "./barcode-scanner";
 import { CountUp } from "./count-up";
 import {
   createLocalNoonDate,
@@ -568,6 +569,11 @@ export function NutritionPage({
     setSelectedFoodGrams(String(defaultServingGrams(food)));
   }
 
+  function handleScannedFood(food: CatalogFood) {
+    setAddMode("food");
+    selectFood(food);
+  }
+
   function addSelectedFood() {
     if (!selectedFood) {
       return;
@@ -1084,6 +1090,8 @@ export function NutritionPage({
 
             {addMode === "food" ? (
               <>
+                <BarcodeScanner onFoodFound={handleScannedFood} />
+
                 <div className="mt-4 flex items-center justify-between gap-2">
                   <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-app-secondary">
                     {showRecentFoods ? browseLabel : "Search results"}
