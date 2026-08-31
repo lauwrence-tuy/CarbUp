@@ -18,13 +18,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid food log" }, { status: 400 });
   }
 
+  const foodId = typeof entry.id === "string" && entry.id.length > 0 ? entry.id : null;
+
   const row = await prisma.foodLog.create({
     data: {
       userId,
       dateKey,
       meal: String(entry.meal),
       source: String(entry.source ?? "food"),
-      foodId: typeof entry.id === "string" ? entry.id : null,
+      foodId,
       name: String(entry.name),
       brand: typeof entry.brand === "string" ? entry.brand : null,
       serving: String(entry.serving ?? `${Math.round(Number(entry.grams) || 0)} g`),
@@ -37,6 +39,20 @@ export async function POST(request: NextRequest) {
       itemsJson: entry.items ? JSON.stringify(entry.items) : null
     }
   });
+
+  // Best-effort popularity signal for search ranking / the Frequent tab.
+  // updateMany is a no-op when the id isn't a real catalog Food (e.g. a
+  // synthetic "recent-..." id), and a failure here must not fail the log.
+  if (foodId) {
+    try {
+      await prisma.food.updateMany({
+        where: { id: foodId },
+        data: { usageCount: { increment: 1 } }
+      });
+    } catch {
+      // ignore
+    }
+  }
 
   revalidatePath("/dashboard");
   revalidatePath("/nutrition");

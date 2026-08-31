@@ -93,64 +93,60 @@ export function projectFood(row: FoodWithServings): CatalogFood {
   };
 }
 
+function logKey(log: RecentFoodLogRow): string {
+  return (log.foodId ?? `${log.name}|${log.brand ?? ""}`).toLowerCase();
+}
+
+/** One food-log row -> CatalogFood, backing per-100g out of the stored portion. */
+function logToCatalogFood(log: RecentFoodLogRow): CatalogFood {
+  const grams = log.grams > 0 ? log.grams : log.baseGrams || 100;
+  const portionGrams = Math.round(grams);
+  const per100 = (value: number) => round((value / grams) * 100, 1);
+  const servingLabel = log.serving || `${portionGrams} g`;
+
+  return {
+    id: log.foodId ?? `recent-${logKey(log)}`,
+    name: log.name,
+    brand: log.brand ?? "Recent",
+    source: "recent",
+    verified: false,
+    serving: servingLabel,
+    baseGrams: portionGrams,
+    calories: Math.round(log.calories),
+    protein: Math.round(log.protein),
+    carbs: Math.round(log.carbs),
+    fat: Math.round(log.fat),
+    per100g: {
+      calories: Math.round(per100(log.calories)),
+      protein: per100(log.protein),
+      carbs: per100(log.carbs),
+      fat: per100(log.fat)
+    },
+    servings: [
+      { label: servingLabel, grams: portionGrams, isDefault: true },
+      { label: "100 g", grams: 100, isDefault: false }
+    ]
+  };
+}
+
 /**
  * Distinct foods the user has logged, most recent first, as CatalogFood so the
  * search UI can show them before anything is typed. Composite "meal" entries
- * are skipped -- they aren't single foods. Per-100g values are backed out of
- * the stored (already portion-scaled) macros.
+ * are skipped -- they aren't single foods. Callers pass logs oldest-first.
  */
-export function recentFoodsFromLogs(
-  logs: RecentFoodLogRow[]
-): CatalogFood[] {
+export function recentFoodsFromLogs(logs: RecentFoodLogRow[]): CatalogFood[] {
   const seen = new Set<string>();
   const recent: CatalogFood[] = [];
 
-  // Callers pass logs oldest-first; walk backwards for most-recent-first.
   for (let index = logs.length - 1; index >= 0; index -= 1) {
     const log = logs[index];
 
-    if (log.source === "meal") {
+    if (log.source === "meal" || seen.has(logKey(log))) {
       continue;
     }
 
-    const key = (
-      log.foodId ?? `${log.name}|${log.brand ?? ""}`
-    ).toLowerCase();
-
-    if (seen.has(key)) {
-      continue;
-    }
-
-    seen.add(key);
-
-    const grams = log.grams > 0 ? log.grams : log.baseGrams || 100;
-    const portionGrams = Math.round(grams);
-    const per100 = (value: number) => round((value / grams) * 100, 1);
-    const servingLabel = log.serving || `${portionGrams} g`;
-
-    recent.push({
-      id: log.foodId ?? `recent-${key}`,
-      name: log.name,
-      brand: log.brand ?? "Recent",
-      source: "recent",
-      verified: false,
-      serving: servingLabel,
-      baseGrams: portionGrams,
-      calories: Math.round(log.calories),
-      protein: Math.round(log.protein),
-      carbs: Math.round(log.carbs),
-      fat: Math.round(log.fat),
-      per100g: {
-        calories: Math.round(per100(log.calories)),
-        protein: per100(log.protein),
-        carbs: per100(log.carbs),
-        fat: per100(log.fat)
-      },
-      servings: [
-        { label: servingLabel, grams: portionGrams, isDefault: true },
-        { label: "100 g", grams: 100, isDefault: false }
-      ]
-    });
+    seen.add(logKey(log));
+    recent.push(logToCatalogFood(log));
 
     if (recent.length >= RECENT_FOODS_LIMIT) {
       break;
@@ -158,6 +154,37 @@ export function recentFoodsFromLogs(
   }
 
   return recent;
+}
+
+/**
+ * Distinct foods the user has logged, most-logged first (ties broken by
+ * recency). Projected from each food's most recent log entry.
+ */
+export function frequentFoodsFromLogs(logs: RecentFoodLogRow[]): CatalogFood[] {
+  const counts = new Map<string, number>();
+  const latest = new Map<string, RecentFoodLogRow>();
+  const order: string[] = [];
+
+  for (const log of logs) {
+    if (log.source === "meal") {
+      continue;
+    }
+
+    const key = logKey(log);
+
+    if (!counts.has(key)) {
+      order.push(key);
+    }
+
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+    latest.set(key, log); // logs are oldest-first, so this ends on the newest
+  }
+
+  return order
+    .map((key, index) => ({ key, index, count: counts.get(key) ?? 0 }))
+    .sort((a, b) => b.count - a.count || b.index - a.index)
+    .slice(0, RECENT_FOODS_LIMIT)
+    .map((entry) => logToCatalogFood(latest.get(entry.key)!));
 }
 
 /**

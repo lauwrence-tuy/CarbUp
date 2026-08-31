@@ -41,9 +41,12 @@ type NutritionPageProps = {
   initialLogsByDate: Record<string, FoodLogEntry[]>;
   initialSavedMeals: SavedMeal[];
   initialRecentFoods: CatalogFood[];
+  initialFrequentFoods: CatalogFood[];
   goalAdjustment: number;
   isConnected: boolean;
 };
+
+type BrowseTab = "recent" | "frequent";
 
 const SEARCH_DEBOUNCE_MS = 300;
 const MIN_SEARCH_LENGTH = 2;
@@ -220,6 +223,7 @@ export function NutritionPage({
   initialLogsByDate,
   initialSavedMeals,
   initialRecentFoods,
+  initialFrequentFoods,
   goalAdjustment,
   isConnected
 }: NutritionPageProps) {
@@ -233,6 +237,11 @@ export function NutritionPage({
   const [searchResults, setSearchResults] = useState<CatalogFood[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [browseTab, setBrowseTab] = useState<BrowseTab>(
+    initialRecentFoods.length === 0 && initialFrequentFoods.length > 0
+      ? "frequent"
+      : "recent"
+  );
   const [selectedFood, setSelectedFood] = useState<CatalogFood | null>(
     initialRecentFoods[0] ?? null
   );
@@ -458,8 +467,13 @@ export function NutritionPage({
     targetCalories > 0 ? (totals.calories / targetCalories) * 100 : 0;
   const diaryStatus =
     remainingCalories === 0 ? "Complete" : totals.calories > 0 ? "Active" : "Ready";
-  const displayedFoods = isSearchActive ? searchResults : initialRecentFoods;
+  const browseFoods =
+    browseTab === "frequent" ? initialFrequentFoods : initialRecentFoods;
+  const displayedFoods = isSearchActive ? searchResults : browseFoods;
   const showRecentFoods = !isSearchActive;
+  const browseLabel = browseTab === "frequent" ? "Frequent foods" : "Recent foods";
+  const hasBrowseHistory =
+    initialRecentFoods.length > 0 || initialFrequentFoods.length > 0;
   const noSearchMatches =
     isSearchActive && !isSearching && !searchError && searchResults.length === 0;
   const selectedFoodPreview = selectedFood
@@ -1072,7 +1086,7 @@ export function NutritionPage({
               <>
                 <div className="mt-4 flex items-center justify-between gap-2">
                   <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-app-secondary">
-                    {showRecentFoods ? "Recent foods" : "Search results"}
+                    {showRecentFoods ? browseLabel : "Search results"}
                   </p>
                   {isSearching ? (
                     <span className="text-xs font-semibold text-app-muted">
@@ -1080,6 +1094,26 @@ export function NutritionPage({
                     </span>
                   ) : null}
                 </div>
+
+                {showRecentFoods && hasBrowseHistory ? (
+                  <div className="mt-2 grid grid-cols-2 gap-2 rounded-full bg-black/28 p-1">
+                    {(["recent", "frequent"] as const).map((tab) => (
+                      <button
+                        key={tab}
+                        type="button"
+                        aria-pressed={browseTab === tab}
+                        className={`min-h-9 rounded-full text-xs font-bold capitalize transition ${
+                          browseTab === tab
+                            ? "bg-app-green text-black"
+                            : "text-app-secondary hover:bg-app-green/10 hover:text-app-green"
+                        }`}
+                        onClick={() => setBrowseTab(tab)}
+                      >
+                        {tab}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
 
                 <div className="mt-2 max-h-[260px] space-y-2 overflow-y-auto pr-1">
                   {showRecentFoods && displayedFoods.length === 0 ? (
@@ -1336,7 +1370,7 @@ export function NutritionPage({
                   />
 
                   <p className="mt-4 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-app-secondary">
-                    {showRecentFoods ? "Recent foods" : "Search results"}
+                    {showRecentFoods ? browseLabel : "Search results"}
                     {isSearching ? " - searching..." : ""}
                   </p>
 

@@ -1,7 +1,10 @@
 import { NutritionPage } from "@/components/dashboard/nutrition-page";
 import { StravaLoginRequiredPage } from "@/components/dashboard/strava-login-required-page";
 import { getLocalDateKey } from "@/lib/date";
-import { recentFoodsFromLogs } from "@/lib/food-catalog";
+import {
+  frequentFoodsFromLogs,
+  recentFoodsFromLogs
+} from "@/lib/food-catalog";
 import { groupFoodLogsByDate, savedMealRowToRecord } from "@/lib/nutrition-db";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
@@ -60,6 +63,7 @@ export default async function NutritionRoute() {
       initialLogsByDate={groupFoodLogsByDate(foodLogs)}
       initialSavedMeals={savedMeals.map(savedMealRowToRecord)}
       initialRecentFoods={recentFoodsFromLogs(foodLogs)}
+      initialFrequentFoods={frequentFoodsFromLogs(foodLogs)}
       goalAdjustment={user?.maintenanceCalories == null ? 0 : user.goalAdjustment}
       isConnected={Boolean(user)}
     />
