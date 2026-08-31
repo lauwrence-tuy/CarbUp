@@ -1261,6 +1261,19 @@ export function NutritionPage({
                     </p>
                   )}
                 </section>
+
+                <p className="mt-4 text-[0.65rem] leading-4 text-app-muted">
+                  Food data from USDA FoodData Central (public domain) and{" "}
+                  <a
+                    className="underline hover:text-app-secondary"
+                    href="https://world.openfoodfacts.org"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open Food Facts
+                  </a>{" "}
+                  (ODbL).
+                </p>
               </>
             ) : (
               <>

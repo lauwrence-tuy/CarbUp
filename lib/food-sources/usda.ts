@@ -1,16 +1,18 @@
-import type { NormalizedFood, NormalizedServing } from "./types";
+import type { NormalizedFood } from "./types";
+import {
+  buildServings,
+  cleanText,
+  dedupeByNameBrand,
+  failsAtwaterCheck,
+  MAX_SANE_KCAL_PER_100G,
+  round
+} from "./normalize";
 
 const USDA_SEARCH_URL = "https://api.nal.usda.gov/fdc/v1/foods/search";
 const DATA_TYPES = ["Foundation", "SR Legacy", "Branded"];
 const REQUEST_TIMEOUT_MS = 4000;
 const MAX_RESULTS = 25;
 const MIN_QUERY_LENGTH = 2;
-// A food that is 100% fat is ~900 kcal / 100 g; anything above this is bad data.
-const MAX_SANE_KCAL_PER_100G = 1000;
-// Stated calories vs. Atwater estimate (4/4/9). Loose enough to allow fiber,
-// sugar alcohols and rounding; tight enough to drop clearly broken rows.
-const ATWATER_TOLERANCE = 0.4;
-const ATWATER_MIN_KCAL = 40;
 
 // USDA identifies nutrients by a numeric `nutrientId` and a legacy string
 // `nutrientNumber`. Different dataTypes populate one or the other, so match both.
@@ -110,50 +112,6 @@ function readEnergyKcal(nutrients: UsdaNutrient[]): number | null {
   return kj != null && kj > 0 ? kj / KJ_PER_KCAL : null;
 }
 
-/** USDA branded descriptions are frequently ALL CAPS. */
-function titleCaseIfShouting(value: string): string {
-  if (/[a-z]/.test(value)) {
-    return value;
-  }
-
-  return value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
-}
-
-function normalizeName(description: string): string {
-  return titleCaseIfShouting(description.replace(/\s+/g, " ").trim());
-}
-
-function normalizeBrand(brand: string | undefined): string | undefined {
-  if (!brand) {
-    return undefined;
-  }
-
-  return titleCaseIfShouting(brand.replace(/\s+/g, " ").trim()) || undefined;
-}
-
-/** Stated kcal is grossly inconsistent with the macro breakdown. */
-function failsAtwaterCheck(
-  calories: number,
-  protein: number,
-  carbs: number,
-  fat: number
-): boolean {
-  const estimate = 4 * protein + 4 * carbs + 9 * fat;
-
-  if (calories < ATWATER_MIN_KCAL || estimate < ATWATER_MIN_KCAL) {
-    return false;
-  }
-
-  return Math.abs(calories - estimate) / Math.max(calories, estimate) >
-    ATWATER_TOLERANCE;
-}
-
-function round(value: number, decimals: number): number {
-  const factor = 10 ** decimals;
-
-  return Math.round(value * factor) / factor;
-}
-
 /** Grams for the provider's stated serving, or null if it can't be trusted. */
 function servingGramsFor(food: UsdaFood): number | null {
   if (typeof food.servingSize !== "number" || food.servingSize <= 0) {
@@ -172,20 +130,6 @@ function servingGramsFor(food: UsdaFood): number | null {
   }
 
   return null;
-}
-
-function buildServings(
-  servingGrams: number | null,
-  servingLabel: string
-): NormalizedServing[] {
-  if (!servingGrams || servingGrams === 100) {
-    return [{ label: "100 g", grams: 100, isDefault: true }];
-  }
-
-  return [
-    { label: servingLabel, grams: round(servingGrams, 2), isDefault: true },
-    { label: "100 g", grams: 100 }
-  ];
 }
 
 export function normalizeUsdaFood(food: UsdaFood): NormalizedFood | null {
@@ -226,8 +170,8 @@ export function normalizeUsdaFood(food: UsdaFood): NormalizedFood | null {
   return {
     source: "usda",
     externalId: String(food.fdcId),
-    name: normalizeName(description),
-    brand: normalizeBrand(food.brandName?.trim() || food.brandOwner?.trim()),
+    name: cleanText(description) ?? description,
+    brand: cleanText(food.brandName?.trim() || food.brandOwner?.trim()),
     barcode: food.gtinUpc?.trim() || undefined,
     caloriesPer100g: Math.round(calories),
     proteinPer100g: round(protein, 2),
@@ -238,23 +182,6 @@ export function normalizeUsdaFood(food: UsdaFood): NormalizedFood | null {
     verified: food.dataType === "Foundation" || food.dataType === "SR Legacy",
     servings: buildServings(servingGrams, servingLabel)
   };
-}
-
-/** Drop repeats of the same name+brand, keeping the highest-ranked one. */
-function dedupe(foods: NormalizedFood[]): NormalizedFood[] {
-  const seen = new Set<string>();
-
-  return foods.filter((food) => {
-    const key = `${food.name.toLowerCase()}|${(food.brand ?? "").toLowerCase()}`;
-
-    if (seen.has(key)) {
-      return false;
-    }
-
-    seen.add(key);
-
-    return true;
-  });
 }
 
 export async function searchUsdaFoods(query: string): Promise<NormalizedFood[]> {
@@ -288,7 +215,7 @@ export async function searchUsdaFoods(query: string): Promise<NormalizedFood[]> 
       .map(normalizeUsdaFood)
       .filter((food): food is NormalizedFood => food !== null);
 
-    return dedupe(normalized);
+    return dedupeByNameBrand(normalized);
   } finally {
     clearTimeout(timer);
   }

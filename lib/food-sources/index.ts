@@ -1,4 +1,5 @@
 import type { NormalizedFood } from "./types";
+import { searchOffFoods } from "./off";
 import { searchUsdaFoods } from "./usda";
 
 export type {
@@ -12,11 +13,13 @@ export {
   type UsdaFood,
   type UsdaNutrient
 } from "./usda";
+export { lookupOffBarcode, searchOffFoods } from "./off";
 
 /**
  * Fan out to every external food provider in parallel and merge the results.
  * One provider failing or timing out must not sink the others, so each is
- * settled independently. Open Food Facts slots in here as a second entry.
+ * settled independently. USDA covers generic foods well; Open Food Facts adds
+ * branded/packaged coverage.
  */
 export async function searchExternalFoods(
   query: string
@@ -27,7 +30,10 @@ export async function searchExternalFoods(
     return [];
   }
 
-  const settled = await Promise.allSettled([searchUsdaFoods(trimmed)]);
+  const settled = await Promise.allSettled([
+    searchUsdaFoods(trimmed),
+    searchOffFoods(trimmed)
+  ]);
 
   return settled.flatMap((result) =>
     result.status === "fulfilled" ? result.value : []

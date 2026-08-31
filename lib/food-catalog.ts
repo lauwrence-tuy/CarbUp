@@ -52,6 +52,19 @@ function scaleFromPer100g(per100g: number, grams: number): number {
   return round((per100g * grams) / 100, 1);
 }
 
+function defaultBrandLabel(source: string): string {
+  switch (source) {
+    case "custom":
+      return "Custom food";
+    case "off":
+      return "Open Food Facts";
+    case "recent":
+      return "Recent";
+    default:
+      return "USDA";
+  }
+}
+
 export function projectFood(row: FoodWithServings): CatalogFood {
   const baseGrams = row.defaultServingGrams > 0 ? row.defaultServingGrams : 100;
   const servings: CatalogServing[] = row.servings
@@ -74,7 +87,7 @@ export function projectFood(row: FoodWithServings): CatalogFood {
   return {
     id: row.id,
     name: row.name,
-    brand: row.brand ?? (row.source === "custom" ? "Custom food" : "USDA"),
+    brand: row.brand ?? defaultBrandLabel(row.source),
     source: row.source,
     verified: row.verified,
     serving: row.defaultServingLabel || "100 g",
