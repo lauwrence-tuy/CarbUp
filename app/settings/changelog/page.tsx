@@ -40,6 +40,12 @@ export default function ChangelogPage() {
         </ul>
       </InfoBlock>
 
+      <InfoBlock title="0.1.1 — Dashboard target fix">
+        The dashboard no longer shows a &ldquo;Target: 0&rdquo; and empty macro
+        bars before you&rsquo;ve set weight and goal &mdash; it falls back to
+        2,400 kcal, the same as the nutrition page.
+      </InfoBlock>
+
       <InfoBlock title="0.1.0 — Initial release">
         Strava connection, ride-calorie import, daily calorie and macro targets,
         the food diary, and saved meals.

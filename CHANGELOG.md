@@ -32,6 +32,18 @@ feature work.
 - Migrations `20260826000000_add_food_catalog` and
   `20260827000000_food_name_trgm`.
 
+## [0.1.1] — Dashboard target fix
+
+### Fixed
+- The dashboard showed `Target: 0` and empty `0g / 0g` macro bars for anyone
+  without a saved maintenance-calorie value; it now falls back to 2,400 kcal
+  until weight/goal are set, matching the nutrition page.
+
+### Changed
+- Target fallback and the macro split (18/52/30 P/C/F) moved to
+  `lib/nutrition-targets.ts` so the dashboard and nutrition page share one
+  implementation.
+
 ## [0.1.0] — Initial release
 
 - Strava OAuth connection and ride-calorie import.
