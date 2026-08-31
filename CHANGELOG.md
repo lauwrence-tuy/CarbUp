@@ -4,6 +4,18 @@ All notable changes to CarbUp are recorded here. Versioning is
 [semver](https://semver.org/); the app is pre-1.0, so minor versions carry
 feature work.
 
+## [0.2.1] — Strava calorie sync fix
+
+### Fixed
+- Activity sync fired an unthrottled detail request for every activity in the
+  183-day window, exhausting Strava's shared 100-request/15-minute read limit.
+  The resulting 429s fell back to the activity summary (which carries no
+  `calories`), and the upsert then overwrote previously-synced calorie values
+  with `null`. Sync now skips the detail call when calories are already stored,
+  spaces the remaining detail batches out, stops calling the detail endpoint on
+  a 429 or as usage nears the limit, and never overwrites a stored
+  `calories` / `sufferScore` with `null`.
+
 ## [0.2.0] — Food database
 
 ### Added

@@ -11,6 +11,13 @@ export default function ChangelogPage() {
       title="What's New"
       description={`You're on version ${APP_VERSION}.`}
     >
+      <InfoBlock title="0.2.1 — Strava calorie sync fix">
+        Syncing a long activity history no longer burns through Strava&rsquo;s
+        rate limit and wipes calories off activities it had already imported.
+        Sync now reuses calories it has, paces its requests, backs off when
+        Strava throttles it, and never clears a value it can&rsquo;t re-fetch.
+      </InfoBlock>
+
       <InfoBlock title="0.2.0 — Food database">
         <ul className="ml-4 list-disc space-y-1.5">
           <li>
