@@ -17,6 +17,7 @@ import {
   Target
 } from "lucide-react";
 import type { SettingsActionState } from "@/app/settings/actions";
+import { APP_VERSION } from "@/lib/app-meta";
 
 type GoalType = "maintain" | "lose_slow" | "lose_steady" | "lose_fast";
 
@@ -36,7 +37,7 @@ type SettingsFormProps = {
   isStravaConnected: boolean;
 };
 
-const appVersion = "0.1.0";
+const appVersion = APP_VERSION;
 
 const initialActionState: SettingsActionState = {
   status: "idle",
@@ -113,6 +114,7 @@ const unitOptions = [
 ];
 
 const settingsLinks = [
+  { href: "/settings/changelog", label: "What's New" },
   { href: "/settings/help-support", label: "Help & Support" },
   { href: "/settings/send-feedback", label: "Send Feedback" },
   { href: "/settings/privacy-policy", label: "Privacy Policy" },
@@ -438,14 +440,23 @@ export function SettingsForm({
             )}
           </div>
 
-          <div className="rounded-[18px] border border-white/[0.05] bg-black/24 p-4">
-            <p className="text-[0.72rem] font-bold uppercase tracking-[0.14em] text-app-secondary">
-              Version
-            </p>
+          <Link
+            href="/settings/changelog"
+            className="block rounded-[18px] border border-white/[0.05] bg-black/24 p-4 transition hover:border-white/[0.12] hover:bg-black/32"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[0.72rem] font-bold uppercase tracking-[0.14em] text-app-secondary">
+                Version
+              </p>
+              <ChevronRight className="size-4 text-app-secondary" aria-hidden="true" />
+            </div>
             <p className="mt-2 text-2xl font-bold tracking-[-0.04em] text-white">
               {appVersion}
             </p>
-          </div>
+            <p className="mt-1 text-xs font-semibold text-app-secondary">
+              See what&apos;s new
+            </p>
+          </Link>
         </div>
       </aside>
 
