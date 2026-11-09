@@ -7,6 +7,7 @@ import {
 import { APP_TIMEZONE, getLocalDateKey } from "@/lib/date";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
+import { calculateActivityLoad, metersToMiles } from "@/lib/workout-metrics";
 
 export const dynamic = "force-dynamic";
 
@@ -35,21 +36,6 @@ type FitnessFreshnessPoint = {
   fatigue: number;
   form: number;
 };
-
-function calculateActivityLoad(activity: {
-  movingTime: number | null;
-  calories: number | null;
-  sufferScore?: number | null;
-}) {
-  if (typeof activity.sufferScore === "number") {
-    return Math.round(activity.sufferScore);
-  }
-
-  const durationLoad = (activity.movingTime ?? 0) / 90;
-  const calorieLoad = (activity.calories ?? 0) / 18;
-
-  return Math.round(durationLoad + calorieLoad);
-}
 
 function startOfLocalDay(date: Date) {
   const key = getLocalDateKey(date);
@@ -202,7 +188,7 @@ export default async function TrendsRoute() {
       weightKg
     }),
     durationMinutes: Math.round((activity.movingTime ?? 0) / 60),
-    distanceMiles: (activity.distance ?? 0) / 1609.344,
+    distanceMiles: metersToMiles(activity.distance ?? 0),
     load: calculateActivityLoad(activity)
   }));
 

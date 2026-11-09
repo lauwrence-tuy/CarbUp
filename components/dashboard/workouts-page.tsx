@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { MetricCard } from "./metric-card";
 import { FloatingActionButton } from "./floating-action-button";
+import type { EffortBadge } from "@/lib/workout-metrics";
 import { StatusBadge } from "./status-badge";
 import { SyncStravaButton } from "./sync-strava-button";
 
@@ -34,7 +35,7 @@ export type WorkoutListItem = {
   distanceMiles: number | null;
   distanceLabel: string;
   effort: number;
-  badge: "Easy" | "Moderate" | "Hard" | "Very Hard";
+  badge: EffortBadge;
 };
 
 type WorkoutsPageProps = {

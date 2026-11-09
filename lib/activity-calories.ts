@@ -1,5 +1,6 @@
+import { POUNDS_PER_KILOGRAM } from "@/lib/calorie-settings";
+
 const DEFAULT_WEIGHT_KG = 70;
-const POUNDS_PER_KILOGRAM = 2.2046226218;
 
 const metByActivityType: Record<string, number> = {
   alpineSki: 5.5,

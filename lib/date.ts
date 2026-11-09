@@ -65,3 +65,12 @@ export function getTrailingSevenLocalDays(referenceDate = new Date()) {
 
   return days;
 }
+
+export function formatWorkoutDate(date: Date) {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: APP_TIMEZONE,
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  }).format(date);
+}

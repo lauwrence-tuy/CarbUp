@@ -18,8 +18,12 @@ import {
 } from "lucide-react";
 import type { SettingsActionState } from "@/app/settings/actions";
 import { APP_VERSION } from "@/lib/app-meta";
-
-type GoalType = "maintain" | "lose_slow" | "lose_steady" | "lose_fast";
+import {
+  calculateBaseTdee,
+  GOAL_ADJUSTMENTS,
+  POUNDS_PER_KILOGRAM,
+  type GoalType
+} from "@/lib/calorie-settings";
 
 type SettingsFormProps = {
   action: (
@@ -75,26 +79,22 @@ const activityOptions = [
   {
     value: "sedentary",
     label: "Sedentary",
-    description: "Mostly seated days",
-    multiplier: 13
+    description: "Mostly seated days"
   },
   {
     value: "light",
     label: "Light",
-    description: "Light walking or errands",
-    multiplier: 14
+    description: "Light walking or errands"
   },
   {
     value: "active",
     label: "Active",
-    description: "On your feet often",
-    multiplier: 16
+    description: "On your feet often"
   },
   {
     value: "very_active",
     label: "Very active",
-    description: "Physical job or busy days",
-    multiplier: 18
+    description: "Physical job or busy days"
   }
 ];
 
@@ -291,26 +291,6 @@ function Stat({
   );
 }
 
-function getWeightInPounds(weight: number, units: string) {
-  return units === "metric" ? weight * 2.2046226218 : weight;
-}
-
-function calculateBaseTdee({
-  everydayActivity,
-  units,
-  weight
-}: {
-  everydayActivity: string;
-  units: string;
-  weight: number;
-}) {
-  const selectedActivity =
-    activityOptions.find((option) => option.value === everydayActivity) ??
-    activityOptions[2];
-
-  return Math.round(getWeightInPounds(weight, units) * selectedActivity.multiplier);
-}
-
 function formatWeightInput(value: number) {
   return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }
@@ -324,7 +304,7 @@ function getGoalDescription(weeklyKg: number, units: string) {
     return `About ${weeklyKg.toLocaleString()} kg per week`;
   }
 
-  return `About ${(weeklyKg * 2.2046226218).toFixed(1)} lb per week`;
+  return `About ${(weeklyKg * POUNDS_PER_KILOGRAM).toFixed(1)} lb per week`;
 }
 
 export function SettingsForm({
@@ -351,12 +331,7 @@ export function SettingsForm({
       : 0;
   const protein = Math.round(weightNumber * (units === "metric" ? 1.8 : 0.8));
   const fat = Math.round(weightNumber * (units === "metric" ? 1 : 0.45));
-  const goalAdjustment = {
-    maintain: 0,
-    lose_slow: -250,
-    lose_steady: -500,
-    lose_fast: -750
-  }[goalType];
+  const goalAdjustment = GOAL_ADJUSTMENTS[goalType];
   const calorieBudget = Math.max(baseTdee + goalAdjustment, 0);
   const carbs = Math.max(
     Math.round((calorieBudget - protein * 4 - fat * 9) / 4),
@@ -373,7 +348,9 @@ export function SettingsForm({
 
     if (Number.isFinite(currentWeight) && currentWeight > 0) {
       const convertedWeight =
-        nextUnits === "metric" ? currentWeight / 2.2046226218 : currentWeight * 2.2046226218;
+        nextUnits === "metric"
+          ? currentWeight / POUNDS_PER_KILOGRAM
+          : currentWeight * POUNDS_PER_KILOGRAM;
 
       setWeight(formatWeightInput(convertedWeight));
     }

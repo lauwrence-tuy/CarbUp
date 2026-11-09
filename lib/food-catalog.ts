@@ -9,6 +9,7 @@ import {
   searchExternalFoods,
   type NormalizedFood
 } from "./food-sources";
+import { round } from "./food-sources/normalize";
 
 export type { CatalogFood, CatalogServing };
 
@@ -45,12 +46,6 @@ const SUBSTRING_MATCH_SCORE = 40;
 const VERIFIED_SCORE_BONUS = 25;
 
 const externalCache = new Map<string, { at: number; foods: NormalizedFood[] }>();
-
-function round(value: number, decimals: number): number {
-  const factor = 10 ** decimals;
-
-  return Math.round(value * factor) / factor;
-}
 
 function scaleFromPer100g(per100g: number, grams: number): number {
   return round((per100g * grams) / 100, 1);

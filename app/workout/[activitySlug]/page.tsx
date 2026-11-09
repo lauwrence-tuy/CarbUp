@@ -1,11 +1,16 @@
 import { notFound } from "next/navigation";
 import { ActivityDetailPage } from "@/components/dashboard/activity-detail-page";
 import { getActivitySlug } from "@/lib/activity-slug";
-import { APP_TIMEZONE, formatActivityTime } from "@/lib/date";
+import { formatActivityTime, formatWorkoutDate } from "@/lib/date";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 import { getFreshStravaAccessToken } from "@/lib/strava";
 import { getStravaActivityVisualData } from "@/lib/strava-activity-detail";
+import {
+  estimateActivityLoad,
+  formatDistance,
+  formatDuration
+} from "@/lib/workout-metrics";
 
 type ActivityRouteProps = {
   params: Promise<{
@@ -22,48 +27,6 @@ type ActivityDetailRow = {
   distance: number | null;
   startDate: Date;
 };
-
-function formatDuration(seconds: number | null) {
-  if (!seconds) {
-    return "Duration unavailable";
-  }
-
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.round((seconds % 3600) / 60);
-
-  if (hours > 0) {
-    return `${hours}h ${minutes}m`;
-  }
-
-  return `${minutes} min`;
-}
-
-function formatDistance(meters: number | null) {
-  if (!meters) {
-    return "Distance unavailable";
-  }
-
-  return `${(meters / 1609.344).toFixed(1)} mi`;
-}
-
-function calculateActivityLoad(activity: {
-  movingTime: number | null;
-  calories: number | null;
-}) {
-  const durationLoad = (activity.movingTime ?? 0) / 90;
-  const calorieLoad = (activity.calories ?? 0) / 18;
-
-  return Math.round(durationLoad + calorieLoad);
-}
-
-function formatWorkoutDate(date: Date) {
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: APP_TIMEZONE,
-    month: "short",
-    day: "numeric",
-    year: "numeric"
-  }).format(date);
-}
 
 export default async function ActivityRoute({ params }: ActivityRouteProps) {
   const { activitySlug } = await params;
@@ -122,7 +85,7 @@ export default async function ActivityRoute({ params }: ActivityRouteProps) {
             : null,
         durationLabel: formatDuration(activity.movingTime),
         distanceLabel: formatDistance(activity.distance),
-        effort: calculateActivityLoad(activity)
+        effort: estimateActivityLoad(activity)
       }}
       visualData={visualData}
     />

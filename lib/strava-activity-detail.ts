@@ -1,3 +1,5 @@
+import { metersToMiles } from "@/lib/workout-metrics";
+
 const STREAM_KEYS = [
   "time",
   "distance",
@@ -70,10 +72,6 @@ export type ActivityVisualData = {
 
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
-}
-
-function metersToMiles(meters: number) {
-  return meters / 1609.344;
 }
 
 function metersToFeet(meters: number) {

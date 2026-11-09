@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Bike } from "lucide-react";
+import type { EffortBadge } from "@/lib/workout-metrics";
 import { StatusBadge } from "./status-badge";
 import { SyncStravaButton } from "./sync-strava-button";
 
@@ -13,7 +14,7 @@ export type Workout = {
   distance: string;
   startTime: string;
   effort: number;
-  badge: "Easy" | "Moderate" | "Hard" | "Very Hard";
+  badge: EffortBadge;
 };
 
 type WorkoutHistoryCardProps = {
