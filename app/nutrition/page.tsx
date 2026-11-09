@@ -1,4 +1,4 @@
-import { NutritionPage } from "@/components/dashboard/nutrition-page";
+import { NutritionPage } from "@/components/nutrition/nutrition-page";
 import { StravaLoginRequiredPage } from "@/components/dashboard/strava-login-required-page";
 import { getLocalDateKey } from "@/lib/date";
 import {

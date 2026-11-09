@@ -22,6 +22,17 @@ export type FoodLogEntry = Food & {
   source?: "food" | "meal" | "quick";
 };
 
+export type SavedMealIngredient = {
+  food: Food;
+  grams: number;
+};
+
+export type SavedMeal = {
+  id: string;
+  name: string;
+  ingredients: SavedMealIngredient[];
+};
+
 export type CatalogServing = {
   id?: string;
   label: string;
