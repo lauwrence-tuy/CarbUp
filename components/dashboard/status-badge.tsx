@@ -1,6 +1,6 @@
 import type { EffortBadge } from "@/lib/workout-metrics";
 
-type StatusBadgeProps = {
+export type StatusBadgeProps = {
   label:
     | EffortBadge
     | "Strava"

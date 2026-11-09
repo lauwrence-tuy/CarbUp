@@ -1,15 +1,11 @@
-import type { Food, FoodLogEntry, MealName } from "@/components/dashboard/nutrition-diary-storage";
+import type {
+  FoodLogEntry,
+  MealName,
+  SavedMeal,
+  SavedMealIngredient
+} from "@/components/dashboard/nutrition-diary-storage";
 
-export type SavedMealIngredient = {
-  food: Food;
-  grams: number;
-};
-
-export type SavedMealRecord = {
-  id: string;
-  name: string;
-  ingredients: SavedMealIngredient[];
-};
+export type SavedMealRecord = SavedMeal;
 
 type FoodLogRow = {
   id: string;
