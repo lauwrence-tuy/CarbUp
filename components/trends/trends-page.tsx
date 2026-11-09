@@ -648,13 +648,13 @@ export function TrendsPage({
                 points={freshnessChartPoints}
                 maxValue={maxFreshnessValue}
                 metric="fitness"
-                color="#f97316"
+                color="var(--orange)"
               />
               <FreshnessLine
                 points={freshnessChartPoints}
                 maxValue={maxFreshnessValue}
                 metric="form"
-                color="#60a5fa"
+                color="var(--blue)"
               />
               {hoveredFreshnessPoint && hoveredFreshnessIndex != null ? (
                 <FreshnessHoverOverlay
@@ -995,7 +995,7 @@ function FreshnessHoverOverlay({
         y={hoverTooltipY}
       />
       <text
-        fill="#b5b5b5"
+        fill="var(--text-secondary)"
         fontSize="10"
         fontWeight="800"
         textAnchor="middle"
@@ -1005,7 +1005,7 @@ function FreshnessHoverOverlay({
         {date.weekday}
       </text>
       <text
-        fill="#ffffff"
+        fill="var(--text-primary)"
         fontSize="12"
         fontWeight="900"
         textAnchor="middle"
@@ -1015,21 +1015,21 @@ function FreshnessHoverOverlay({
         {date.date}
       </text>
       <HoverValue
-        color="#f97316"
+        color="var(--orange)"
         label="Fitness"
         value={point.fitness}
         x={tooltipX + 98}
         y={hoverTooltipY}
       />
       <HoverValue
-        color="#b5b5b5"
+        color="var(--text-secondary)"
         label="Fatigue"
         value={point.fatigue}
         x={tooltipX + 166}
         y={hoverTooltipY}
       />
       <HoverValue
-        color="#60a5fa"
+        color="var(--blue)"
         label="Form"
         value={point.form}
         x={tooltipX + 230}
@@ -1055,7 +1055,7 @@ function HoverValue({
   return (
     <>
       <text
-        fill="#b5b5b5"
+        fill="var(--text-secondary)"
         fontSize="10"
         fontWeight="800"
         textAnchor="middle"
@@ -1172,7 +1172,7 @@ function ActivityDots({ points }: { points: FitnessFreshnessPoint[] }) {
                   y="-42"
                 />
                 <text
-                  fill="#b5b5b5"
+                  fill="var(--text-secondary)"
                   fontSize="9"
                   fontWeight="700"
                   textAnchor="middle"
@@ -1182,7 +1182,7 @@ function ActivityDots({ points }: { points: FitnessFreshnessPoint[] }) {
                   {point.label}
                 </text>
                 <text
-                  fill="#ffffff"
+                  fill="var(--text-primary)"
                   fontSize="10"
                   fontWeight="800"
                   textAnchor="middle"

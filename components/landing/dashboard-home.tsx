@@ -113,7 +113,7 @@ function DemoEfficiencyCard() {
   return (
     <section className="rounded-[28px] border border-white/[0.04] bg-app-card p-6 shadow-card">
       <div className="flex items-center gap-4">
-        <span className="flex size-12 items-center justify-center rounded-2xl bg-[#ffdd00] text-black">
+        <span className="flex size-12 items-center justify-center rounded-2xl bg-app-green text-black">
           <Gauge className="size-6" aria-hidden="true" />
         </span>
         <div>
@@ -136,7 +136,7 @@ function DemoEfficiencyCard() {
               {bucket.workouts}
             </p>
             <p className="mt-1 text-sm text-white">workouts</p>
-            <p className="mt-5 text-sm font-bold text-[#ffdd00]">
+            <p className="mt-5 text-sm font-bold text-app-green">
               {bucket.calories}
             </p>
             <p className="mt-1 text-xs text-app-muted">{bucket.detail}</p>

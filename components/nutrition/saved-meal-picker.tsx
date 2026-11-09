@@ -82,7 +82,7 @@ export function SavedMealPicker({
               <button
                 className="flex size-11 items-center justify-center rounded-full bg-white/[0.06] text-app-muted transition hover:bg-app-red/20 hover:text-app-red"
                 type="button"
-                aria-label={`Remove ${selectedMeal.name}`}
+                aria-label={`Delete saved meal ${selectedMeal.name}`}
                 onClick={() => onRemove(selectedMeal.id)}
               >
                 <Trash2 className="size-4" aria-hidden="true" />
