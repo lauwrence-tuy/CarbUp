@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { ActivityDetailPage } from "@/components/dashboard/activity-detail-page";
+import { ActivityDetailPage } from "@/components/workouts/activity-detail-page";
 import { getActivitySlug } from "@/lib/activity-slug";
 import { formatActivityTime, formatWorkoutDate } from "@/lib/date";
 import { prisma } from "@/lib/prisma";

@@ -1,4 +1,4 @@
-import { DashboardHome } from "@/components/dashboard/dashboard-home";
+import { DashboardHome } from "@/components/landing/dashboard-home";
 import { getCurrentUserId } from "@/lib/session";
 
 type LandingPageProps = {

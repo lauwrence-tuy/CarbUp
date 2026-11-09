@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Bike } from "lucide-react";
 import type { EffortBadge } from "@/lib/workout-metrics";
-import { StatusBadge } from "./status-badge";
-import { SyncStravaButton } from "./sync-strava-button";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { SyncStravaButton } from "@/components/strava/sync-strava-button";
 
 export type Workout = {
   id: string;
