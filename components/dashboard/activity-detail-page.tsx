@@ -17,7 +17,6 @@ import {
   MapPinned,
   Mountain,
   Route,
-  Settings,
   Timer
 } from "lucide-react";
 import type {
@@ -26,6 +25,7 @@ import type {
   LatLngPoint
 } from "@/lib/strava-activity-detail";
 import { MetricCard } from "./metric-card";
+import { AppHeader } from "@/components/app-header";
 
 const MAP_WIDTH = 1200;
 const MAP_HEIGHT = 420;
@@ -289,48 +289,7 @@ export function ActivityDetailPage({
   return (
     <main className="min-h-screen bg-app-bg text-white">
       <div className="mx-auto min-h-screen w-full max-w-7xl px-5 pb-24 pt-6 sm:px-8 lg:px-10">
-        <header className="flex items-center justify-between gap-6 rounded-[28px] border border-white/[0.04] bg-app-card/72 px-5 py-4 shadow-card backdrop-blur lg:px-6">
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <span className="flex size-11 items-center justify-center rounded-2xl border border-white/10 bg-app-card text-app-green shadow-card">
-              <Flame className="size-6" aria-hidden="true" />
-            </span>
-            <p className="text-lg font-bold tracking-[-0.04em] sm:text-xl">
-              Carb<span className="text-app-green">Up</span>
-            </p>
-          </Link>
-
-          <nav
-            className="hidden items-center gap-2 rounded-full bg-black/35 p-1 lg:flex"
-            aria-label="Activity detail navigation"
-          >
-            {[
-              { label: "Dashboard", href: "/dashboard" },
-              { label: "Nutrition", href: "/nutrition" },
-              { label: "Workouts", href: "/workouts" },
-              { label: "Trends", href: "/trends" }
-            ].map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={`rounded-full px-4 py-2 text-sm font-bold transition ${
-                  item.label === "Workouts"
-                    ? "bg-white text-black"
-                    : "text-app-secondary hover:bg-white/[0.08] hover:text-white"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          <Link
-            href="/settings"
-            className="flex size-12 items-center justify-center rounded-full bg-app-card text-app-blue transition hover:bg-app-hover"
-            aria-label="Settings"
-          >
-            <Settings className="size-5" aria-hidden="true" />
-          </Link>
-        </header>
+        <AppHeader isConnected active="Workouts" />
 
         <section className="mt-8">
           <Link
