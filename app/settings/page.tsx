@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 import { saveUserSettings } from "./actions";
 import { SettingsForm } from "@/components/settings/settings-form";
-import { FloatingActionButton } from "@/components/dashboard/floating-action-button";
+import { FloatingActionButton } from "@/components/ui/floating-action-button";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/app-header";
 

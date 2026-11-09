@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { FoodLogEntry } from "@/components/dashboard/nutrition-diary-storage";
+import type { FoodLogEntry } from "./nutrition-diary-storage";
 import { deleteFoodLog, saveFoodLog } from "./nutrition-api";
 
 export type LogsByDate = Record<string, FoodLogEntry[]>;

@@ -2,7 +2,7 @@ import type { Food, FoodServing } from "@prisma/client";
 import type {
   CatalogFood,
   CatalogServing
-} from "@/components/dashboard/nutrition-diary-storage";
+} from "@/components/nutrition/nutrition-diary-storage";
 import { prisma } from "./prisma";
 import {
   lookupOffBarcode,

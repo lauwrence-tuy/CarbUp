@@ -13,11 +13,11 @@ import {
   Search,
   Timer
 } from "lucide-react";
-import { MetricCard } from "./metric-card";
-import { FloatingActionButton } from "./floating-action-button";
+import { MetricCard } from "@/components/ui/metric-card";
+import { FloatingActionButton } from "@/components/ui/floating-action-button";
 import type { EffortBadge } from "@/lib/workout-metrics";
-import { StatusBadge } from "./status-badge";
-import { SyncStravaButton } from "./sync-strava-button";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { SyncStravaButton } from "@/components/strava/sync-strava-button";
 import { AppHeader } from "@/components/app-header";
 
 export type WorkoutListItem = {

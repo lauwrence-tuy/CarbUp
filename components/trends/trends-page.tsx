@@ -14,8 +14,8 @@ import {
   Timer,
   TrendingUp
 } from "lucide-react";
-import { MetricCard } from "./metric-card";
-import { FloatingActionButton } from "./floating-action-button";
+import { MetricCard } from "@/components/ui/metric-card";
+import { FloatingActionButton } from "@/components/ui/floating-action-button";
 import { AppHeader } from "@/components/app-header";
 
 type TrendPoint = {

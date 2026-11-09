@@ -1,7 +1,7 @@
 import { Flame, Info } from "lucide-react";
-import { CountUp } from "./count-up";
-import { ProgressBar } from "./progress-bar";
-import { StatusBadge } from "./status-badge";
+import { CountUp } from "@/components/ui/count-up";
+import { ProgressBar } from "@/components/ui/progress-bar";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 type DailyCalorieCardProps = {
   baseCalories: number;

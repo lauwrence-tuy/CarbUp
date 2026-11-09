@@ -1,5 +1,5 @@
 import { NutritionPage } from "@/components/nutrition/nutrition-page";
-import { StravaLoginRequiredPage } from "@/components/dashboard/strava-login-required-page";
+import { StravaLoginRequiredPage } from "@/components/strava/strava-login-required-page";
 import { getLocalDateKey } from "@/lib/date";
 import {
   frequentFoodsFromLogs,

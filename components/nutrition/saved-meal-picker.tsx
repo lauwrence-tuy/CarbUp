@@ -1,5 +1,5 @@
 import { Apple, Plus, Trash2 } from "lucide-react";
-import type { SavedMeal } from "@/components/dashboard/nutrition-diary-storage";
+import type { SavedMeal } from "./nutrition-diary-storage";
 import { getMealTotals, getScaledMealTotals } from "@/lib/nutrition-portions";
 import { GramsInput, NutritionPreview } from "./nutrition-inputs";
 

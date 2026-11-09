@@ -4,7 +4,7 @@ import { useState } from "react";
 import type {
   CatalogFood,
   SavedMealIngredient
-} from "@/components/dashboard/nutrition-diary-storage";
+} from "./nutrition-diary-storage";
 
 /** Draft state for the "Build meal" form. */
 export function useMealBuilder() {
