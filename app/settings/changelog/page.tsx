@@ -11,11 +11,54 @@ export default function ChangelogPage() {
       title="What's New"
       description={`You're on version ${APP_VERSION}.`}
     >
+      <InfoBlock title="0.2.2 — Consistency and cleanup">
+        <ul className="ml-4 list-disc space-y-1.5">
+          <li>
+            Effort scores now match everywhere. The Dashboard, Workouts, and
+            workout pages use Strava&rsquo;s Relative Effort when a workout has
+            one, the same as Trends, so a workout shows the same number on every
+            page.
+          </li>
+          <li>
+            Workout durations no longer show &ldquo;60 min&rdquo; or &ldquo;1h
+            60m&rdquo;; a workout just under an hour now reads &ldquo;1h
+            0m&rdquo;.
+          </li>
+          <li>
+            Invalid food entries, meals, and custom foods are rejected with a
+            clear error instead of being saved as zeros.
+          </li>
+          <li>
+            The navigation bar is the same on every page and announces the
+            current page to screen readers.
+          </li>
+          <li>
+            The button for deleting a saved meal is now labelled differently
+            from the one for removing a diary entry.
+          </li>
+          <li>
+            Behind the scenes: smaller, better-organized pages and automated
+            tests for the calorie and macro math.
+          </li>
+        </ul>
+      </InfoBlock>
+
       <InfoBlock title="0.2.1 — Strava calorie sync fix">
-        Syncing a long activity history no longer burns through Strava&rsquo;s
-        rate limit and wipes calories off activities it had already imported.
-        Sync now reuses calories it has, paces its requests, backs off when
-        Strava throttles it, and never clears a value it can&rsquo;t re-fetch.
+        <ul className="ml-4 list-disc space-y-1.5">
+          <li>
+            Sync reuses calories it already has instead of re-fetching every
+            activity.
+          </li>
+          <li>
+            Requests to Strava are paced so a long history no longer burns
+            through its rate limit.
+          </li>
+          <li>Sync backs off when Strava throttles it.</li>
+          <li>
+            Calories already imported are never wiped when Strava can&rsquo;t
+            return them.
+          </li>
+        </ul>
       </InfoBlock>
 
       <InfoBlock title="0.2.0 — Food database">
@@ -48,14 +91,26 @@ export default function ChangelogPage() {
       </InfoBlock>
 
       <InfoBlock title="0.1.1 — Dashboard target fix">
-        The dashboard no longer shows a &ldquo;Target: 0&rdquo; and empty macro
-        bars before you&rsquo;ve set weight and goal &mdash; it falls back to
-        2,400 kcal, the same as the nutrition page.
+        <ul className="ml-4 list-disc space-y-1.5">
+          <li>
+            The dashboard no longer shows &ldquo;Target: 0&rdquo; and empty
+            macro bars before you&rsquo;ve set your weight and goal.
+          </li>
+          <li>
+            Until then it falls back to 2,400 kcal, the same as the nutrition
+            page.
+          </li>
+        </ul>
       </InfoBlock>
 
       <InfoBlock title="0.1.0 — Initial release">
-        Strava connection, ride-calorie import, daily calorie and macro targets,
-        the food diary, and saved meals.
+        <ul className="ml-4 list-disc space-y-1.5">
+          <li>Strava connection.</li>
+          <li>Ride-calorie import.</li>
+          <li>Daily calorie and macro targets.</li>
+          <li>Food diary.</li>
+          <li>Saved meals.</li>
+        </ul>
       </InfoBlock>
     </SettingsStaticPage>
   );
