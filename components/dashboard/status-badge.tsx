@@ -1,9 +1,8 @@
+import type { EffortBadge } from "@/lib/workout-metrics";
+
 type StatusBadgeProps = {
   label:
-    | "Easy"
-    | "Moderate"
-    | "Hard"
-    | "Very Hard"
+    | EffortBadge
     | "Strava"
     | "Ready"
     | "Active"

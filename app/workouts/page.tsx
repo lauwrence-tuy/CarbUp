@@ -1,8 +1,15 @@
 import { WorkoutsPage, type WorkoutListItem } from "@/components/dashboard/workouts-page";
 import { StravaLoginRequiredPage } from "@/components/dashboard/strava-login-required-page";
 import { getActivitySlug } from "@/lib/activity-slug";
-import { APP_TIMEZONE, formatActivityTime, getLocalDateKey } from "@/lib/date";
+import { formatActivityTime, formatWorkoutDate, getLocalDateKey } from "@/lib/date";
 import { prisma } from "@/lib/prisma";
+import {
+  calculateActivityLoad,
+  formatDistance,
+  formatDuration,
+  getEffortBadge,
+  metersToMiles
+} from "@/lib/workout-metrics";
 import { getCurrentUserId } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -13,67 +20,10 @@ type ActivityRow = {
   type: string;
   calories: number | null;
   movingTime: number | null;
+  sufferScore: number | null;
   distance: number | null;
   startDate: Date;
 };
-
-function formatDuration(seconds: number | null) {
-  if (!seconds) {
-    return "Duration unavailable";
-  }
-
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.round((seconds % 3600) / 60);
-
-  if (hours > 0) {
-    return `${hours}h ${minutes}m`;
-  }
-
-  return `${minutes} min`;
-}
-
-function formatDistance(meters: number | null) {
-  if (!meters) {
-    return "Distance unavailable";
-  }
-
-  return `${(meters / 1609.344).toFixed(1)} mi`;
-}
-
-function getEffortBadge(load: number): WorkoutListItem["badge"] {
-  if (load >= 100) {
-    return "Very Hard";
-  }
-
-  if (load >= 65) {
-    return "Hard";
-  }
-
-  if (load >= 30) {
-    return "Moderate";
-  }
-
-  return "Easy";
-}
-
-function calculateActivityLoad(activity: {
-  movingTime: number | null;
-  calories: number | null;
-}) {
-  const durationLoad = (activity.movingTime ?? 0) / 90;
-  const calorieLoad = (activity.calories ?? 0) / 18;
-
-  return Math.round(durationLoad + calorieLoad);
-}
-
-function formatWorkoutDate(date: Date) {
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: APP_TIMEZONE,
-    month: "short",
-    day: "numeric",
-    year: "numeric"
-  }).format(date);
-}
 
 export default async function WorkoutsRoute() {
   const userId = await getCurrentUserId();
@@ -114,7 +64,7 @@ export default async function WorkoutsRoute() {
         durationLabel: formatDuration(activity.movingTime),
         distanceMiles:
           typeof activity.distance === "number"
-            ? activity.distance / 1609.344
+            ? metersToMiles(activity.distance)
             : null,
         distanceLabel: formatDistance(activity.distance),
         effort,

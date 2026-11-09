@@ -9,6 +9,12 @@ import {
   isSameLocalDay
 } from "@/lib/date";
 import { prisma } from "@/lib/prisma";
+import {
+  calculateActivityLoad,
+  formatDistance,
+  formatDuration,
+  getEffortBadge
+} from "@/lib/workout-metrics";
 import { getCurrentUserId } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +32,7 @@ type ActivityRow = {
   type: string;
   calories: number | null;
   movingTime: number | null;
+  sufferScore: number | null;
   distance: number | null;
   startDate: Date;
 };
@@ -38,55 +45,6 @@ type FoodLogRow = {
   fat: number;
 };
 
-function formatDuration(seconds: number | null) {
-  if (!seconds) {
-    return "Duration unavailable";
-  }
-
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.round((seconds % 3600) / 60);
-
-  if (hours > 0) {
-    return `${hours}h ${minutes}m`;
-  }
-
-  return `${minutes} min`;
-}
-
-function formatDistance(meters: number | null) {
-  if (!meters) {
-    return "Distance unavailable";
-  }
-
-  return `${(meters / 1609.344).toFixed(1)} mi`;
-}
-
-function getEffortBadge(load: number): Workout["badge"] {
-  if (load >= 100) {
-    return "Very Hard";
-  }
-
-  if (load >= 65) {
-    return "Hard";
-  }
-
-  if (load >= 30) {
-    return "Moderate";
-  }
-
-  return "Easy";
-}
-
-function calculateActivityLoad(activity: {
-  movingTime: number | null;
-  calories: number | null;
-}) {
-  const durationLoad = (activity.movingTime ?? 0) / 90;
-  const calorieLoad = (activity.calories ?? 0) / 18;
-
-  return Math.round(durationLoad + calorieLoad);
-}
-
 function mapActivityToWorkout(
   activity: {
     id: string;
@@ -94,6 +52,7 @@ function mapActivityToWorkout(
     type: string;
     calories: number | null;
     movingTime: number | null;
+    sufferScore: number | null;
     distance: number | null;
     startDate: Date;
   }

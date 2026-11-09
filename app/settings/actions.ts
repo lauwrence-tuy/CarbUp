@@ -2,6 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import {
+  calculateBaseTdee,
+  GOAL_ADJUSTMENTS,
+  isActivityLevel,
+  isGoalType
+} from "@/lib/calorie-settings";
 import { getCurrentUserId } from "@/lib/session";
 
 export type SettingsActionState = {
@@ -9,35 +15,7 @@ export type SettingsActionState = {
   message: string;
 };
 
-const goalAdjustments: Record<string, number> = {
-  maintain: 0,
-  lose_slow: -250,
-  lose_steady: -500,
-  lose_fast: -750
-};
-
-const activityLevels = new Set(["sedentary", "light", "active", "very_active"]);
 const unitOptions = new Set(["imperial", "metric"]);
-const tdeeMultipliers: Record<string, number> = {
-  sedentary: 13,
-  light: 14,
-  active: 16,
-  very_active: 18
-};
-
-function calculateBaseTdee({
-  everydayActivity,
-  units,
-  weight
-}: {
-  everydayActivity: string;
-  units: string;
-  weight: number;
-}) {
-  const weightInPounds = units === "metric" ? weight * 2.2046226218 : weight;
-
-  return Math.round(weightInPounds * tdeeMultipliers[everydayActivity]);
-}
 
 export async function saveUserSettings(
   _previousState: SettingsActionState,
@@ -57,14 +35,14 @@ export async function saveUserSettings(
   const units = String(formData.get("units") ?? "imperial");
   const weight = Number(formData.get("weight") ?? 0);
 
-  if (!(goalType in goalAdjustments)) {
+  if (!isGoalType(goalType)) {
     return {
       status: "error",
       message: "Choose maintain, lose slow, lose steady, or lose fast."
     };
   }
 
-  if (!activityLevels.has(everydayActivity)) {
+  if (!isActivityLevel(everydayActivity)) {
     return {
       status: "error",
       message: "Choose a valid activity level."
@@ -104,7 +82,7 @@ export async function saveUserSettings(
     data: {
       maintenanceCalories,
       goalType,
-      goalAdjustment: goalAdjustments[goalType],
+      goalAdjustment: GOAL_ADJUSTMENTS[goalType],
       everydayActivity,
       units,
       weight
