@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  createSavedMealSchema,
+  deleteSavedMealSchema
+} from "@/lib/api/nutrition-schemas";
+import { parseJsonBody } from "@/lib/api/parse-json-body";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 
@@ -9,19 +14,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
-  const name = String(body.name ?? "").trim();
-  const ingredients = Array.isArray(body.ingredients) ? body.ingredients : [];
+  const parsed = await parseJsonBody(request, createSavedMealSchema);
 
-  if (!name || ingredients.length === 0) {
-    return NextResponse.json({ error: "Invalid meal" }, { status: 400 });
+  if (!parsed.ok) {
+    return parsed.response;
   }
 
   const meal = await prisma.savedMeal.create({
     data: {
       userId,
-      name,
-      ingredientsJson: JSON.stringify(ingredients)
+      name: parsed.data.name,
+      ingredientsJson: JSON.stringify(parsed.data.ingredients)
     }
   });
 
@@ -35,16 +38,15 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
-  const mealId = String(body.mealId ?? "");
+  const parsed = await parseJsonBody(request, deleteSavedMealSchema);
 
-  if (!mealId) {
-    return NextResponse.json({ error: "Missing meal id" }, { status: 400 });
+  if (!parsed.ok) {
+    return parsed.response;
   }
 
   await prisma.savedMeal.deleteMany({
     where: {
-      id: mealId,
+      id: parsed.data.mealId,
       userId
     }
   });

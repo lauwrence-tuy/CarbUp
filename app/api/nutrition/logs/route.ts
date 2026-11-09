@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import {
+  createFoodLogSchema,
+  deleteFoodLogSchema
+} from "@/lib/api/nutrition-schemas";
+import { parseJsonBody } from "@/lib/api/parse-json-body";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 
@@ -10,43 +15,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
-  const entry = body.entry;
-  const dateKey = String(body.dateKey ?? "");
+  const parsed = await parseJsonBody(request, createFoodLogSchema);
 
-  if (!dateKey || !entry?.name || !entry?.meal) {
-    return NextResponse.json({ error: "Invalid food log" }, { status: 400 });
+  if (!parsed.ok) {
+    return parsed.response;
   }
 
-  const foodId = typeof entry.id === "string" && entry.id.length > 0 ? entry.id : null;
-
+  const log = parsed.data;
   const row = await prisma.foodLog.create({
-    data: {
-      userId,
-      dateKey,
-      meal: String(entry.meal),
-      source: String(entry.source ?? "food"),
-      foodId,
-      name: String(entry.name),
-      brand: typeof entry.brand === "string" ? entry.brand : null,
-      serving: String(entry.serving ?? `${Math.round(Number(entry.grams) || 0)} g`),
-      baseGrams: Number(entry.baseGrams) || Number(entry.grams) || 100,
-      grams: Number(entry.grams) || 0,
-      calories: Math.round(Number(entry.calories) || 0),
-      protein: Math.round(Number(entry.protein) || 0),
-      carbs: Math.round(Number(entry.carbs) || 0),
-      fat: Math.round(Number(entry.fat) || 0),
-      itemsJson: entry.items ? JSON.stringify(entry.items) : null
-    }
+    data: { userId, ...log }
   });
 
   // Best-effort popularity signal for search ranking / the Frequent tab.
   // updateMany is a no-op when the id isn't a real catalog Food (e.g. a
   // synthetic "recent-..." id), and a failure here must not fail the log.
-  if (foodId) {
+  if (log.foodId) {
     try {
       await prisma.food.updateMany({
-        where: { id: foodId },
+        where: { id: log.foodId },
         data: { usageCount: { increment: 1 } }
       });
     } catch {
@@ -67,16 +53,15 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
-  const logId = String(body.logId ?? "");
+  const parsed = await parseJsonBody(request, deleteFoodLogSchema);
 
-  if (!logId) {
-    return NextResponse.json({ error: "Missing log id" }, { status: 400 });
+  if (!parsed.ok) {
+    return parsed.response;
   }
 
   await prisma.foodLog.deleteMany({
     where: {
-      id: logId,
+      id: parsed.data.logId,
       userId
     }
   });
