@@ -10,7 +10,7 @@ import {
 } from "@/lib/date";
 import { prisma } from "@/lib/prisma";
 import {
-  estimateActivityLoad,
+  calculateActivityLoad,
   formatDistance,
   formatDuration,
   getEffortBadge
@@ -32,6 +32,7 @@ type ActivityRow = {
   type: string;
   calories: number | null;
   movingTime: number | null;
+  sufferScore: number | null;
   distance: number | null;
   startDate: Date;
 };
@@ -51,11 +52,12 @@ function mapActivityToWorkout(
     type: string;
     calories: number | null;
     movingTime: number | null;
+    sufferScore: number | null;
     distance: number | null;
     startDate: Date;
   }
 ): Workout {
-  const load = estimateActivityLoad(activity);
+  const load = calculateActivityLoad(activity);
 
   return {
     id: activity.id,
@@ -124,7 +126,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       )
     );
     const load = activitiesForDay.reduce(
-      (total, activity) => total + estimateActivityLoad(activity),
+      (total, activity) => total + calculateActivityLoad(activity),
       0
     );
 

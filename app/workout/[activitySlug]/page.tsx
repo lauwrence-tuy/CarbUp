@@ -7,7 +7,7 @@ import { getCurrentUserId } from "@/lib/session";
 import { getFreshStravaAccessToken } from "@/lib/strava";
 import { getStravaActivityVisualData } from "@/lib/strava-activity-detail";
 import {
-  estimateActivityLoad,
+  calculateActivityLoad,
   formatDistance,
   formatDuration
 } from "@/lib/workout-metrics";
@@ -24,6 +24,7 @@ type ActivityDetailRow = {
   type: string;
   calories: number | null;
   movingTime: number | null;
+  sufferScore: number | null;
   distance: number | null;
   startDate: Date;
 };
@@ -85,7 +86,7 @@ export default async function ActivityRoute({ params }: ActivityRouteProps) {
             : null,
         durationLabel: formatDuration(activity.movingTime),
         distanceLabel: formatDistance(activity.distance),
-        effort: estimateActivityLoad(activity)
+        effort: calculateActivityLoad(activity)
       }}
       visualData={visualData}
     />

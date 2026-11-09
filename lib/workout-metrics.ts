@@ -7,12 +7,7 @@ type LoadInputs = {
   calories: number | null;
 };
 
-/**
- * Rough training load from duration and calories alone.
- * Used where Strava's suffer score isn't considered (dashboard, workout list,
- * workout detail).
- */
-export function estimateActivityLoad({ movingTime, calories }: LoadInputs) {
+function estimateActivityLoad({ movingTime, calories }: LoadInputs) {
   const durationLoad = (movingTime ?? 0) / 90;
   const calorieLoad = (calories ?? 0) / 18;
 
@@ -20,8 +15,8 @@ export function estimateActivityLoad({ movingTime, calories }: LoadInputs) {
 }
 
 /**
- * Training load that prefers Strava's suffer score when the activity has one,
- * falling back to {@link estimateActivityLoad}. Used by the Trends page.
+ * Training load for an activity. Uses Strava's suffer score when the activity
+ * has one; otherwise estimates it from moving time and calories.
  */
 export function calculateActivityLoad(
   activity: LoadInputs & { sufferScore: number | null }

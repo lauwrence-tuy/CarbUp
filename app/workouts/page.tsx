@@ -4,7 +4,7 @@ import { getActivitySlug } from "@/lib/activity-slug";
 import { formatActivityTime, formatWorkoutDate, getLocalDateKey } from "@/lib/date";
 import { prisma } from "@/lib/prisma";
 import {
-  estimateActivityLoad,
+  calculateActivityLoad,
   formatDistance,
   formatDuration,
   getEffortBadge,
@@ -20,6 +20,7 @@ type ActivityRow = {
   type: string;
   calories: number | null;
   movingTime: number | null;
+  sufferScore: number | null;
   distance: number | null;
   startDate: Date;
 };
@@ -45,7 +46,7 @@ export default async function WorkoutsRoute() {
   const activities = (user?.activities ?? []) as ActivityRow[];
   const workouts: WorkoutListItem[] =
     activities.map((activity) => {
-      const effort = estimateActivityLoad(activity);
+      const effort = calculateActivityLoad(activity);
 
       return {
         id: activity.id,
