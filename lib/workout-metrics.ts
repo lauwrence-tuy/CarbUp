@@ -53,8 +53,10 @@ export function formatDuration(seconds: number | null) {
     return "Duration unavailable";
   }
 
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.round((seconds % 3600) / 60);
+  // Round to whole minutes first so 59m59s reads "1h 0m", not "60 min".
+  const totalMinutes = Math.round(seconds / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
 
   if (hours > 0) {
     return `${hours}h ${minutes}m`;
