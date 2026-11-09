@@ -27,6 +27,17 @@ import type {
 import { MetricCard } from "@/components/ui/metric-card";
 import { AppHeader } from "@/components/app-header";
 
+// Route map colors. Strava-style orange route on a dark slate base, kept
+// separate from the app theme so the map reads like a map.
+const MAP_COLORS = {
+  background: "#0f172a",
+  route: "#ff5a1f",
+  outline: "#ffffff",
+  start: "#22c55e",
+  end: "#ff5a1f",
+  hover: "#0ea5e9"
+} as const;
+
 const MAP_WIDTH = 1200;
 const MAP_HEIGHT = 420;
 const TILE_SIZE = 256;
@@ -642,7 +653,7 @@ function ActivityRouteMap({
         onPointerUp={stopDragging}
         onWheel={handleWheel}
       >
-        <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="#0f172a" />
+        <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill={MAP_COLORS.background} />
         {mapData.tiles.map((tile) => (
           <image
             key={tile.key}
@@ -657,7 +668,7 @@ function ActivityRouteMap({
         <path
           d={mapData.routePath}
           fill="none"
-          stroke="#ff5a1f"
+          stroke={MAP_COLORS.route}
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth="6"
@@ -665,7 +676,7 @@ function ActivityRouteMap({
         <path
           d={mapData.routePath}
           fill="none"
-          stroke="#ffffff"
+          stroke={MAP_COLORS.outline}
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeOpacity="0.5"
@@ -674,26 +685,26 @@ function ActivityRouteMap({
         <circle
           cx={mapData.start.x}
           cy={mapData.start.y}
-          fill="#22c55e"
+          fill={MAP_COLORS.start}
           r="9"
-          stroke="#ffffff"
+          stroke={MAP_COLORS.outline}
           strokeWidth="4"
         />
         <circle
           cx={mapData.end.x}
           cy={mapData.end.y}
-          fill="#ff5a1f"
+          fill={MAP_COLORS.end}
           r="9"
-          stroke="#ffffff"
+          stroke={MAP_COLORS.outline}
           strokeWidth="4"
         />
         {hoverPoint ? (
           <circle
             cx={hoverPoint.x}
             cy={hoverPoint.y}
-            fill="#0ea5e9"
+            fill={MAP_COLORS.hover}
             r="11"
-            stroke="#ffffff"
+            stroke={MAP_COLORS.outline}
             strokeWidth="4"
           />
         ) : null}
