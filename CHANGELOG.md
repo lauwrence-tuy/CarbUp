@@ -4,6 +4,28 @@ All notable changes to CarbUp are recorded here. Versioning is
 [semver](https://semver.org/); the app is pre-1.0, so minor versions carry
 feature work.
 
+## [0.2.2] — Consistency and cleanup
+
+### Changed
+- Training load uses Strava's suffer score (Relative Effort) when present on
+  every page, not just Trends; effort numbers and badges on the Dashboard,
+  Workouts, and workout detail pages can change for those workouts.
+- Shared navigation header (`components/app-header.tsx`) on every page; the
+  nav is labelled "Main navigation" and marks the current page with
+  `aria-current`.
+- The saved-meal delete button is labelled "Delete saved meal …".
+- Nutrition API routes validate request bodies with zod and return 400 with
+  the failing fields instead of a 500 or storing coerced zeros.
+- Internal: shared helpers in `lib/`, nutrition and trends pages split into
+  components and hooks, components grouped by feature, theme colors instead
+  of hardcoded hex values, unused components and images removed.
+
+### Fixed
+- `formatDuration` showed 59m59s as "60 min" and 1h59m59s as "1h 60m".
+
+### Added
+- Vitest unit tests (`pnpm test`), run in CI.
+
 ## [0.2.1] — Strava calorie sync fix
 
 ### Fixed
