@@ -2,8 +2,8 @@ import { Plus, Trash2, Utensils } from "lucide-react";
 import type {
   FoodLogEntry,
   MealName
-} from "@/components/dashboard/nutrition-diary-storage";
-import { StatusBadge, type StatusBadgeProps } from "@/components/dashboard/status-badge";
+} from "./nutrition-diary-storage";
+import { StatusBadge, type StatusBadgeProps } from "@/components/ui/status-badge";
 import { meals } from "./meals";
 
 /** The day's log, grouped by meal. */

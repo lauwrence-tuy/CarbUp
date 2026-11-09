@@ -3,7 +3,7 @@ import type {
   CatalogFood,
   Food,
   SavedMeal
-} from "@/components/dashboard/nutrition-diary-storage";
+} from "@/components/nutrition/nutrition-diary-storage";
 import {
   createFoodLogEntry,
   createMealLogEntry,

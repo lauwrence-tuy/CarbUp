@@ -1,5 +1,5 @@
-import { TrendsPage } from "@/components/dashboard/trends-page";
-import { StravaLoginRequiredPage } from "@/components/dashboard/strava-login-required-page";
+import { TrendsPage } from "@/components/trends/trends-page";
+import { StravaLoginRequiredPage } from "@/components/strava/strava-login-required-page";
 import {
   getActivityCalories,
   getActivityWeightKg

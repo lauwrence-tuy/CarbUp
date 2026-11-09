@@ -1,5 +1,5 @@
 import { AppDashboard } from "@/components/dashboard/app-dashboard";
-import { StravaLoginRequiredPage } from "@/components/dashboard/strava-login-required-page";
+import { StravaLoginRequiredPage } from "@/components/strava/strava-login-required-page";
 import type { Workout } from "@/components/dashboard/workout-history-card";
 import { getActivitySlug } from "@/lib/activity-slug";
 import {

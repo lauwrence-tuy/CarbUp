@@ -2,7 +2,7 @@ import { Pencil, Plus, Trash2 } from "lucide-react";
 import type {
   CatalogFood,
   MealName
-} from "@/components/dashboard/nutrition-diary-storage";
+} from "./nutrition-diary-storage";
 import { getFoodPortion } from "@/lib/nutrition-portions";
 import { GramsInput, NutritionPreview } from "./nutrition-inputs";
 

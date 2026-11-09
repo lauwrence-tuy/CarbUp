@@ -10,8 +10,8 @@ import {
   Utensils
 } from "lucide-react";
 import { SyncedDashboardSummary } from "./synced-dashboard-nutrition";
-import { FloatingActionButton } from "./floating-action-button";
-import type { NutritionTotals } from "./nutrition-diary-storage";
+import { FloatingActionButton } from "@/components/ui/floating-action-button";
+import type { NutritionTotals } from "@/components/nutrition/nutrition-diary-storage";
 import { WeeklyCalendar, type CalendarDay } from "./weekly-calendar";
 import { WorkoutHistoryCard, type Workout } from "./workout-history-card";
 import { AppHeader } from "@/components/app-header";

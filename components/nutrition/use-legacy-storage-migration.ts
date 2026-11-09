@@ -10,7 +10,7 @@ import {
   type FoodLogEntry,
   legacyLogStorageKey,
   type SavedMeal
-} from "@/components/dashboard/nutrition-diary-storage";
+} from "./nutrition-diary-storage";
 import { createLogId } from "@/lib/nutrition-portions";
 import { saveFoodLog, saveMeal } from "./nutrition-api";
 import type { LogsByDate } from "./use-food-log";

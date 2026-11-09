@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { CatalogFood } from "@/components/dashboard/nutrition-diary-storage";
+import type { CatalogFood } from "./nutrition-diary-storage";
 
 const SEARCH_DEBOUNCE_MS = 300;
 const MIN_SEARCH_LENGTH = 2;

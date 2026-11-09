@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { Coffee, Cookie, Soup, Utensils } from "lucide-react";
-import type { MealName } from "@/components/dashboard/nutrition-diary-storage";
+import type { MealName } from "./nutrition-diary-storage";
 
 export const meals: Array<{
   name: MealName;

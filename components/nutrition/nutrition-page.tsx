@@ -3,20 +3,20 @@
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { AppHeader } from "@/components/app-header";
-import { BarcodeScanner } from "@/components/dashboard/barcode-scanner";
-import { CustomFoodForm } from "@/components/dashboard/custom-food-form";
+import { BarcodeScanner } from "./barcode-scanner";
+import { CustomFoodForm } from "./custom-food-form";
 import {
   createLocalNoonDate,
   DaySpreadWidget,
   formatDateKey
-} from "@/components/dashboard/day-spread-widget";
+} from "./day-spread-widget";
 import {
   type CatalogFood,
   createNutritionTotals,
   type MealName,
   type SavedMeal
-} from "@/components/dashboard/nutrition-diary-storage";
-import { StatusBadge } from "@/components/dashboard/status-badge";
+} from "./nutrition-diary-storage";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
   createFoodLogEntry,
   createMealLogEntry,

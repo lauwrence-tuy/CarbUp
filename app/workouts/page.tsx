@@ -1,5 +1,5 @@
-import { WorkoutsPage, type WorkoutListItem } from "@/components/dashboard/workouts-page";
-import { StravaLoginRequiredPage } from "@/components/dashboard/strava-login-required-page";
+import { WorkoutsPage, type WorkoutListItem } from "@/components/workouts/workouts-page";
+import { StravaLoginRequiredPage } from "@/components/strava/strava-login-required-page";
 import { getActivitySlug } from "@/lib/activity-slug";
 import { formatActivityTime, formatWorkoutDate, getLocalDateKey } from "@/lib/date";
 import { prisma } from "@/lib/prisma";
