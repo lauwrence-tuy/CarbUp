@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
+import { AppHeader } from "@/components/app-header";
 import { BarcodeScanner } from "@/components/dashboard/barcode-scanner";
 import { CustomFoodForm } from "@/components/dashboard/custom-food-form";
 import {
@@ -28,7 +29,6 @@ import { type BrowseTab, FoodPicker } from "./food-picker";
 import { MealBuilder } from "./meal-builder";
 import { meals } from "./meals";
 import { deleteCustomFood } from "./nutrition-api";
-import { NutritionHeader } from "./nutrition-header";
 import { SavedMealPicker } from "./saved-meal-picker";
 import { type LogsByDate, useFoodLog } from "./use-food-log";
 import { useFoodSearch } from "./use-food-search";
@@ -223,7 +223,7 @@ export function NutritionPage({
   return (
     <main className="min-h-screen bg-app-bg text-white">
       <div className="mx-auto min-h-screen w-full max-w-7xl px-5 pb-24 pt-6 sm:px-8 lg:px-10">
-        <NutritionHeader isConnected={isConnected} />
+        <AppHeader isConnected={isConnected} active="Nutrition" />
 
         <section className="mt-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
