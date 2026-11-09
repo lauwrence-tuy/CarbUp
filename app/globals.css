@@ -33,11 +33,10 @@ html {
 
 body {
   margin: 0;
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--cds-background);
+  color: var(--cds-text-primary);
   font-family: Inter, "SF Pro Display", system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-feature-settings: "ss01" on, "cv01" on;
   text-rendering: optimizeLegibility;
 }
 
@@ -54,8 +53,8 @@ textarea {
 }
 
 ::selection {
-  background: rgba(255, 221, 0, 0.35);
-  color: var(--text-primary);
+  background: var(--cds-highlight);
+  color: var(--cds-text-primary);
 }
 
 @keyframes fill-progress {
@@ -82,4 +81,12 @@ textarea {
 
 .animate-rise-in {
   animation: rise-in 420ms ease both;
+}
+
+/* Carbon's reset sets `border-style: none` on most elements, which hides
+   Tailwind border utilities (they only set a width). Restore Tailwind's
+   default solid style; widths stay 0 unless a border class is used. */
+html, body, div, span, p, a, ol, ul, li, section, header, footer, nav,
+article, aside, main, h1, h2, h3, h4, h5, h6, form, label, fieldset {
+  border-style: solid;
 }

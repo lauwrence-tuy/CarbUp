@@ -1,12 +1,11 @@
-import { AppDashboard } from "@/components/dashboard/app-dashboard";
+import { CarbonDashboard } from "@/components/carbon/carbon-dashboard";
 import { StravaLoginRequiredPage } from "@/components/strava/strava-login-required-page";
 import type { Workout } from "@/components/dashboard/workout-history-card";
 import { getActivitySlug } from "@/lib/activity-slug";
 import {
   formatActivityTime,
   getLocalDateKey,
-  getTrailingSevenLocalDays,
-  isSameLocalDay
+  getTrailingSevenLocalDays
 } from "@/lib/date";
 import { prisma } from "@/lib/prisma";
 import {
@@ -101,19 +100,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   const activities = (user?.activities ?? []) as ActivityRow[];
   const foodLogs = (user?.foodLogs ?? []) as FoodLogRow[];
-  const todaysActivities =
-    activities.filter((activity) => isSameLocalDay(activity.startDate));
-  const activityCalories = Math.round(
-    todaysActivities.reduce(
-      (total, activity) => total + (activity.calories ?? 0),
-      0
-    )
-  );
-  const workouts: Workout[] = todaysActivities.map(mapActivityToWorkout);
-  const trainingLoad = workouts.reduce(
-    (total, workout) => total + workout.effort,
-    0
-  );
   const calendarDays = calendarBaseDays.map((day) => {
     const activitiesForDay =
       activities.filter(
@@ -176,17 +162,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     }, {});
 
   return (
-    <AppDashboard
+    <CarbonDashboard
       isConnected={Boolean(user)}
       authStatus={params.connected === "strava" ? "connected" : undefined}
       authError={params.auth_error}
       baseCalories={user?.maintenanceCalories ?? 0}
-      activityCalories={activityCalories}
       goalAdjustment={user?.maintenanceCalories == null ? 0 : user.goalAdjustment}
-      workouts={workouts}
       workoutsByDate={workoutsByDate}
       nutritionTotalsByDate={nutritionTotalsByDate}
-      trainingLoad={trainingLoad}
       calendarDays={calendarDays}
     />
   );

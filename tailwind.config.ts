@@ -9,6 +9,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Carbon g100 theme tokens (CSS custom properties from app/carbon.scss).
+        cds: {
+          background: "var(--cds-background)",
+          layer: "var(--cds-layer-01)",
+          "layer-2": "var(--cds-layer-02)",
+          "layer-hover": "var(--cds-layer-hover-01)",
+          "border-subtle": "var(--cds-border-subtle-01)",
+          "border-strong": "var(--cds-border-strong-01)",
+          "text-primary": "var(--cds-text-primary)",
+          "text-secondary": "var(--cds-text-secondary)",
+          "text-helper": "var(--cds-text-helper)",
+          interactive: "var(--cds-interactive)",
+          focus: "var(--cds-focus)",
+          "support-error": "var(--cds-support-error)",
+          "support-success": "var(--cds-support-success)",
+          "support-warning": "var(--cds-support-warning)",
+          "support-info": "var(--cds-support-info)"
+        },
         app: {
           bg: "#000000",
           surface: "#111111",
