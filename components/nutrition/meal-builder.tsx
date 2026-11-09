@@ -2,7 +2,7 @@ import { Plus, Trash2 } from "lucide-react";
 import type {
   CatalogFood,
   SavedMealIngredient
-} from "@/components/dashboard/nutrition-diary-storage";
+} from "./nutrition-diary-storage";
 import { getFoodPortion, getMealTotals } from "@/lib/nutrition-portions";
 import { GramsInput, NutritionPreview } from "./nutrition-inputs";
 

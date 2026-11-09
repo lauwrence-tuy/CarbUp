@@ -1,6 +1,6 @@
-import { CountUp } from "@/components/dashboard/count-up";
-import type { NutritionTotals } from "@/components/dashboard/nutrition-diary-storage";
-import { ProgressBar } from "@/components/dashboard/progress-bar";
+import { CountUp } from "@/components/ui/count-up";
+import type { NutritionTotals } from "./nutrition-diary-storage";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { getMacroTargets } from "@/lib/nutrition-targets";
 
 /** Remaining calories, the target breakdown, and macro progress for one day. */

@@ -3,7 +3,7 @@
 import type {
   FoodLogEntry,
   SavedMealIngredient
-} from "@/components/dashboard/nutrition-diary-storage";
+} from "./nutrition-diary-storage";
 
 async function sendJson(url: string, method: string, body: unknown) {
   const response = await fetch(url, {

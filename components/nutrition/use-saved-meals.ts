@@ -4,7 +4,7 @@ import { useState } from "react";
 import type {
   SavedMeal,
   SavedMealIngredient
-} from "@/components/dashboard/nutrition-diary-storage";
+} from "./nutrition-diary-storage";
 import { getMealGramsInput } from "@/lib/nutrition-portions";
 import { deleteSavedMeal, saveMeal } from "./nutrition-api";
 

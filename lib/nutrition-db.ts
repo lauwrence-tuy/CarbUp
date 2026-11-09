@@ -3,7 +3,7 @@ import type {
   MealName,
   SavedMeal,
   SavedMealIngredient
-} from "@/components/dashboard/nutrition-diary-storage";
+} from "@/components/nutrition/nutrition-diary-storage";
 
 export type SavedMealRecord = SavedMeal;
 

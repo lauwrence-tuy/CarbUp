@@ -24,7 +24,7 @@ import type {
   ActivityVisualData,
   LatLngPoint
 } from "@/lib/strava-activity-detail";
-import { MetricCard } from "./metric-card";
+import { MetricCard } from "@/components/ui/metric-card";
 import { AppHeader } from "@/components/app-header";
 
 const MAP_WIDTH = 1200;

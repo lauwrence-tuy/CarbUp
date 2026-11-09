@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { ArrowRight, Flame } from "lucide-react";
-import { CountUp } from "./count-up";
-import type { NutritionTotals } from "./nutrition-diary-storage";
-import { ProgressBar } from "./progress-bar";
+import { CountUp } from "@/components/ui/count-up";
+import type { NutritionTotals } from "@/components/nutrition/nutrition-diary-storage";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { getMacroTargets, resolveBaseCalories } from "@/lib/nutrition-targets";
 
 type SyncedDashboardNutritionProps = {

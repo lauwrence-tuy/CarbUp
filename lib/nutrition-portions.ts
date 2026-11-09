@@ -9,7 +9,7 @@ import {
   type MealName,
   type SavedMeal,
   type SavedMealIngredient
-} from "@/components/dashboard/nutrition-diary-storage";
+} from "@/components/nutrition/nutrition-diary-storage";
 
 export function createLogId() {
   return `food-${Date.now()}-${Math.random().toString(16).slice(2)}`;

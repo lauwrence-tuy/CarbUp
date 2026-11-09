@@ -9,11 +9,11 @@ import {
   Target,
   Zap
 } from "lucide-react";
-import { DailyCalorieCard } from "./daily-calorie-card";
-import { FloatingActionButton } from "./floating-action-button";
-import { MetricCard } from "./metric-card";
-import { WeeklyCalendar } from "./weekly-calendar";
-import { WorkoutHistoryCard } from "./workout-history-card";
+import { DailyCalorieCard } from "@/components/dashboard/daily-calorie-card";
+import { FloatingActionButton } from "@/components/ui/floating-action-button";
+import { MetricCard } from "@/components/ui/metric-card";
+import { WeeklyCalendar } from "@/components/dashboard/weekly-calendar";
+import { WorkoutHistoryCard } from "@/components/dashboard/workout-history-card";
 import { AppHeader, ConnectStravaLink, SettingsLink } from "@/components/app-header";
 
 type DashboardHomeProps = {
