@@ -1,6 +1,6 @@
 import { CarbonDashboard } from "@/components/carbon/carbon-dashboard";
 import { StravaLoginRequiredPage } from "@/components/strava/strava-login-required-page";
-import type { Workout } from "@/lib/dashboard-types";
+import type { MealsByDate, Workout } from "@/lib/dashboard-types";
 import { getActivitySlug } from "@/lib/activity-slug";
 import {
   formatActivityTime,
@@ -38,6 +38,8 @@ type ActivityRow = {
 
 type FoodLogRow = {
   dateKey: string;
+  meal: string;
+  name: string;
   calories: number;
   protein: number;
   carbs: number;
@@ -161,6 +163,21 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       return grouped;
     }, {});
 
+  // Each day's logged foods grouped by meal, for the dashboard's meals card.
+  const mealsByDate = foodLogs.reduce<MealsByDate>((grouped, foodLog) => {
+    if (!calendarDateKeys.has(foodLog.dateKey)) {
+      return grouped;
+    }
+
+    const day = (grouped[foodLog.dateKey] ??= {});
+    (day[foodLog.meal] ??= []).push({
+      name: foodLog.name,
+      calories: Math.round(foodLog.calories)
+    });
+
+    return grouped;
+  }, {});
+
   return (
     <CarbonDashboard
       isConnected={Boolean(user)}
@@ -170,6 +187,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       goalAdjustment={user?.maintenanceCalories == null ? 0 : user.goalAdjustment}
       workoutsByDate={workoutsByDate}
       nutritionTotalsByDate={nutritionTotalsByDate}
+      mealsByDate={mealsByDate}
       calendarDays={calendarDays}
     />
   );

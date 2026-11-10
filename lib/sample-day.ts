@@ -1,4 +1,4 @@
-import type { CalendarDay, Workout } from "@/lib/dashboard-types";
+import type { CalendarDay, MealsByDate, Workout } from "@/lib/dashboard-types";
 import type { NutritionTotals } from "@/components/nutrition/nutrition-diary-storage";
 import { getTrailingSevenLocalDays } from "@/lib/date";
 import { getEffortBadge } from "@/lib/workout-metrics";
@@ -58,7 +58,18 @@ export type SampleDay = {
   activityCalories: number;
   workoutsByDate: Record<string, Workout[]>;
   nutritionTotalsByDate: Record<string, NutritionTotals>;
+  mealsByDate: MealsByDate;
   calendarDays: CalendarDay[];
+};
+
+/** Today's sample meals. Calories sum to the 1,285 kcal eaten below. */
+const sampleMeals: MealsByDate[string] = {
+  Breakfast: [{ name: "Oatmeal with berries", calories: 318 }],
+  Lunch: [{ name: "Chicken burrito bowl", calories: 577 }],
+  Snacks: [
+    { name: "Greek yogurt and granola", calories: 285 },
+    { name: "Banana", calories: 105 }
+  ]
 };
 
 /**
@@ -103,6 +114,7 @@ export function buildSampleDay(now = new Date()): SampleDay {
     nutritionTotalsByDate: {
       [todayKey]: { calories: 1285, protein: 72, carbs: 168, fat: 36 }
     },
+    mealsByDate: { [todayKey]: sampleMeals },
     calendarDays
   };
 }

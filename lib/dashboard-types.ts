@@ -24,3 +24,12 @@ export type CalendarDay = {
   activityCount: number;
   isToday: boolean;
 };
+
+/** One logged food, as listed under its meal on the dashboard. */
+export type MealEntry = {
+  name: string;
+  calories: number;
+};
+
+/** Food logged per day, grouped by meal name (Breakfast, Lunch, Dinner, Snacks). */
+export type MealsByDate = Record<string, Record<string, MealEntry[]>>;
