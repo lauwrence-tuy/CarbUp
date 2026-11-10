@@ -35,6 +35,8 @@ feature work.
   period" (its buckets are about two weeks).
 - Settings: one-column flow with an "Account & integrations" card replacing
   the sidebar and the separate Integrations card.
+- The app's address is now `carbup.dev` (`metadataBase` in `app/layout.tsx`,
+  README, `.env.example`); `carb-up-lilac.vercel.app` redirects there.
 - Faster pages: each page loads only the rows and columns it shows
   (Dashboard: the week's activities and food logs; Nutrition: the last 12
   weeks, which is now how far week paging goes; Trends/Workouts: only the

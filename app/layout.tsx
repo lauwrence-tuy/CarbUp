@@ -4,7 +4,7 @@ import "./carbon.scss";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://carb-up-lilac.vercel.app"),
+  metadataBase: new URL("https://carbup.dev"),
   applicationName: "CarbUp",
   title: "CarbUp",
   description:

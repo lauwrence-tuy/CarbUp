@@ -19,6 +19,10 @@ export default function ChangelogPage() {
             the navigation opens from a menu button.
           </li>
           <li>
+            CarbUp has a new address: carbup.dev. The old link takes you there,
+            and you&rsquo;ll be asked to connect Strava once more.
+          </li>
+          <li>
             New home page that explains how CarbUp works, with a live
             &ldquo;today&rdquo; preview, a feature overview, and answers to
             common questions. If you&rsquo;re already connected you go straight

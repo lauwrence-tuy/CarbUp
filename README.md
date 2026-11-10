@@ -2,7 +2,7 @@
 
 CarbUp connects to a user's Strava account and adds today's activity calories on top of their maintenance calories to produce a daily nutrition target.
 
-Live app: [https://carb-up-lilac.vercel.app/](https://carb-up-lilac.vercel.app/)
+Live app: [https://carbup.dev](https://carbup.dev)
 
 Core features:
 
@@ -55,8 +55,9 @@ Core features:
    app. If it is still a placeholder or copied from a different app, Strava will
    reject the token exchange after login.
 
-   For the deployed app, configure the Strava callback URL as
-   `https://carb-up-lilac.vercel.app/api/strava/callback`.
+   For the deployed app, set the Strava app's Authorization Callback Domain
+   to `carbup.dev` (the callback URL is
+   `https://carbup.dev/api/strava/callback`).
 
 6. Prepare Prisma for local development:
 
@@ -128,8 +129,8 @@ For a live deployment, configure these production environment variables:
 DATABASE_URL="..."
 STRAVA_CLIENT_ID="..."
 STRAVA_CLIENT_SECRET="..."
-STRAVA_REDIRECT_URI="https://carb-up-lilac.vercel.app/api/strava/callback"
-APP_URL="https://carb-up-lilac.vercel.app"
+STRAVA_REDIRECT_URI="https://carbup.dev/api/strava/callback"
+APP_URL="https://carbup.dev"
 TOKEN_ENCRYPTION_KEY="long_random_secret"
 SESSION_SECRET="different_long_random_secret"
 ```
