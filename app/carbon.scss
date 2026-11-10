@@ -180,6 +180,19 @@ $on-yellow: #000000;
   border-radius: 9999px;
 }
 
+// Macro bars: carbs yellow, protein blue, fat purple (bar fill only).
+.cu-bar-carbs .cds--progress-bar__bar {
+  background-color: $yellow;
+}
+
+.cu-bar-protein .cds--progress-bar__bar {
+  background-color: #60a5fa;
+}
+
+.cu-bar-fat .cds--progress-bar__bar {
+  background-color: #a855f7;
+}
+
 .cds--progress-bar__label {
   font-weight: 700;
 }

@@ -1,4 +1,5 @@
 import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Tile } from "@carbon/react";
 import type {
   CatalogFood,
   MealName
@@ -8,7 +9,7 @@ import { GramsInput, NutritionPreview } from "./nutrition-inputs";
 
 export type BrowseTab = "recent" | "frequent" | "mine";
 
-/** Browse/search results plus the portion panel for the selected food. */
+/** Browse/search results. The portion panel lives in SelectedFoodCard. */
 export function FoodPicker({
   heading,
   isSearching,
@@ -19,12 +20,9 @@ export function FoodPicker({
   emptyMessage,
   errorMessage,
   selectedFood,
-  gramsInput,
-  onGramsInputChange,
   selectedMeal,
   onSelect,
   onAdd,
-  onAddSelected,
   onEditCustom,
   onDeleteCustom
 }: {
@@ -38,12 +36,9 @@ export function FoodPicker({
   emptyMessage: string | null;
   errorMessage: string | null;
   selectedFood: CatalogFood | null;
-  gramsInput: string;
-  onGramsInputChange: (value: string) => void;
   selectedMeal: MealName;
   onSelect: (food: CatalogFood) => void;
   onAdd: (food: CatalogFood) => void;
-  onAddSelected: () => void;
   onEditCustom: (food: CatalogFood) => void;
   onDeleteCustom: (food: CatalogFood) => void;
 }) {
@@ -82,7 +77,7 @@ export function FoodPicker({
         </div>
       ) : null}
 
-      <div className="mt-2 max-h-[260px] space-y-2 overflow-y-auto pr-1">
+      <div className="mt-2 max-h-[300px] space-y-2 overflow-y-auto pr-1">
         {emptyMessage ? (
           <p className="rounded-[20px] bg-black/30 px-4 py-4 text-sm text-cds-text-helper">
             {emptyMessage}
@@ -108,22 +103,6 @@ export function FoodPicker({
           />
         ))}
       </div>
-
-      <section className="mt-5 border-t border-white/[0.06] pt-5">
-        {selectedFood ? (
-          <PortionPanel
-            food={selectedFood}
-            gramsInput={gramsInput}
-            onGramsInputChange={onGramsInputChange}
-            selectedMeal={selectedMeal}
-            onAdd={onAddSelected}
-          />
-        ) : (
-          <p className="rounded-[24px] bg-black/30 px-4 py-5 text-sm text-cds-text-helper">
-            Pick a food above to set a portion and add it.
-          </p>
-        )}
-      </section>
 
       <p className="mt-4 text-[0.65rem] leading-4 text-cds-text-helper">
         Food data from USDA FoodData Central (public domain) and{" "}
@@ -306,5 +285,41 @@ function PortionPanel({
         Add to {selectedMeal}
       </button>
     </div>
+  );
+}
+
+/** Right-column card: portion and Add button for the food picked on the left. */
+export function SelectedFoodCard({
+  food,
+  gramsInput,
+  onGramsInputChange,
+  selectedMeal,
+  onAdd
+}: {
+  food: CatalogFood | null;
+  gramsInput: string;
+  onGramsInputChange: (value: string) => void;
+  selectedMeal: MealName;
+  onAdd: () => void;
+}) {
+  return (
+    <Tile className="!p-6">
+      <h2 className="cu-heading-02">Selected food</h2>
+      <div className="mt-4">
+        {food ? (
+          <PortionPanel
+            food={food}
+            gramsInput={gramsInput}
+            onGramsInputChange={onGramsInputChange}
+            selectedMeal={selectedMeal}
+            onAdd={onAdd}
+          />
+        ) : (
+          <p className="cu-body-01 rounded-[22px] bg-black/30 px-4 py-5 text-cds-text-helper">
+            Pick a food from the list to set a portion and add it to {selectedMeal}.
+          </p>
+        )}
+      </div>
+    </Tile>
   );
 }

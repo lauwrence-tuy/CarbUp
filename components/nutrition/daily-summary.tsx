@@ -85,13 +85,13 @@ export function DailySummary({
           label="Protein"
           eaten={totals.protein}
           target={macroTargets.protein}
-          color="yellow"
+          color="blue"
         />
         <MacroProgress
           label="Fat"
           eaten={totals.fat}
           target={macroTargets.fat}
-          color="yellow"
+          color="purple"
         />
       </div>
     </section>

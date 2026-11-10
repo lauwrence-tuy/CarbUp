@@ -87,9 +87,9 @@ export function DashboardBody({
   const over = Math.max(totals.calories - target, 0);
   const macroTargets = getMacroTargets(target);
   const macros = [
-    { label: "Carbs", eaten: totals.carbs, target: macroTargets.carbs },
-    { label: "Protein", eaten: totals.protein, target: macroTargets.protein },
-    { label: "Fat", eaten: totals.fat, target: macroTargets.fat }
+    { label: "Carbs", eaten: totals.carbs, target: macroTargets.carbs, bar: "cu-bar-carbs" },
+    { label: "Protein", eaten: totals.protein, target: macroTargets.protein, bar: "cu-bar-protein" },
+    { label: "Fat", eaten: totals.fat, target: macroTargets.fat, bar: "cu-bar-fat" }
   ];
   const maxLoad = Math.max(...calendarDays.map((day) => day.load), 1);
 
@@ -142,6 +142,7 @@ export function DashboardBody({
             {macros.map((macro) => (
               <ProgressBar
                 key={`${selectedKey}-${macro.label}`}
+                className={macro.bar}
                 label={macro.label}
                 helperText={`${formatNumber(macro.eaten)} of ${formatNumber(macro.target)} g`}
                 value={Math.min((macro.eaten / Math.max(macro.target, 1)) * 100, 100)}

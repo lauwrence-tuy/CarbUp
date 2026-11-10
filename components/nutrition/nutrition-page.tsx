@@ -24,7 +24,7 @@ import {
 import { resolveBaseCalories } from "@/lib/nutrition-targets";
 import { DailySummary } from "./daily-summary";
 import { FoodDiary } from "./food-diary";
-import { type BrowseTab, FoodPicker } from "./food-picker";
+import { type BrowseTab, FoodPicker, SelectedFoodCard } from "./food-picker";
 import { MealBuilder } from "./meal-builder";
 import { meals } from "./meals";
 import { deleteCustomFood } from "./nutrition-api";
@@ -238,141 +238,155 @@ export function NutritionPage({
             goalAdjustment={dayGoalAdjustment}
           />
 
-          {/* Add food is the tall column; the diary stays pinned beside it. */}
-          <div className="mt-4 grid items-start gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
-            <Tile className="!p-6">
+          {/* Phones: diary, Add food, then Selected food under the list.
+              Desktop: Add food on the left; Selected food above the diary on the right. */}
+          <div className="mt-4 grid items-start gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)] lg:grid-rows-[auto_1fr]">
+            <Tile className="order-2 !p-6 lg:order-none lg:col-start-1 lg:row-span-2 lg:row-start-1">
               <div>
                 <h2 className="cu-heading-02">Add food</h2>
                 <p className="cu-helper mt-1">to {selectedMeal}</p>
               </div>
-                <div className="mt-5">
-                  <div className="grid grid-cols-2 gap-2 rounded-full bg-black/30 p-1">
-                    {addModes.map(({ value: mode, label }) => (
-                      <button
-                        key={mode}
-                        className={`min-h-10 rounded-full text-sm font-bold transition ${
-                          addMode === mode
-                            ? "bg-cds-interactive text-black"
-                            : "text-cds-text-secondary hover:bg-white/[0.08] hover:text-white"
-                        }`}
-                        type="button"
-                        onClick={() => setAddMode(mode)}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
+              <div className="mt-5">
+                <div className="grid grid-cols-2 gap-2 rounded-full bg-black/30 p-1">
+                  {addModes.map(({ value: mode, label }) => (
+                    <button
+                      key={mode}
+                      className={`min-h-10 rounded-full text-sm font-bold transition ${
+                        addMode === mode
+                          ? "bg-cds-interactive text-black"
+                          : "text-cds-text-secondary hover:bg-white/[0.08] hover:text-white"
+                      }`}
+                      type="button"
+                      onClick={() => setAddMode(mode)}
+                    >
+                      {label}
+                    </button>
+                  ))}
                 </div>
+              </div>
 
-                <div className="mt-5 grid grid-cols-2 gap-2 border-t border-[color:var(--cds-border-subtle-00)] pt-5 sm:grid-cols-4 lg:grid-cols-2">
-                  {meals.map((meal) => {
-                    const Icon = meal.icon;
-                    const isSelected = selectedMeal === meal.name;
+              <div className="mt-5 grid grid-cols-2 gap-2 border-t border-[color:var(--cds-border-subtle-00)] pt-5 sm:grid-cols-4 lg:grid-cols-2">
+                {meals.map((meal) => {
+                  const Icon = meal.icon;
+                  const isSelected = selectedMeal === meal.name;
 
-                    return (
-                      <button
-                        key={meal.name}
-                        aria-pressed={isSelected}
-                        className={`flex min-h-12 items-center gap-2 rounded-full px-3 text-left text-xs font-bold transition ${
-                          isSelected
-                            ? "bg-cds-interactive text-black"
-                            : "bg-black/30 text-cds-text-secondary hover:bg-white/[0.08] hover:text-white"
-                        }`}
-                        type="button"
-                        onClick={() => setSelectedMeal(meal.name)}
-                      >
-                        <Icon className="size-4 shrink-0" aria-hidden="true" />
-                        <span className="truncate">{meal.name}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                  return (
+                    <button
+                      key={meal.name}
+                      aria-pressed={isSelected}
+                      className={`flex min-h-12 items-center gap-2 rounded-full px-3 text-left text-xs font-bold transition ${
+                        isSelected
+                          ? "bg-cds-interactive text-black"
+                          : "bg-black/30 text-cds-text-secondary hover:bg-white/[0.08] hover:text-white"
+                      }`}
+                      type="button"
+                      onClick={() => setSelectedMeal(meal.name)}
+                    >
+                      <Icon className="size-4 shrink-0" aria-hidden="true" />
+                      <span className="truncate">{meal.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
 
-                <div className="mt-5 border-t border-[color:var(--cds-border-subtle-00)] pt-5">
-                  <Search
-                    id="food-search"
-                    labelText="Search foods"
-                    placeholder="Search foods"
-                    size="lg"
-                    value={search.query}
-                    onChange={(event) =>
-                      search.setQuery((event.target as HTMLInputElement).value)
-                    }
-                    closeButtonLabelText="Clear search"
+              <div className="mt-5 border-t border-[color:var(--cds-border-subtle-00)] pt-5">
+                <Search
+                  id="food-search"
+                  labelText="Search foods"
+                  placeholder="Search foods"
+                  size="lg"
+                  value={search.query}
+                  onChange={(event) =>
+                    search.setQuery((event.target as HTMLInputElement).value)
+                  }
+                  closeButtonLabelText="Clear search"
+                />
+              </div>
+
+              {addMode === "food" ? (
+                <>
+                  <BarcodeScanner onFoodFound={handleScannedFood} />
+                  <CustomFoodForm
+                    key={editingCustomFood?.id ?? "new"}
+                    editing={editingCustomFood}
+                    onSaved={handleSavedCustomFood}
+                    onCancelEdit={() => setEditingCustomFood(null)}
                   />
-                </div>
-
-                {addMode === "food" ? (
-                  <>
-                    <BarcodeScanner onFoodFound={handleScannedFood} />
-                    <CustomFoodForm
-                      key={editingCustomFood?.id ?? "new"}
-                      editing={editingCustomFood}
-                      onSaved={handleSavedCustomFood}
-                      onCancelEdit={() => setEditingCustomFood(null)}
-                    />
-                    <FoodPicker
-                      heading={listHeading}
-                      isSearching={search.isSearching}
-                      browseTabs={!search.isActive && hasBrowseHistory ? browseTabs : []}
-                      activeBrowseTab={activeBrowseTab}
-                      onBrowseTabChange={setBrowseTab}
-                      foods={listFoods}
-                      emptyMessage={
-                        search.noMatches
-                          ? `No foods found for “${search.trimmedQuery}”.`
-                          : !search.isActive && listFoods.length === 0
-                            ? "Search for a food to add. Foods you log will show up here."
-                            : null
-                      }
-                      errorMessage={search.error}
-                      selectedFood={selectedFood}
-                      gramsInput={foodGramsInput}
-                      onGramsInputChange={setFoodGramsInput}
-                      selectedMeal={selectedMeal}
-                      onSelect={(food) => selectFood(food)}
-                      onAdd={addFoodFromList}
-                      onAddSelected={() => {
-                        if (selectedFood) {
-                          logFood(selectedFood, Number(foodGramsInput));
-                        }
-                      }}
-                      onEditCustom={editCustomFood}
-                      onDeleteCustom={removeCustomFood}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <SavedMealPicker
-                      savedMeals={savedMeals.savedMeals}
-                      selectedMeal={savedMeals.selectedMeal}
-                      gramsInput={savedMeals.gramsInput}
-                      onGramsInputChange={savedMeals.setGramsInput}
-                      onSelect={savedMeals.selectById}
-                      onAdd={logSavedMeal}
-                      onRemove={savedMeals.remove}
-                    />
-                    <MealBuilder
-                      name={mealBuilder.name}
-                      onNameChange={mealBuilder.setName}
-                      ingredients={mealBuilder.ingredients}
-                      onAddIngredient={mealBuilder.addIngredient}
-                      onIngredientGramsChange={mealBuilder.setIngredientGrams}
-                      onRemoveIngredient={mealBuilder.removeIngredient}
-                      onSave={saveBuiltMeal}
-                      heading={`${listHeading}${search.isSearching ? " - searching..." : ""}`}
-                      foods={listFoods}
-                      emptyMessage={
-                        !search.isActive
-                          ? "Search above to find foods for this meal."
-                          : search.error ?? `No foods found for "${search.trimmedQuery}".`
-                      }
-                    />
-                  </>
-                )}
+                  <FoodPicker
+                    heading={listHeading}
+                    isSearching={search.isSearching}
+                    browseTabs={!search.isActive && hasBrowseHistory ? browseTabs : []}
+                    activeBrowseTab={activeBrowseTab}
+                    onBrowseTabChange={setBrowseTab}
+                    foods={listFoods}
+                    emptyMessage={
+                      search.noMatches
+                        ? `No foods found for “${search.trimmedQuery}”.`
+                        : !search.isActive && listFoods.length === 0
+                          ? "Search for a food to add. Foods you log will show up here."
+                          : null
+                    }
+                    errorMessage={search.error}
+                    selectedFood={selectedFood}
+                    selectedMeal={selectedMeal}
+                    onSelect={(food) => selectFood(food)}
+                    onAdd={addFoodFromList}
+                    onEditCustom={editCustomFood}
+                    onDeleteCustom={removeCustomFood}
+                  />
+                </>
+              ) : (
+                <>
+                  <SavedMealPicker
+                    savedMeals={savedMeals.savedMeals}
+                    selectedMeal={savedMeals.selectedMeal}
+                    gramsInput={savedMeals.gramsInput}
+                    onGramsInputChange={savedMeals.setGramsInput}
+                    onSelect={savedMeals.selectById}
+                    onAdd={logSavedMeal}
+                    onRemove={savedMeals.remove}
+                  />
+                  <MealBuilder
+                    name={mealBuilder.name}
+                    onNameChange={mealBuilder.setName}
+                    ingredients={mealBuilder.ingredients}
+                    onAddIngredient={mealBuilder.addIngredient}
+                    onIngredientGramsChange={mealBuilder.setIngredientGrams}
+                    onRemoveIngredient={mealBuilder.removeIngredient}
+                    onSave={saveBuiltMeal}
+                    heading={`${listHeading}${search.isSearching ? " - searching..." : ""}`}
+                    foods={listFoods}
+                    emptyMessage={
+                      !search.isActive
+                        ? "Search above to find foods for this meal."
+                        : search.error ?? `No foods found for "${search.trimmedQuery}".`
+                    }
+                  />
+                </>
+              )}
             </Tile>
 
-            <div className="order-first lg:sticky lg:top-6 lg:order-none">
+            {addMode === "food" ? (
+              <div className="order-3 lg:order-none lg:col-start-2 lg:row-start-1">
+                <SelectedFoodCard
+                  food={selectedFood}
+                  gramsInput={foodGramsInput}
+                  onGramsInputChange={setFoodGramsInput}
+                  selectedMeal={selectedMeal}
+                  onAdd={() => {
+                    if (selectedFood) {
+                      logFood(selectedFood, Number(foodGramsInput));
+                    }
+                  }}
+                />
+              </div>
+            ) : null}
+
+            <div
+              className={`order-1 lg:order-none lg:col-start-2 ${
+                addMode === "food" ? "lg:row-start-2" : "lg:row-start-1"
+              }`}
+            >
               <FoodDiary
                 log={foodLog.log}
                 dateLabel={dateLabel}
