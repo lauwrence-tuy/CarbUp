@@ -2,8 +2,8 @@
 
 import type { MouseEvent } from "react";
 import { useState } from "react";
-import { ChevronDown, LineChart } from "lucide-react";
-import { type FitnessFreshnessPoint, timeframeOptions } from "@/lib/trends";
+import { Tile } from "@carbon/react";
+import type { FitnessFreshnessPoint } from "@/lib/trends";
 import {
   ActivityDots,
   ChartLegend,
@@ -74,39 +74,14 @@ export function FitnessFreshnessCard({
   }
 
   return (
-  <section className="mt-6 rounded-[28px] border border-white/[0.04] bg-app-card p-6 shadow-card">
+  <Tile className="mt-4 !p-6">
     <div className="flex flex-wrap items-start justify-between gap-5">
-      <div className="flex items-center gap-3">
-        <span className="flex size-12 items-center justify-center rounded-2xl bg-app-orange text-white">
-          <LineChart className="size-6" aria-hidden="true" />
-        </span>
-        <div>
-          <h2 className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-white">
-            Fitness & Freshness
-          </h2>
-          <p className="mt-1 text-sm text-app-muted">
-            Strava Relative Effort when available, with local load fallback
-          </p>
-        </div>
+      <div>
+        <h2 className="cu-heading-02">Fitness &amp; Freshness</h2>
+        <p className="cu-helper mt-1">
+          {selectedTimeframe}. Strava Relative Effort when available, with local load fallback
+        </p>
       </div>
-      <label className="hidden">
-        <span className="sr-only">Fitness and freshness date range</span>
-        <select
-          className="min-h-10 appearance-none rounded-full border border-white/[0.06] bg-black/35 py-2 pl-4 pr-9 text-xs font-bold text-app-green outline-none transition focus:border-app-green/60"
-          onChange={() => undefined}
-          value={selectedTimeframe}
-        >
-          {timeframeOptions.map((option) => (
-            <option key={option.label} value={option.label}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[0] text-app-green">
-          <ChevronDown className="size-3.5" aria-hidden="true" />
-          ▾
-        </span>
-      </label>
     </div>
 
     <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -114,23 +89,23 @@ export function FitnessFreshnessCard({
         label="Fitness"
         value={latestFitnessFreshness?.fitness ?? 0}
         delta={fitnessDelta}
-        color="text-app-orange"
+        color="text-cds-interactive"
       />
       <FreshnessMetric
         label="Fatigue"
         value={latestFitnessFreshness?.fatigue ?? 0}
         delta={fatigueDelta}
-        color="text-app-secondary"
+        color="text-cds-text-secondary"
       />
       <FreshnessMetric
         label="Form"
         value={latestFitnessFreshness?.form ?? 0}
         delta={formDelta}
-        color="text-app-blue"
+        color="text-[color:var(--blue)]"
       />
     </div>
 
-    <div className="mt-8 h-[540px] rounded-[24px] bg-black/24 p-5">
+    <div className="mt-6 h-[540px] rounded-[22px] bg-black/30 p-5">
       <svg
         className="h-full w-full overflow-visible"
         role="img"
@@ -168,7 +143,7 @@ export function FitnessFreshnessCard({
           points={points}
           maxValue={maxFreshnessValue}
           metric="fitness"
-          color="var(--orange)"
+          color="var(--cds-interactive)"
         />
         <FreshnessLine
           points={points}
@@ -187,12 +162,12 @@ export function FitnessFreshnessCard({
       </svg>
     </div>
 
-    <div className="mt-4 flex flex-wrap gap-4 text-xs font-bold uppercase tracking-[0.14em] text-app-muted">
-      <ChartLegend color="bg-app-orange" label="Fitness" />
-      <ChartLegend color="bg-app-secondary" label="Fatigue" />
-      <ChartLegend color="bg-app-blue" label="Form" />
+    <div className="mt-4 flex flex-wrap gap-4 text-xs font-bold uppercase tracking-[0.14em] text-cds-text-helper">
+      <ChartLegend color="bg-cds-interactive" label="Fitness" />
+      <ChartLegend color="bg-cds-text-secondary" label="Fatigue" />
+      <ChartLegend color="bg-[color:var(--blue)]" label="Form" />
       <ChartLegend color="bg-white/20" label="Daily load" />
     </div>
-  </section>
+  </Tile>
   );
 }

@@ -21,8 +21,8 @@ export function FreshnessMetric({
   color: string;
 }) {
   return (
-    <div className="rounded-[22px] bg-black/24 p-5">
-      <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-app-muted">
+    <div className="rounded-[22px] bg-black/30 p-5">
+      <p className="cu-label">
         {label}
       </p>
       <div className="mt-3 flex items-end gap-2">
@@ -32,7 +32,7 @@ export function FreshnessMetric({
         {delta == null ? null : (
           <span
             className={`pb-2 text-sm font-bold ${
-              delta >= 0 ? "text-app-green" : "text-app-red"
+              delta >= 0 ? "text-cds-support-success" : "text-cds-support-error"
             }`}
           >
             {delta >= 0 ? "+" : ""}
@@ -100,7 +100,7 @@ export function FreshnessHoverOverlay({
         y={hoverTooltipY}
       />
       <text
-        fill="var(--text-secondary)"
+        fill="var(--cds-text-secondary)"
         fontSize="10"
         fontWeight="800"
         textAnchor="middle"
@@ -110,7 +110,7 @@ export function FreshnessHoverOverlay({
         {date.weekday}
       </text>
       <text
-        fill="var(--text-primary)"
+        fill="var(--cds-text-primary)"
         fontSize="12"
         fontWeight="900"
         textAnchor="middle"
@@ -160,7 +160,7 @@ export function HoverValue({
   return (
     <>
       <text
-        fill="var(--text-secondary)"
+        fill="var(--cds-text-secondary)"
         fontSize="10"
         fontWeight="800"
         textAnchor="middle"
@@ -260,9 +260,8 @@ export function ActivityDots({ points }: { points: FitnessFreshnessPoint[] }) {
               target="_blank"
               rel="noreferrer"
             >
-              <title>
-                {activity.name} - {activity.type} - load {activity.load}
-              </title>
+              {/* One string child: split text nodes in <title> break hydration. */}
+              <title>{`${activity.name} - ${activity.type} - load ${activity.load}`}</title>
               <g
                 className="pointer-events-none opacity-0 transition group-hover:opacity-100 group-focus:opacity-100"
                 transform={`translate(${Math.max(72, Math.min(chartWidth - 72, x))} ${Math.max(34, dotY - 34)})`}
@@ -277,7 +276,7 @@ export function ActivityDots({ points }: { points: FitnessFreshnessPoint[] }) {
                   y="-42"
                 />
                 <text
-                  fill="var(--text-secondary)"
+                  fill="var(--cds-text-secondary)"
                   fontSize="9"
                   fontWeight="700"
                   textAnchor="middle"
@@ -287,7 +286,7 @@ export function ActivityDots({ points }: { points: FitnessFreshnessPoint[] }) {
                   {point.label}
                 </text>
                 <text
-                  fill="var(--text-primary)"
+                  fill="var(--cds-text-primary)"
                   fontSize="10"
                   fontWeight="800"
                   textAnchor="middle"
@@ -302,7 +301,7 @@ export function ActivityDots({ points }: { points: FitnessFreshnessPoint[] }) {
                 cy={dotY}
                 fill="rgba(255,255,255,0.16)"
                 r={4}
-                className="transition hover:fill-app-green"
+                className="transition hover:fill-cds-interactive"
               />
             </a>
           );
