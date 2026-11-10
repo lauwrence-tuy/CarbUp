@@ -3,22 +3,26 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
-  Bike,
-  CalendarDays,
-  Clock3,
-  Flame,
-  Gauge,
-  ListFilter,
-  Route,
+  Column,
+  Grid,
   Search,
-  Timer
-} from "lucide-react";
-import { MetricCard } from "@/components/ui/metric-card";
-import { FloatingActionButton } from "@/components/ui/floating-action-button";
+  StructuredListBody,
+  StructuredListCell,
+  StructuredListHead,
+  StructuredListRow,
+  StructuredListWrapper,
+  Tag,
+  Tile
+} from "@carbon/react";
 import type { EffortBadge } from "@/lib/workout-metrics";
-import { StatusBadge } from "@/components/ui/status-badge";
-import { SyncStravaButton } from "@/components/strava/sync-strava-button";
-import { AppHeader } from "@/components/app-header";
+import { CarbonSyncButton } from "@/components/carbon/sync-button";
+import {
+  effortTagType,
+  PageShell,
+  PageTitle,
+  PillGroup,
+  StatTile
+} from "@/components/carbon/page-shell";
 
 export type WorkoutListItem = {
   id: string;
@@ -42,24 +46,12 @@ type WorkoutsPageProps = {
   isConnected: boolean;
 };
 
-const rangeOptions = [
-  { label: "7D", days: 7 },
-  { label: "30D", days: 30 },
-  { label: "90D", days: 90 },
-  { label: "All", days: null }
+const rangeOptions: { label: string; value: number | null }[] = [
+  { label: "7D", value: 7 },
+  { label: "30D", value: 30 },
+  { label: "90D", value: 90 },
+  { label: "All", value: null }
 ];
-
-function getBadgeColor(badge: WorkoutListItem["badge"]) {
-  if (badge === "Very Hard") {
-    return "bg-app-red";
-  }
-
-  if (badge === "Hard") {
-    return "bg-app-orange";
-  }
-
-  return "bg-app-green";
-}
 
 function formatDistanceValue(miles: number) {
   return `${miles.toFixed(miles >= 100 ? 0 : 1)} mi`;
@@ -97,8 +89,7 @@ export function WorkoutsPage({ workouts, isConnected }: WorkoutsPageProps) {
     return workouts.filter((workout) => {
       const workoutDate = new Date(`${workout.dateKey}T12:00:00`);
       const matchesRange = !rangeStart || workoutDate >= rangeStart;
-      const matchesType =
-        selectedType === "All" || workout.type === selectedType;
+      const matchesType = selectedType === "All" || workout.type === selectedType;
       const matchesQuery =
         normalizedQuery.length === 0 ||
         `${workout.name} ${workout.type} ${workout.dateLabel}`
@@ -129,233 +120,176 @@ export function WorkoutsPage({ workouts, isConnected }: WorkoutsPageProps) {
         )
       : 0;
   const averageCalories =
-    filteredWorkouts.length > 0
-      ? Math.round(totalCalories / filteredWorkouts.length)
-      : 0;
+    filteredWorkouts.length > 0 ? Math.round(totalCalories / filteredWorkouts.length) : 0;
 
   return (
-    <main className="min-h-screen bg-app-bg text-white">
-      <div className="mx-auto min-h-screen w-full max-w-7xl px-5 pb-24 pt-6 sm:px-8 lg:px-10">
-        <AppHeader isConnected={isConnected} active="Workouts" />
+    <PageShell isConnected={isConnected}>
+      <PageTitle
+        label="Workouts"
+        title="Activity log"
+        description="Every synced Strava session, with calories, time, distance and effort."
+        actions={isConnected ? <CarbonSyncButton /> : null}
+      />
 
-        <section className="mt-8">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h1 className="text-4xl font-bold leading-none text-white sm:text-5xl">
-                Activity log
-              </h1>
-              <p className="mt-3 max-w-2xl text-base text-app-secondary">
-                Inspect synced Strava sessions, spot standout calorie burns, and
-                compare effort across your recent training.
-              </p>
-            </div>
-            {isConnected ? <SyncStravaButton /> : null}
+      <Grid className="mt-8">
+        <Column sm={4} md={8} lg={16}>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatTile
+              label="Calories"
+              value={totalCalories.toLocaleString("en-US")}
+              helper={`${averageCalories.toLocaleString("en-US")} kcal per workout`}
+              accent
+            />
+            <StatTile
+              label="Workouts"
+              value={filteredWorkouts.length.toLocaleString("en-US")}
+              helper={`${types.length - 1} activity types`}
+            />
+            <StatTile
+              label="Moving time"
+              value={formatDurationValue(totalMinutes)}
+              helper="total"
+            />
+            <StatTile
+              label="Distance"
+              value={formatDistanceValue(totalDistance)}
+              helper={`average effort ${averageEffort}`}
+            />
           </div>
-        </section>
 
-        <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard
-            label="Calories"
-            value={totalCalories.toLocaleString()}
-            detail={`${averageCalories.toLocaleString()} kcal per workout`}
-            icon={Flame}
-            tone="green"
-          />
-          <MetricCard
-            label="Workouts"
-            value={filteredWorkouts.length.toLocaleString()}
-            detail={`${types.length - 1} activity types synced`}
-            icon={CalendarDays}
-            tone="blue"
-          />
-          <MetricCard
-            label="Duration"
-            value={formatDurationValue(totalMinutes)}
-            detail="moving time"
-            icon={Timer}
-            tone="purple"
-          />
-          <MetricCard
-            label="Distance"
-            value={formatDistanceValue(totalDistance)}
-            detail={`avg effort ${averageEffort}`}
-            icon={Route}
-            tone="orange"
-          />
-        </section>
-
-        <section className="mt-6 rounded-[28px] border border-white/[0.04] bg-app-card p-5 shadow-card">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex items-center gap-3">
-              <span className="flex size-11 items-center justify-center rounded-2xl bg-app-blue text-black">
-                <ListFilter className="size-5" aria-hidden="true" />
-              </span>
+          {/* Filters */}
+          <Tile className="mt-4 !p-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <h2 className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-white">
-                  Filters
-                </h2>
-                <p className="mt-1 text-sm text-app-muted">
+                <h2 className="cu-heading-02">Filters</h2>
+                <p className="cu-helper mt-1">
                   {filteredWorkouts.length} of {workouts.length} workouts
                 </p>
               </div>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] xl:min-w-[720px]">
-              <label className="relative block">
-                <span className="sr-only">Search workouts</span>
-                <Search
-                  className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-app-muted"
-                  aria-hidden="true"
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center lg:min-w-[560px]">
+                <div className="flex-1">
+                  <Search
+                    id="workout-search"
+                    labelText="Search workouts"
+                    placeholder="Search workouts"
+                    size="lg"
+                    value={query}
+                    onChange={(event) =>
+                      setQuery((event.target as HTMLInputElement).value)
+                    }
+                    closeButtonLabelText="Clear search"
+                  />
+                </div>
+                <PillGroup
+                  label="Date range"
+                  options={rangeOptions}
+                  value={selectedRange}
+                  onChange={setSelectedRange}
                 />
-                <input
-                  className="min-h-12 w-full rounded-full border border-white/[0.06] bg-black/28 py-2 pl-11 pr-4 text-sm font-semibold text-white outline-none transition placeholder:text-app-muted focus:border-app-green/60"
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search workouts"
-                  type="search"
-                  value={query}
-                />
-              </label>
-
-              <div className="flex flex-wrap gap-2">
-                {rangeOptions.map((option) => (
-                  <button
-                    key={option.label}
-                    className={`min-h-11 rounded-full px-4 text-sm font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-app-green/70 focus-visible:ring-offset-2 focus-visible:ring-offset-app-card ${
-                      selectedRange === option.days
-                        ? "bg-white text-black"
-                        : "bg-black/28 text-app-secondary hover:bg-white/[0.08] hover:text-white"
-                    }`}
-                    type="button"
-                    onClick={() => setSelectedRange(option.days)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
               </div>
             </div>
-          </div>
 
-          <div className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 py-4">
-            {types.map((type) => (
-              <button
-                key={type}
-                className={`min-h-10 shrink-0 rounded-full px-4 text-sm font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-app-green/70 focus-visible:ring-offset-2 focus-visible:ring-offset-app-card ${
-                  selectedType === type
-                    ? "bg-app-green text-black shadow-glow"
-                    : "bg-black/28 text-app-secondary hover:bg-white/[0.08] hover:text-white"
-                }`}
-                type="button"
-                onClick={() => setSelectedType(type)}
-              >
-                {type}
-              </button>
-            ))}
-          </div>
-        </section>
+            <div className="mt-5 flex flex-wrap gap-2" role="group" aria-label="Activity type">
+              {types.map((type) => {
+                const isSelected = selectedType === type;
 
-        <section className="mt-6">
-          {filteredWorkouts.length > 0 ? (
-            <div className="grid gap-4">
-              {filteredWorkouts.map((workout) => (
-                <Link
-                  key={workout.id}
-                  href={`/workout/${workout.slug}`}
-                  className="rounded-[28px] border border-white/[0.04] bg-app-card p-5 shadow-card transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-app-hover"
-                >
-                  <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-                    <div className="flex min-w-0 gap-4">
-                      <span
-                        className={`mt-1 h-24 w-1.5 shrink-0 rounded-full ${getBadgeColor(
-                          workout.badge
-                        )}`}
-                      />
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <StatusBadge label={workout.badge} />
-                          <span className="rounded-full bg-white/[0.06] px-3 py-1 text-xs font-bold text-app-secondary">
-                            {workout.type}
-                          </span>
-                        </div>
-                        <h2 className="mt-3 text-2xl font-bold tracking-[-0.03em] text-white">
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => setSelectedType(type)}
+                    className={`min-h-10 rounded-full px-4 text-sm font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cds-focus ${
+                      isSelected
+                        ? "bg-cds-interactive text-black shadow-[var(--cu-shadow-glow)]"
+                        : "bg-black/30 text-cds-text-secondary hover:bg-white/[0.08] hover:text-white"
+                    }`}
+                  >
+                    {type}
+                  </button>
+                );
+              })}
+            </div>
+          </Tile>
+
+          {/* List */}
+          <Tile className="mt-4 !p-6">
+            <h2 className="cu-heading-02">Activities</h2>
+            {filteredWorkouts.length > 0 ? (
+              <StructuredListWrapper aria-label="Activities" className="!mb-0 mt-4">
+                <StructuredListHead>
+                  <StructuredListRow head>
+                    <StructuredListCell head>Workout</StructuredListCell>
+                    <StructuredListCell head>Intensity</StructuredListCell>
+                    <StructuredListCell head className="hidden md:table-cell">
+                      Time
+                    </StructuredListCell>
+                    <StructuredListCell head className="hidden md:table-cell">
+                      Distance
+                    </StructuredListCell>
+                    <StructuredListCell head className="hidden lg:table-cell">
+                      Load
+                    </StructuredListCell>
+                    <StructuredListCell head className="text-right">
+                      kcal
+                    </StructuredListCell>
+                  </StructuredListRow>
+                </StructuredListHead>
+                <StructuredListBody>
+                  {filteredWorkouts.map((workout) => (
+                    <StructuredListRow key={workout.id}>
+                      <StructuredListCell>
+                        <Link
+                          href={`/workout/${workout.slug}`}
+                          className="font-semibold text-white hover:text-cds-interactive hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cds-focus"
+                        >
                           {workout.name}
-                        </h2>
-                        <p className="mt-2 text-sm font-semibold text-app-muted">
-                          {workout.dateLabel} at {workout.startTime}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:min-w-[520px]">
-                      <WorkoutStat
-                        icon={Flame}
-                        label="Calories"
-                        value={
-                          workout.calories == null
-                            ? "--"
-                            : workout.calories.toLocaleString()
-                        }
-                      />
-                      <WorkoutStat
-                        icon={Clock3}
-                        label="Time"
-                        value={workout.durationLabel}
-                      />
-                      <WorkoutStat
-                        icon={Route}
-                        label="Distance"
-                        value={workout.distanceLabel}
-                      />
-                      <WorkoutStat
-                        icon={Gauge}
-                        label="Effort"
-                        value={String(workout.effort)}
-                      />
-                      <span className="sr-only">Open activity detail</span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-[28px] border border-white/[0.04] bg-app-card p-8 text-center shadow-card">
-              <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-app-orange text-white">
-                <Bike className="size-7" aria-hidden="true" />
-              </span>
-              <h2 className="mt-5 text-2xl font-bold text-white">
-                {isConnected ? "No workouts match this view" : "Connect Strava"}
-              </h2>
-              <p className="mx-auto mt-2 max-w-md text-sm text-app-secondary">
-                {isConnected
-                  ? "Try a wider date range or clear the search to see more synced activity."
-                  : "Once Strava is connected, this page becomes your searchable activity log."}
-              </p>
-            </div>
-          )}
-        </section>
-      </div>
-      {isConnected ? <FloatingActionButton href="/nutrition" /> : null}
-    </main>
-  );
-}
-
-function WorkoutStat({
-  icon: Icon,
-  label,
-  value
-}: {
-  icon: typeof Flame;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-[22px] bg-black/24 p-4">
-      <div className="flex items-center gap-2 text-app-muted">
-        <Icon className="size-4" aria-hidden="true" />
-        <span className="text-[0.68rem] font-bold uppercase tracking-[0.14em]">
-          {label}
-        </span>
-      </div>
-      <p className="mt-3 text-lg font-bold text-white">{value}</p>
-    </div>
+                        </Link>
+                        <span className="cu-helper mt-1 block">
+                          {workout.type} · {workout.dateLabel}, {workout.startTime}
+                          <span className="md:hidden">
+                            {" "}· {workout.durationLabel} · {workout.distanceLabel}
+                          </span>
+                        </span>
+                      </StructuredListCell>
+                      <StructuredListCell>
+                        <Tag type={effortTagType[workout.badge]} size="sm">
+                          {workout.badge}
+                        </Tag>
+                      </StructuredListCell>
+                      <StructuredListCell className="cu-mono hidden md:table-cell">
+                        {workout.durationLabel}
+                      </StructuredListCell>
+                      <StructuredListCell className="cu-mono hidden md:table-cell">
+                        {workout.distanceLabel}
+                      </StructuredListCell>
+                      <StructuredListCell className="cu-mono hidden lg:table-cell">
+                        {workout.effort}
+                      </StructuredListCell>
+                      <StructuredListCell className="cu-mono text-right">
+                        {workout.calories == null
+                          ? "—"
+                          : `+${workout.calories.toLocaleString("en-US")}`}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                  ))}
+                </StructuredListBody>
+              </StructuredListWrapper>
+            ) : (
+              <div className="mt-4 rounded-[22px] bg-black/30 p-8 text-center">
+                <p className="cu-heading-03">
+                  {isConnected ? "No workouts match this view" : "Connect Strava"}
+                </p>
+                <p className="cu-body-01 mx-auto mt-2 max-w-md text-cds-text-secondary">
+                  {isConnected
+                    ? "Try a wider date range or clear the search to see more synced activity."
+                    : "Once Strava is connected, this page becomes your searchable activity log."}
+                </p>
+              </div>
+            )}
+          </Tile>
+        </Column>
+      </Grid>
+    </PageShell>
   );
 }

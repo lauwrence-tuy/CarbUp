@@ -19,9 +19,9 @@ import { ArrowRight } from "@carbon/icons-react";
 import type { CalendarDay } from "@/components/dashboard/weekly-calendar";
 import type { Workout } from "@/components/dashboard/workout-history-card";
 import type { NutritionTotals } from "@/components/nutrition/nutrition-diary-storage";
-import type { EffortBadge } from "@/lib/workout-metrics";
 import { getMacroTargets, resolveBaseCalories } from "@/lib/nutrition-targets";
 import { CarbonSyncButton } from "./sync-button";
+import { effortTagType, StatTile } from "./page-shell";
 
 export type DashboardBodyProps = {
   baseCalories: number;
@@ -36,12 +36,6 @@ export type DashboardBodyProps = {
 
 const emptyTotals: NutritionTotals = { calories: 0, protein: 0, carbs: 0, fat: 0 };
 
-const effortTagType: Record<EffortBadge, "green" | "blue" | "magenta" | "red"> = {
-  Easy: "green",
-  Moderate: "blue",
-  Hard: "magenta",
-  "Very Hard": "red"
-};
 
 function formatNumber(value: number) {
   return Math.round(value).toLocaleString("en-US");
@@ -276,20 +270,3 @@ export function DashboardBody({
   );
 }
 
-function StatTile({
-  label,
-  value,
-  helper
-}: {
-  label: string;
-  value: string;
-  helper: string;
-}) {
-  return (
-    <Tile className="!p-6">
-      <p className="cu-label">{label}</p>
-      <p className="cu-number mt-2">{value}</p>
-      <p className="cu-helper mt-1">{helper}</p>
-    </Tile>
-  );
-}

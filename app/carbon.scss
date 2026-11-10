@@ -29,6 +29,7 @@
 @use '@carbon/react/scss/components/link';
 @use '@carbon/react/scss/components/notification';
 @use '@carbon/react/scss/components/progress-bar';
+@use '@carbon/react/scss/components/search';
 @use '@carbon/react/scss/components/structured-list';
 @use '@carbon/react/scss/components/tag';
 @use '@carbon/react/scss/components/tile';
@@ -144,6 +145,28 @@ $on-yellow: #000000;
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 28px;
   box-shadow: var(--cu-shadow-card);
+}
+
+// Search: rounded inset field.
+.cds--search .cds--search-input {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 9999px;
+  background-color: rgba(0, 0, 0, 0.3);
+  color: #ffffff;
+  font-weight: 600;
+
+  &:focus {
+    outline: 2px solid $yellow;
+    outline-offset: -2px;
+  }
+}
+
+.cds--search-close {
+  border-radius: 9999px;
+}
+
+.cds--search-close::before {
+  display: none;
 }
 
 // Progress bars: rounded tracks.

@@ -72,7 +72,9 @@ export function CarbonHeader({ isConnected }: CarbonHeaderProps) {
                 <Settings className="size-5" aria-hidden="true" />
               </Link>
             ) : (
-              <Link
+              // Plain <a>: a Next <Link> to an API route fires a client fetch first,
+              // which hits /api/strava/auth twice and can mismatch the OAuth state.
+              <a
                 href="/api/strava/auth"
                 aria-label="Connect Strava"
                 className="inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full bg-cds-interactive px-4 text-sm font-bold text-black shadow-[var(--cu-shadow-glow)] transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:px-5"
@@ -80,7 +82,7 @@ export function CarbonHeader({ isConnected }: CarbonHeaderProps) {
                 <span className="sm:hidden">Connect</span>
                 <span className="hidden sm:inline">Connect Strava</span>
                 <ArrowRight className="hidden size-4 sm:block" aria-hidden="true" />
-              </Link>
+              </a>
             )}
             <button
               type="button"
