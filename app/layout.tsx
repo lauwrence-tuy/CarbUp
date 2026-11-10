@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import "./carbon.scss";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://carb-up-lilac.vercel.app"),
+  metadataBase: new URL("https://carbup.dev"),
   applicationName: "CarbUp",
   title: "CarbUp",
   description:
@@ -62,7 +63,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="cds--g100">
       <body>
         {children}
         <Analytics />

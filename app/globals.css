@@ -4,23 +4,8 @@
 
 :root {
   color-scheme: dark;
-  --bg-primary: #000000;
-  --bg-secondary: #111111;
-  --card-bg: #17181c;
-  --card-hover: #1e2025;
-  --green: #FFDD00;
-  --green-soft: #FFE766;
-  --orange: #f97316;
-  --red: #ef4444;
-  --purple: #a855f7;
+  /* Theme colours live in app/carbon.scss. --blue is the Trends "form" line. */
   --blue: #60a5fa;
-  --yellow: #FFDD00;
-  --text-primary: #ffffff;
-  --text-secondary: #b5b5b5;
-  --text-muted: #777777;
-  --border: rgba(255, 255, 255, 0.06);
-  --background: var(--bg-primary);
-  --foreground: var(--text-primary);
 }
 
 * {
@@ -33,11 +18,10 @@ html {
 
 body {
   margin: 0;
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--cds-background);
+  color: var(--cds-text-primary);
   font-family: Inter, "SF Pro Display", system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-feature-settings: "ss01" on, "cv01" on;
   text-rendering: optimizeLegibility;
 }
 
@@ -54,8 +38,8 @@ textarea {
 }
 
 ::selection {
-  background: rgba(255, 221, 0, 0.35);
-  color: var(--text-primary);
+  background: var(--cds-highlight);
+  color: var(--cds-text-primary);
 }
 
 @keyframes fill-progress {
@@ -82,4 +66,12 @@ textarea {
 
 .animate-rise-in {
   animation: rise-in 420ms ease both;
+}
+
+/* Carbon's reset sets `border-style: none` on most elements, which hides
+   Tailwind border utilities (they only set a width). Restore Tailwind's
+   default solid style; widths stay 0 unless a border class is used. */
+html, body, div, span, p, a, ol, ul, li, section, header, footer, nav,
+article, aside, main, h1, h2, h3, h4, h5, h6, form, label, fieldset {
+  border-style: solid;
 }

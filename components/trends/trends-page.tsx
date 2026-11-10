@@ -1,20 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import {
-  Activity,
-  BarChart3,
-  CalendarDays,
-  Flame,
-  Gauge,
-  LineChart,
-  PieChart,
-  Timer,
-  TrendingUp
-} from "lucide-react";
-import { MetricCard } from "@/components/ui/metric-card";
-import { FloatingActionButton } from "@/components/ui/floating-action-button";
-import { AppHeader } from "@/components/app-header";
+import { Column, Grid, Tag, Tile } from "@carbon/react";
+import { PageShell, PageTitle, StatTile } from "@/components/carbon/page-shell";
 import {
   type TrendsPageProps,
   buildInsights,
@@ -29,12 +17,13 @@ import {
 } from "@/lib/trends";
 import { FitnessFreshnessCard } from "./fitness-freshness-card";
 
-const toneClasses = {
-  green: "bg-app-green text-black",
-  orange: "bg-app-orange text-white",
-  blue: "bg-app-blue text-black",
-  purple: "bg-app-purple text-white"
-};
+// Insight tone → Carbon Tag colour.
+const insightTagType = {
+  green: "green",
+  orange: "magenta",
+  blue: "blue",
+  purple: "purple"
+} as const;
 
 
 
@@ -118,288 +107,190 @@ export function TrendsPage({
     1
   );
   return (
-    <main className="min-h-screen bg-app-bg text-white">
-      <div className="mx-auto min-h-screen w-full max-w-7xl px-5 pb-24 pt-6 sm:px-8 lg:px-10">
-        <AppHeader isConnected={isConnected} active="Trends" />
+    <PageShell isConnected={isConnected}>
+      <PageTitle
+        label="Trends"
+        title="Training patterns"
+        description="How calories, workout volume, sport mix and consistency are moving across your synced Strava history."
+        actions={
+          <span className="inline-flex min-h-10 items-center rounded-full bg-cds-layer px-4 text-sm font-bold text-cds-interactive">
+            {selectedTimeframe}
+          </span>
+        }
+      />
 
-        <section className="mt-8">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h1 className="text-4xl font-bold leading-none text-white sm:text-5xl">
-                Training patterns
-              </h1>
-              <p className="mt-3 max-w-2xl text-base text-app-secondary">
-                See how calories, workout volume, sport mix, and consistency are
-                moving across your synced Strava history.
-              </p>
-            </div>
-            <span className="rounded-full border border-app-green/35 bg-black/35 px-5 py-3 text-sm font-bold text-app-green">
-              Last 3 months
-            </span>
-          </div>
-        </section>
-
-        <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard
-            label="Calories"
-            value={summary.totalCalories.toLocaleString()}
-            detail={`${summary.averageCaloriesPerWorkout.toLocaleString()} kcal per workout`}
-            icon={Flame}
-            tone="green"
-          />
-          <MetricCard
-            label="Workouts"
-            value={summary.totalWorkouts.toLocaleString()}
-            detail={`${summary.activeDays} active days`}
-            icon={CalendarDays}
-            tone="blue"
-          />
-          <MetricCard
-            label="Moving Time"
-            value={formatDuration(summary.totalDurationMinutes)}
-            detail={`${summary.averageCaloriesPerHour.toLocaleString()} kcal per hour`}
-            icon={Timer}
-            tone="purple"
-          />
-          <MetricCard
-            label="Momentum"
-            value={insights[0]?.value ?? "Ready"}
-            detail={insights[0]?.detail ?? "sync workouts to calculate"}
-            icon={TrendingUp}
-            tone="orange"
-          />
-        </section>
-
-        <FitnessFreshnessCard
-          points={freshnessChartPoints}
-          selectedTimeframe={selectedTimeframe}
-        />
-
-        <section className="mt-6 grid items-start gap-5 xl:grid-cols-[minmax(0,1.08fr)_minmax(420px,0.92fr)]">
-          <div className="space-y-5">
-          <article className="rounded-[28px] border border-white/[0.04] bg-app-card p-6 shadow-card">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <span className="flex size-12 items-center justify-center rounded-2xl bg-app-green text-black">
-                  <BarChart3 className="size-6" aria-hidden="true" />
-                </span>
-                <div>
-                  <h2 className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-white">
-                    Weekly calories
-                  </h2>
-                  <p className="mt-1 text-sm text-app-muted">
-                    {selectedTimeframe}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 flex h-40 items-end gap-3">
-              {weeklyPoints.map((point) => (
-                <div
-                  key={point.label}
-                  className="flex h-full flex-1 flex-col justify-end gap-3"
-                >
-                  <div className="flex flex-1 items-end rounded-full bg-black/24 p-1">
-                    <div
-                      className="w-full rounded-full bg-app-green shadow-glow"
-                      style={{
-                        height: `${Math.max(
-                          point.calories > 0
-                            ? (point.calories / maxWeeklyCalories) * 100
-                            : 0,
-                          point.calories > 0 ? 10 : 0
-                        )}%`
-                      }}
-                    />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xs font-bold text-white">
-                      {formatCompactCalories(point.calories)}
-                    </p>
-                    <p className="mt-1 text-[0.65rem] font-bold uppercase tracking-wide text-app-muted">
-                      {point.label}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </article>
-
-          <article className="rounded-[28px] border border-white/[0.04] bg-app-card p-6 shadow-card">
-            <div className="flex items-center gap-3">
-              <span className="flex size-12 items-center justify-center rounded-2xl bg-app-purple text-white">
-                <LineChart className="size-6" aria-hidden="true" />
-              </span>
-              <div>
-                <h2 className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-white">
-                  Monthly load
-                </h2>
-                <p className="mt-1 text-sm text-app-muted">
-                  {selectedTimeframe} load proxy
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-7 space-y-4">
-              {monthlyPoints.map((point) => (
-                <div
-                  key={point.label}
-                  className="grid grid-cols-[74px_minmax(0,1fr)_74px] items-center gap-4"
-                >
-                  <span className="text-sm font-bold text-app-secondary">
-                    {point.label}
-                  </span>
-                  <div className="h-4 rounded-full bg-black/35">
-                    <div
-                      className="h-full rounded-full bg-app-purple"
-                      style={{
-                        width: `${Math.max(
-                          point.load > 0 ? (point.load / maxMonthlyLoad) * 100 : 0,
-                          point.load > 0 ? 5 : 0
-                        )}%`
-                      }}
-                    />
-                  </div>
-                  <span className="text-right text-sm font-bold text-white">
-                    {point.load}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </article>
-
-          <article className="rounded-[28px] border border-white/[0.04] bg-app-card p-6 shadow-card">
-            <div className="flex items-center gap-3">
-              <span className="flex size-12 items-center justify-center rounded-2xl bg-app-green text-black">
-                <Gauge className="size-6" aria-hidden="true" />
-              </span>
-              <div>
-                <h2 className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-white">
-                  Efficiency
-                </h2>
-                <p className="mt-1 text-sm text-app-muted">
-                  Past 4 weeks, one week per bucket
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-6 grid gap-3 sm:grid-cols-4">
-              {efficiencyPoints.map((point) => (
-                <div key={point.label} className="rounded-[22px] bg-black/24 p-4">
-                  <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-app-muted">
-                    {point.label}
-                  </p>
-                  <p className="mt-3 text-2xl font-bold text-white">
-                    {point.workouts}
-                  </p>
-                  <p className="mt-1 text-sm text-app-secondary">
-                    workouts
-                  </p>
-                  <p className="mt-4 text-sm font-semibold text-app-green">
-                    {formatCompactCalories(point.calories)} kcal
-                  </p>
-                  <p className="mt-1 text-xs font-semibold text-app-muted">
-                    {formatDuration(point.durationMinutes)} -{" "}
-                    {point.distanceMiles.toFixed(1)} mi
-                  </p>
-                </div>
-              ))}
-            </div>
-          </article>
+      <Grid className="mt-8">
+        <Column sm={4} md={8} lg={16}>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatTile
+              label="Calories"
+              value={summary.totalCalories.toLocaleString("en-US")}
+              helper={`${summary.averageCaloriesPerWorkout.toLocaleString("en-US")} kcal per workout`}
+              accent
+            />
+            <StatTile
+              label="Workouts"
+              value={summary.totalWorkouts.toLocaleString("en-US")}
+              helper={`${summary.activeDays} active days`}
+            />
+            <StatTile
+              label="Moving time"
+              value={formatDuration(summary.totalDurationMinutes)}
+              helper={`${summary.averageCaloriesPerHour.toLocaleString("en-US")} kcal per hour`}
+            />
+            <StatTile
+              label="Momentum"
+              value={insights[0]?.value ?? "Ready"}
+              helper={insights[0]?.detail ?? "sync workouts to calculate"}
+            />
           </div>
 
-          <aside className="space-y-5">
-            <section className="rounded-[28px] border border-white/[0.04] bg-app-card p-6 shadow-card">
-              <div className="flex items-center gap-3">
-                <span className="flex size-12 items-center justify-center rounded-2xl bg-app-blue text-black">
-                  <Activity className="size-6" aria-hidden="true" />
-                </span>
-                <div>
-                  <h2 className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-white">
-                    Insights
-                  </h2>
-                  <p className="mt-1 text-sm text-app-muted">
-                    Current readout
-                  </p>
-                </div>
-              </div>
+          <FitnessFreshnessCard
+            points={freshnessChartPoints}
+            selectedTimeframe={selectedTimeframe}
+          />
 
-              <div className="mt-5 space-y-3">
-                {insights.map((insight) => (
-                  <div
-                    key={insight.label}
-                    className="rounded-[22px] bg-black/24 p-4"
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-sm font-bold text-white">
-                        {insight.label}
-                      </span>
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-bold ${toneClasses[insight.tone]}`}
-                      >
-                        {insight.value}
-                      </span>
+          {/* Paired rows keep the two columns the same height. */}
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <Tile className="flex h-full flex-col !p-6">
+              <CardHeading title="Weekly calories" helper={selectedTimeframe} />
+              <div className="mt-8 flex min-h-40 flex-1 items-end gap-2 sm:gap-3">
+                {weeklyPoints.map((point) => (
+                  <div key={point.label} className="flex h-full flex-1 flex-col justify-end gap-3">
+                    <div className="flex flex-1 items-end rounded-full bg-black/30 p-1">
+                      <div
+                        className="w-full rounded-full bg-cds-interactive"
+                        style={{
+                          height: `${Math.max(
+                            point.calories > 0 ? (point.calories / maxWeeklyCalories) * 100 : 0,
+                            point.calories > 0 ? 10 : 0
+                          )}%`
+                        }}
+                      />
                     </div>
-                    <p className="mt-2 text-sm text-app-muted">
-                      {insight.detail}
-                    </p>
+                    <div className="text-center">
+                      <p className="cu-mono text-xs text-white">
+                        {formatCompactCalories(point.calories)}
+                      </p>
+                      <p className="mt-1 text-[0.65rem] font-bold uppercase tracking-wide text-cds-text-helper">
+                        {point.label}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
-            </section>
+            </Tile>
 
-            <section className="rounded-[28px] border border-white/[0.04] bg-app-card p-6 shadow-card">
-              <div className="flex items-center gap-3">
-                <span className="flex size-12 items-center justify-center rounded-2xl bg-app-orange text-white">
-                  <PieChart className="size-6" aria-hidden="true" />
-                </span>
-                <div>
-                  <h2 className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-white">
-                    Sport mix
-                  </h2>
-                  <p className="mt-1 text-sm text-app-muted">
-                    Calories by type
-                  </p>
-                </div>
+            <Tile className="h-full !p-6">
+              <CardHeading title="Load by period" helper={`${selectedTimeframe}, load proxy`} />
+              <div className="mt-6 space-y-4">
+                {monthlyPoints.map((point) => (
+                  <div
+                    key={point.label}
+                    className="grid grid-cols-[64px_minmax(0,1fr)_56px] items-center gap-4"
+                  >
+                    <span className="text-sm font-bold text-cds-text-secondary">{point.label}</span>
+                    <div className="h-3 rounded-full bg-black/30">
+                      <div
+                        className="h-full rounded-full bg-white"
+                        style={{
+                          width: `${Math.max(
+                            point.load > 0 ? (point.load / maxMonthlyLoad) * 100 : 0,
+                            point.load > 0 ? 5 : 0
+                          )}%`
+                        }}
+                      />
+                    </div>
+                    <span className="cu-mono text-right text-sm text-white">{point.load}</span>
+                  </div>
+                ))}
               </div>
+            </Tile>
 
+            <Tile className="flex h-full flex-col !p-6">
+              <CardHeading title="Efficiency" helper="Past 4 weeks, one week per bucket" />
+              <div className="mt-6 grid flex-1 gap-3 sm:grid-cols-4">
+                {efficiencyPoints.map((point) => (
+                  <div
+                    key={point.label}
+                    className="flex flex-col justify-between gap-4 rounded-[22px] bg-black/30 p-4"
+                  >
+                    <div>
+                      <p className="cu-label">{point.label}</p>
+                      <p className="cu-number mt-3 !text-2xl">{point.workouts}</p>
+                      <p className="cu-helper">workouts</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-cds-interactive">
+                        {formatCompactCalories(point.calories)} kcal
+                      </p>
+                      <p className="cu-helper mt-1">
+                        {formatDuration(point.durationMinutes)} · {point.distanceMiles.toFixed(1)} mi
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Tile>
+
+            <Tile className="h-full !p-6">
+              <CardHeading title="Insights" helper="Current readout" />
+              <div className="mt-5 space-y-3">
+                {insights.map((insight) => (
+                  <div key={insight.label} className="rounded-[22px] bg-black/30 p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-sm font-bold text-white">{insight.label}</span>
+                      <Tag type={insightTagType[insight.tone]} size="sm" className="shrink-0">
+                        {insight.value}
+                      </Tag>
+                    </div>
+                    <p className="cu-helper mt-2">{insight.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </Tile>
+
+            <Tile className="!p-6 lg:col-span-2">
+              <CardHeading title="Sport mix" helper="Calories by type" />
               <div className="mt-5 space-y-4">
                 {sportTrends.length > 0 ? (
                   sportTrends.map((sport) => (
                     <div key={sport.type}>
                       <div className="mb-2 flex items-center justify-between gap-4">
-                        <span className="text-sm font-bold text-white">
-                          {sport.type}
-                        </span>
-                        <span className="text-sm font-semibold text-app-muted">
-                          {sport.calories.toLocaleString()} kcal
+                        <span className="text-sm font-bold text-white">{sport.type}</span>
+                        <span className="cu-mono text-sm text-cds-text-secondary">
+                          {sport.calories.toLocaleString("en-US")} kcal
                         </span>
                       </div>
-                      <div className="h-3 rounded-full bg-black/35">
+                      <div className="h-3 rounded-full bg-black/30">
                         <div
-                          className="h-full rounded-full bg-app-orange"
+                          className="h-full rounded-full bg-cds-interactive"
                           style={{
-                            width: `${Math.max(
-                              (sport.calories / sportTotalCalories) * 100,
-                              4
-                            )}%`
+                            width: `${Math.max((sport.calories / sportTotalCalories) * 100, 4)}%`
                           }}
                         />
                       </div>
                     </div>
                   ))
                 ) : (
-                  <p className="rounded-[22px] bg-black/24 p-4 text-sm text-app-muted">
+                  <p className="cu-body-01 rounded-[22px] bg-black/30 p-4 text-cds-text-secondary">
                     Connect Strava to see your sport mix.
                   </p>
                 )}
               </div>
-            </section>
-          </aside>
-        </section>
-      </div>
-      {isConnected ? <FloatingActionButton href="/nutrition" /> : null}
-    </main>
+            </Tile>
+          </div>
+        </Column>
+      </Grid>
+    </PageShell>
+  );
+}
+
+function CardHeading({ title, helper }: { title: string; helper: string }) {
+  return (
+    <div>
+      <h2 className="cu-heading-02">{title}</h2>
+      <p className="cu-helper mt-1">{helper}</p>
+    </div>
   );
 }

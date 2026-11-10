@@ -12,6 +12,35 @@ const STREAM_KEYS = [
   "temp"
 ].join(",");
 
+// Strava returns one sample per second, so a long ride is tens of thousands of
+// points per stream. The page draws at most ~520 chart points and ~1,400
+// route points, so thin the streams here instead of shipping megabytes of
+// JSON to the browser (and into the cache). Max/avg use the full streams.
+const MAX_CHART_POINTS = 1000;
+const MAX_ROUTE_POINTS = 1400;
+
+/** Every nth point so at most `maxPoints` remain, always keeping the last. */
+function thin<T>(points: T[], maxPoints: number) {
+  if (points.length <= maxPoints) {
+    return points;
+  }
+
+  const step = Math.ceil(points.length / maxPoints);
+  const thinned = points.filter((_, index) => index % step === 0);
+
+  if (thinned.at(-1) !== points.at(-1)) {
+    thinned.push(points.at(-1)!);
+  }
+
+  return thinned;
+}
+
+function roundTo(value: number, digits: number) {
+  const factor = 10 ** digits;
+
+  return Math.round(value * factor) / factor;
+}
+
 type Stream<T> = {
   data?: T[];
 };
@@ -246,7 +275,10 @@ function buildChart({
     unit,
     color,
     digits,
-    points,
+    points: thin(points, MAX_CHART_POINTS).map((point) => ({
+      x: roundTo(point.x, 3),
+      y: roundTo(point.y, 2)
+    })),
     maxLabel: max == null ? "--" : formatNumber(max, digits),
     averageLabel: avg == null ? "--" : formatNumber(avg, digits)
   };
@@ -265,6 +297,12 @@ export async function getStravaActivityVisualData({
     fetchActivityDetail(accessToken, stravaActivityId),
     fetchActivityStreams(accessToken, stravaActivityId)
   ]);
+
+  // No detail means Strava failed (token, rate limit, outage). Throw so the
+  // caller shows the page without visuals and the failure is never cached.
+  if (!detail) {
+    throw new Error(`Strava activity ${stravaActivityId} could not be loaded.`);
+  }
   const totalDistanceMeters =
     streams?.distance?.data?.at(-1) ??
     detail?.distance ??
@@ -342,7 +380,10 @@ export async function getStravaActivityVisualData({
   ];
 
   return {
-    route,
+    route: thin(route, MAX_ROUTE_POINTS).map((point) => ({
+      lat: roundTo(point.lat, 5),
+      lng: roundTo(point.lng, 5)
+    })),
     charts,
     totalDistanceMiles: totalDistanceMeters
       ? metersToMiles(totalDistanceMeters)

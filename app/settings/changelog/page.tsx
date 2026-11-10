@@ -11,6 +11,102 @@ export default function ChangelogPage() {
       title="What's New"
       description={`You're on version ${APP_VERSION}.`}
     >
+      <InfoBlock title="0.3.0 — The redesign">
+        <ul className="ml-4 list-disc space-y-1.5">
+          <li>
+            A new look on every page: rounded dark cards, bold type, and yellow
+            buttons, with the same header and navigation everywhere. On phones
+            the navigation opens from a menu button.
+          </li>
+          <li>
+            CarbUp has a new address: carbup.dev. The old link takes you there,
+            and you&rsquo;ll be asked to connect Strava once more.
+          </li>
+          <li>
+            New home page that explains how CarbUp works, with a live
+            &ldquo;today&rdquo; preview, a feature overview, and answers to
+            common questions. If you&rsquo;re already connected you go straight
+            to your dashboard.
+          </li>
+          <li>
+            New sample dashboard (&ldquo;See sample day&rdquo;) so you can try
+            CarbUp before connecting Strava.
+          </li>
+          <li>
+            Redesigned dashboard: pick a day from the week bar at the top, then
+            see your fuel (calories left, base + rides = target, and macros) next
+            to what you&rsquo;ve eaten at each meal, with that day&rsquo;s
+            workouts below.
+          </li>
+          <li>
+            The day&rsquo;s intensity tag now uses the same scale as your
+            workouts, so a Very Hard ride makes a Very Hard day.
+          </li>
+          <li>
+            Nutrition has the same week bar, showing calories eaten each day,
+            with arrows to look back by week. Today is always on the right.
+          </li>
+          <li>
+            Logging food is easier to follow: pick a food on the left, then set
+            the amount and add it on the right, just above your food diary.
+            &ldquo;Create a food&rdquo; and &ldquo;Scan a barcode&rdquo; sit
+            side by side under search.
+          </li>
+          <li>
+            Carbs, protein, and fat have their own colours (yellow, blue, and
+            purple) on the dashboard and Nutrition pages.
+          </li>
+          <li>
+            Workouts has search, date range, and activity type filters, and a
+            cleaner list with intensity tags.
+          </li>
+          <li>
+            Trends cards line up in even rows, and the Fitness &amp; Freshness
+            hover readout is no longer squished.
+          </li>
+          <li>
+            Settings is simpler: profile and goal side by side, a live preview
+            of your targets, and Strava, TrainingPeaks, and the app version
+            together in one card.
+          </li>
+          <li>
+            Faster everywhere: pages load only what they show, and each page
+            now shows its layout the moment you click instead of waiting.
+          </li>
+          <li>
+            Strava sync is much quicker: after your first import it only
+            fetches recent activities and saves only what changed.
+          </li>
+          <li>
+            Workout pages show your stats straight away, with the route map
+            and charts filling in a moment later, and open almost instantly
+            the second time.
+          </li>
+          <li>
+            Nutrition keeps the last 12 weeks; the week arrows stop there.
+          </li>
+          <li>
+            Fixed: older Nutrition weeks could be missing your ride calories.
+          </li>
+          <li>
+            Fixed: saving Settings a second time could switch your goal back to
+            the one the page opened with.
+          </li>
+          <li>
+            Fixed: connecting Strava could sometimes fail with &ldquo;login
+            session expired&rdquo;.
+          </li>
+          <li>
+            Fixed: the Nutrition portion menu could list the same serving twice,
+            and two pages logged errors behind the scenes.
+          </li>
+          <li>
+            Better keyboard and screen reader support, including labelled
+            settings menus and chart activity dots you can tab to.
+          </li>
+        </ul>
+      </InfoBlock>
+
       <InfoBlock title="0.2.2 — Consistency and cleanup">
         <ul className="ml-4 list-disc space-y-1.5">
           <li>

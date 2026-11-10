@@ -20,21 +20,53 @@ type ActivityRow = {
 type FoodLogRow = Parameters<typeof groupFoodLogsByDate>[0][number];
 type SavedMealRow = Parameters<typeof savedMealRowToRecord>[0];
 
+/**
+ * How far back Nutrition loads the diary (and the activities that set each
+ * day's target). Week paging stops here, and Recent/Frequent come from it.
+ */
+const NUTRITION_HISTORY_DAYS = 84;
+
 export default async function NutritionRoute() {
   const userId = await getCurrentUserId();
+  const historyStart = new Date(Date.now() - (NUTRITION_HISTORY_DAYS - 1) * 24 * 60 * 60 * 1000);
+  const historyStartKey = getLocalDateKey(historyStart);
+  // A day of slack so activities near midnight in the app's time zone count.
+  const activitiesFrom = new Date(historyStart.getTime() - 24 * 60 * 60 * 1000);
   const user = userId
     ? await prisma.user.findUnique({
         where: { id: userId },
-        include: {
+        select: {
+          maintenanceCalories: true,
+          goalAdjustment: true,
           activities: {
+            where: { startDate: { gte: activitiesFrom } },
             orderBy: { startDate: "desc" },
-            take: 30
+            select: { startDate: true, calories: true }
           },
           foodLogs: {
-            orderBy: { createdAt: "asc" }
+            where: { dateKey: { gte: historyStartKey } },
+            orderBy: { createdAt: "asc" },
+            select: {
+              id: true,
+              dateKey: true,
+              foodId: true,
+              name: true,
+              brand: true,
+              serving: true,
+              baseGrams: true,
+              grams: true,
+              calories: true,
+              protein: true,
+              carbs: true,
+              fat: true,
+              itemsJson: true,
+              meal: true,
+              source: true
+            }
           },
           savedMeals: {
-            orderBy: { createdAt: "desc" }
+            orderBy: { createdAt: "desc" },
+            select: { id: true, name: true, ingredientsJson: true }
           },
           customFoods: {
             orderBy: { updatedAt: "desc" },
@@ -43,6 +75,17 @@ export default async function NutritionRoute() {
         }
       })
     : null;
+  // Every day with entries (dates only), so the one-time localStorage
+  // migration never re-uploads a day that is older than the loaded window.
+  const loggedDateKeys = userId
+    ? (
+        await prisma.foodLog.findMany({
+          where: { userId },
+          distinct: ["dateKey"],
+          select: { dateKey: true }
+        })
+      ).map((row) => row.dateKey)
+    : [];
 
   if (!user) {
     return <StravaLoginRequiredPage pageName="Nutrition" />;
@@ -55,10 +98,9 @@ export default async function NutritionRoute() {
     activities.reduce<Record<string, number>>((totals, activity) => {
       const key = getLocalDateKey(activity.startDate);
 
-      return {
-        ...totals,
-        [key]: (totals[key] ?? 0) + Math.round(activity.calories ?? 0)
-      };
+      totals[key] = (totals[key] ?? 0) + Math.round(activity.calories ?? 0);
+
+      return totals;
     }, {});
 
   return (
@@ -71,6 +113,8 @@ export default async function NutritionRoute() {
       initialFrequentFoods={frequentFoodsFromLogs(foodLogs)}
       initialCustomFoods={(user.customFoods ?? []).map(projectFood)}
       goalAdjustment={user?.maintenanceCalories == null ? 0 : user.goalAdjustment}
+      historyStartKey={historyStartKey}
+      loggedDateKeys={loggedDateKeys}
       isConnected={Boolean(user)}
     />
   );

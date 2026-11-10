@@ -4,6 +4,89 @@ All notable changes to CarbUp are recorded here. Versioning is
 [semver](https://semver.org/); the app is pre-1.0, so minor versions carry
 feature work.
 
+## [0.3.0] — The redesign
+
+### Changed
+- Every page rebuilt on IBM Carbon React components (`@carbon/react`,
+  `@carbon/styles`, `@carbon/icons-react`), re-skinned to the CarbUp look in
+  `app/carbon.scss`: black background, rounded `#17181c` cards, bold type,
+  yellow pill buttons. Tailwind stays for layout, mapped to the theme's CSS
+  custom properties (`cds-*` colours).
+- Shared page frame (`components/carbon/page-shell.tsx`: `PageShell`,
+  `PageTitle`, `StatTile`, `PillGroup`) and header
+  (`components/carbon/carbon-header.tsx`) with a phone menu.
+- Landing page (`/`) is a marketing page: hero with a "today" panel, features,
+  dashboard preview, how it works, FAQ. Signed-in visitors are redirected to
+  `/dashboard`.
+- Dashboard: full-width `WeekBar` (`components/carbon/week-bar.tsx`) is the
+  page heading; Fuel card (remaining, eaten, base + rides = target, macros);
+  new Today's meals card (foods per meal, from `mealsByDate`); Workouts with
+  time and distance. Day intensity tag uses `getEffortBadge` on the day's
+  total load (was a separate weekly scale).
+- Nutrition: the same `WeekBar` with kcal eaten per day and week paging
+  (stops at the current week; replaces `DaySpreadWidget`, which re-centred on
+  every click and showed future days). Portion panel moved into a Selected
+  food card above the diary; Create a food and Scan a barcode on one row.
+- Macro bars: carbs yellow, protein blue, fat purple.
+- Workouts: Carbon Search, pill date-range and type filters, structured list
+  with intensity tags. Workout detail, Trends, Settings, the five Settings info
+  pages, 404 and error pages moved to the shared frame.
+- Trends cards in equal-height paired rows; "Monthly load" renamed "Load by
+  period" (its buckets are about two weeks).
+- Settings: one-column flow with an "Account & integrations" card replacing
+  the sidebar and the separate Integrations card.
+- The app's address is now `carbup.dev` (`metadataBase` in `app/layout.tsx`,
+  README, `.env.example`); `carb-up-lilac.vercel.app` redirects there.
+- Faster pages: each page loads only the rows and columns it shows
+  (Dashboard: the week's activities and food logs; Nutrition: the last 12
+  weeks, which is now how far week paging goes; Trends/Workouts: only the
+  columns they use, no tokens). Date formatters in `lib/date.ts` are created
+  once instead of on every call.
+- Strava sync is incremental: after the first 183-day import it fetches from
+  7 days before the newest stored activity, and writes only new activities
+  (one `createMany`) and changed ones, instead of re-upserting every row.
+- Workout detail renders its stats immediately and streams the route map and
+  charts (`Suspense` + `use`). Route and streams are thinned and rounded on
+  the server (the page was ~5 MB of HTML, now ~330 KB) and cached per
+  activity for 30 days (`lib/activity-visual-cache.ts`, `unstable_cache`).
+
+### Added
+- Loading screens (`loading.tsx`) for Dashboard, Nutrition, Workouts, Trends,
+  workout detail and Settings, built from `components/carbon/skeleton.tsx`
+  and `components/carbon/page-skeletons.tsx`.
+- `/sample`: full dashboard with sample data anchored on the current date
+  (`lib/sample-day.ts`); sample meals sum to the sample's eaten calories.
+- `lib/dashboard-types.ts` (`Workout`, `CalendarDay`, `MealEntry`,
+  `MealsByDate`).
+
+### Fixed
+- Nutrition: weeks more than about 30 activities back lost their ride
+  calories (the page only loaded the 30 most recent activities).
+- Settings: React 19 resets the form after a server action, snapping the goal
+  radios back to the page-load value, so a second Save stored the old goal.
+  The goal is now submitted through a hidden input.
+- Header and Settings "Connect Strava" used `next/link` to `/api/strava/auth`;
+  the client fetch plus fallback navigation hit the route twice and could
+  mismatch the OAuth state ("login session expired"). Now plain links.
+- Trends hydration error: the chart dot `<title>` had several text children.
+- Fitness & Freshness hover tooltip and activity dots were distorted by the
+  stretched SVG (`preserveAspectRatio="none"`); both are now HTML overlays.
+- Nutrition: duplicate React keys when a food lists the same serving twice;
+  the portion dropdown now shows each serving once.
+- Old landing page: hardcoded "Friday 19" date, exercise calories that
+  disagreed with the workouts total, and a stretched empty card.
+- Carbon's reset set `border-style: none`, hiding every Tailwind border
+  utility; `app/globals.css` restores the solid style.
+- Accessibility: names for the Settings dropdown buttons, keyboard-focusable
+  chart activity dots, visible focus outlines on custom controls.
+
+### Removed
+- Unused components: old app header, old dashboard and its cards, metric card,
+  status badge, floating action button, old Sync button, `DaySpreadWidget`.
+- Unused Tailwind palettes (ember, pine, ink, old greys, shadows) and old CSS
+  variables. Carbon packages' install scripts (IBM telemetry) are blocked in
+  `pnpm-workspace.yaml`.
+
 ## [0.2.2] — Consistency and cleanup
 
 ### Changed

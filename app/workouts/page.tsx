@@ -30,10 +30,20 @@ export default async function WorkoutsRoute() {
   const user = userId
     ? await prisma.user.findUnique({
         where: { id: userId },
-        include: {
+        select: {
           activities: {
             orderBy: { startDate: "desc" },
-            take: 180
+            take: 180,
+            select: {
+              id: true,
+              name: true,
+              type: true,
+              calories: true,
+              movingTime: true,
+              sufferScore: true,
+              distance: true,
+              startDate: true
+            }
           }
         }
       })

@@ -27,14 +27,14 @@ export function SavedMealPicker({
 
   return (
     <section className="mt-5 border-t border-white/[0.06] pt-5">
-      <div className="rounded-[24px] bg-black/24 p-4">
+      <div className="rounded-[24px] bg-black/30 p-4">
         <div className="flex items-center gap-3">
-          <span className="flex size-10 items-center justify-center rounded-2xl bg-app-green text-black">
+          <span className="flex size-10 items-center justify-center rounded-2xl bg-cds-interactive text-black">
             <Apple className="size-5" aria-hidden="true" />
           </span>
           <div>
             <h2 className="text-sm font-bold text-white">Saved meal</h2>
-            <p className="mt-1 text-xs font-semibold text-app-muted">
+            <p className="mt-1 text-xs font-semibold text-cds-text-helper">
               Add a full dish by grams
             </p>
           </div>
@@ -45,7 +45,7 @@ export function SavedMealPicker({
             <label>
               <span className="sr-only">Saved meal</span>
               <select
-                className="min-h-11 w-full rounded-full border border-white/[0.06] bg-black/28 px-4 text-sm font-semibold text-white outline-none focus:border-app-green/60"
+                className="min-h-11 w-full rounded-full border border-white/[0.06] bg-black/30 px-4 text-sm font-semibold text-white outline-none focus:border-cds-interactive"
                 value={selectedMeal.id}
                 onChange={(event) => onSelect(event.target.value)}
               >
@@ -72,7 +72,7 @@ export function SavedMealPicker({
 
             <div className="grid grid-cols-[1fr_auto] gap-2">
               <button
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-app-green px-4 text-sm font-bold text-black shadow-glow transition hover:-translate-y-0.5"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-cds-interactive px-4 text-sm font-bold text-black shadow-[var(--cu-shadow-glow)] transition hover:-translate-y-0.5"
                 type="button"
                 onClick={() => onAdd(selectedMeal, grams)}
               >
@@ -80,7 +80,7 @@ export function SavedMealPicker({
                 Add meal
               </button>
               <button
-                className="flex size-11 items-center justify-center rounded-full bg-white/[0.06] text-app-muted transition hover:bg-app-red/20 hover:text-app-red"
+                className="flex size-11 items-center justify-center rounded-full bg-white/[0.06] text-cds-text-helper transition hover:bg-app-red/20 hover:text-app-red"
                 type="button"
                 aria-label={`Delete saved meal ${selectedMeal.name}`}
                 onClick={() => onRemove(selectedMeal.id)}
@@ -90,7 +90,7 @@ export function SavedMealPicker({
             </div>
           </div>
         ) : (
-          <p className="mt-4 rounded-[20px] bg-app-card px-4 py-4 text-sm text-app-muted">
+          <p className="mt-4 rounded-[20px] bg-cds-layer px-4 py-4 text-sm text-cds-text-helper">
             No saved meals yet.
           </p>
         )}

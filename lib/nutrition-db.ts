@@ -61,10 +61,7 @@ export function groupFoodLogsByDate(
   rows: Array<FoodLogRow & { dateKey: string }>
 ) {
   return rows.reduce<Record<string, FoodLogEntry[]>>((grouped, row) => {
-    grouped[row.dateKey] = [
-      ...(grouped[row.dateKey] ?? []),
-      foodLogRowToEntry(row)
-    ];
+    (grouped[row.dateKey] ??= []).push(foodLogRowToEntry(row));
 
     return grouped;
   }, {});

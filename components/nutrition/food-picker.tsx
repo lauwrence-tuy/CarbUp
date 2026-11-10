@@ -1,4 +1,5 @@
 import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Tile } from "@carbon/react";
 import type {
   CatalogFood,
   MealName
@@ -8,7 +9,7 @@ import { GramsInput, NutritionPreview } from "./nutrition-inputs";
 
 export type BrowseTab = "recent" | "frequent" | "mine";
 
-/** Browse/search results plus the portion panel for the selected food. */
+/** Browse/search results. The portion panel lives in SelectedFoodCard. */
 export function FoodPicker({
   heading,
   isSearching,
@@ -19,12 +20,9 @@ export function FoodPicker({
   emptyMessage,
   errorMessage,
   selectedFood,
-  gramsInput,
-  onGramsInputChange,
   selectedMeal,
   onSelect,
   onAdd,
-  onAddSelected,
   onEditCustom,
   onDeleteCustom
 }: {
@@ -38,29 +36,26 @@ export function FoodPicker({
   emptyMessage: string | null;
   errorMessage: string | null;
   selectedFood: CatalogFood | null;
-  gramsInput: string;
-  onGramsInputChange: (value: string) => void;
   selectedMeal: MealName;
   onSelect: (food: CatalogFood) => void;
   onAdd: (food: CatalogFood) => void;
-  onAddSelected: () => void;
   onEditCustom: (food: CatalogFood) => void;
   onDeleteCustom: (food: CatalogFood) => void;
 }) {
   return (
     <>
       <div className="mt-4 flex items-center justify-between gap-2">
-        <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-app-secondary">
+        <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-cds-text-secondary">
           {heading}
         </p>
         {isSearching ? (
-          <span className="text-xs font-semibold text-app-muted">Searching...</span>
+          <span className="text-xs font-semibold text-cds-text-helper">Searching...</span>
         ) : null}
       </div>
 
       {browseTabs.length > 0 ? (
         <div
-          className={`mt-2 grid gap-2 rounded-full bg-black/28 p-1 ${
+          className={`mt-2 grid gap-2 rounded-full bg-black/30 p-1 ${
             browseTabs.length === 3 ? "grid-cols-3" : "grid-cols-2"
           }`}
         >
@@ -71,8 +66,8 @@ export function FoodPicker({
               aria-pressed={activeBrowseTab === tab}
               className={`min-h-9 rounded-full text-xs font-bold capitalize transition ${
                 activeBrowseTab === tab
-                  ? "bg-app-green text-black"
-                  : "text-app-secondary hover:bg-app-green/10 hover:text-app-green"
+                  ? "bg-cds-interactive text-black"
+                  : "text-cds-text-secondary hover:bg-white/[0.08] hover:text-white"
               }`}
               onClick={() => onBrowseTabChange(tab)}
             >
@@ -82,9 +77,9 @@ export function FoodPicker({
         </div>
       ) : null}
 
-      <div className="mt-2 max-h-[260px] space-y-2 overflow-y-auto pr-1">
+      <div className="mt-2 max-h-[300px] space-y-2 overflow-y-auto pr-1">
         {emptyMessage ? (
-          <p className="rounded-[20px] bg-black/24 px-4 py-4 text-sm text-app-muted">
+          <p className="rounded-[20px] bg-black/30 px-4 py-4 text-sm text-cds-text-helper">
             {emptyMessage}
           </p>
         ) : null}
@@ -109,26 +104,10 @@ export function FoodPicker({
         ))}
       </div>
 
-      <section className="mt-5 border-t border-white/[0.06] pt-5">
-        {selectedFood ? (
-          <PortionPanel
-            food={selectedFood}
-            gramsInput={gramsInput}
-            onGramsInputChange={onGramsInputChange}
-            selectedMeal={selectedMeal}
-            onAdd={onAddSelected}
-          />
-        ) : (
-          <p className="rounded-[24px] bg-black/24 px-4 py-5 text-sm text-app-muted">
-            Pick a food above to set a portion and add it.
-          </p>
-        )}
-      </section>
-
-      <p className="mt-4 text-[0.65rem] leading-4 text-app-muted">
+      <p className="mt-4 text-[0.65rem] leading-4 text-cds-text-helper">
         Food data from USDA FoodData Central (public domain) and{" "}
         <a
-          className="underline hover:text-app-secondary"
+          className="underline hover:text-cds-text-secondary"
           href="https://world.openfoodfacts.org"
           target="_blank"
           rel="noreferrer"
@@ -160,12 +139,12 @@ function FoodRow({
 }) {
   const iconButtonClass = selected
     ? "bg-black/15 text-black"
-    : "bg-white/[0.06] text-app-muted";
+    : "bg-white/[0.06] text-cds-text-helper";
 
   return (
     <div
       className={`flex items-center justify-between gap-4 rounded-[20px] p-4 transition ${
-        selected ? "bg-app-green text-black" : "bg-black/24 text-white"
+        selected ? "bg-cds-interactive text-black" : "bg-black/30 text-white"
       }`}
     >
       <button
@@ -176,14 +155,14 @@ function FoodRow({
         <p className="truncate text-sm font-bold">{food.name}</p>
         <p
           className={`mt-1 text-xs font-semibold ${
-            selected ? "text-black/65" : "text-app-muted"
+            selected ? "text-black/65" : "text-cds-text-helper"
           }`}
         >
           {food.brand} - {food.serving}
         </p>
         <p
           className={`mt-2 text-xs font-semibold ${
-            selected ? "text-black/70" : "text-app-secondary"
+            selected ? "text-black/70" : "text-cds-text-secondary"
           }`}
         >
           {food.calories} kcal - P {food.protein}g / C {food.carbs}g / F {food.fat}g
@@ -248,11 +227,11 @@ function PortionPanel({
   );
 
   return (
-    <div className="rounded-[24px] bg-black/24 p-4">
+    <div className="rounded-[24px] bg-black/30 p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-bold text-white">{food.name}</p>
-          <p className="mt-1 text-xs font-semibold text-app-muted">
+          <p className="mt-1 text-xs font-semibold text-cds-text-helper">
             {food.per100g.calories} kcal per 100 g
             {food.brand ? ` - ${food.brand}` : ""}
           </p>
@@ -264,7 +243,7 @@ function PortionPanel({
         <label className="mt-3 block">
           <span className="sr-only">Serving size</span>
           <select
-            className="min-h-11 w-full rounded-full border border-white/[0.06] bg-black/28 px-4 text-sm font-semibold text-white outline-none focus:border-app-green/60"
+            className="min-h-11 w-full rounded-full border border-white/[0.06] bg-black/30 px-4 text-sm font-semibold text-white outline-none focus:border-cds-interactive"
             value={matchesServing ? gramsInput : "custom"}
             onChange={(event) => {
               if (event.target.value !== "custom") {
@@ -272,11 +251,19 @@ function PortionPanel({
               }
             }}
           >
-            {food.servings.map((serving) => (
-              <option key={`${serving.label}-${serving.grams}`} value={String(serving.grams)}>
-                {serving.label} ({serving.grams} g)
-              </option>
-            ))}
+            {/* Some foods list the same serving twice (e.g. two "100 g"); show each once. */}
+            {food.servings
+              .filter(
+                (serving, index, all) =>
+                  all.findIndex(
+                    (other) => other.label === serving.label && other.grams === serving.grams
+                  ) === index
+              )
+              .map((serving) => (
+                <option key={`${serving.label}-${serving.grams}`} value={String(serving.grams)}>
+                  {serving.label} ({serving.grams} g)
+                </option>
+              ))}
             <option value="custom">Custom amount</option>
           </select>
         </label>
@@ -290,7 +277,7 @@ function PortionPanel({
       />
 
       <button
-        className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-app-green px-5 text-sm font-bold text-black shadow-glow transition hover:-translate-y-0.5"
+        className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-cds-interactive px-5 text-sm font-bold text-black shadow-[var(--cu-shadow-glow)] transition hover:-translate-y-0.5"
         type="button"
         onClick={onAdd}
       >
@@ -298,5 +285,41 @@ function PortionPanel({
         Add to {selectedMeal}
       </button>
     </div>
+  );
+}
+
+/** Right-column card: portion and Add button for the food picked on the left. */
+export function SelectedFoodCard({
+  food,
+  gramsInput,
+  onGramsInputChange,
+  selectedMeal,
+  onAdd
+}: {
+  food: CatalogFood | null;
+  gramsInput: string;
+  onGramsInputChange: (value: string) => void;
+  selectedMeal: MealName;
+  onAdd: () => void;
+}) {
+  return (
+    <Tile className="!p-6">
+      <h2 className="cu-heading-02">Selected food</h2>
+      <div className="mt-4">
+        {food ? (
+          <PortionPanel
+            food={food}
+            gramsInput={gramsInput}
+            onGramsInputChange={onGramsInputChange}
+            selectedMeal={selectedMeal}
+            onAdd={onAdd}
+          />
+        ) : (
+          <p className="cu-body-01 rounded-[22px] bg-black/30 px-4 py-5 text-cds-text-helper">
+            Pick a food from the list to set a portion and add it to {selectedMeal}.
+          </p>
+        )}
+      </div>
+    </Tile>
   );
 }

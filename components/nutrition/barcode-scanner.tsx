@@ -164,27 +164,28 @@ export function BarcodeScanner({ onFoodFound }: BarcodeScannerProps) {
   }, [open, stopCamera]);
 
   return (
-    <div className="mt-3">
+    // `contents`: the button and panel sit directly in the parent's button row.
+    <div className="contents">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex min-h-10 items-center gap-2 rounded-full bg-black/28 px-4 text-xs font-bold text-app-secondary transition hover:bg-app-green/10 hover:text-app-green"
+        className="inline-flex min-h-10 items-center gap-2 rounded-full bg-black/30 px-3 text-xs sm:px-4 font-bold text-cds-text-secondary transition hover:bg-white/[0.08] hover:text-white"
       >
         <Barcode className="size-4" aria-hidden="true" />
         {open ? "Hide scanner" : "Scan a barcode"}
       </button>
 
       {open ? (
-        <div className="mt-3 rounded-[20px] bg-black/24 p-4">
+        <div className="order-last w-full basis-full rounded-[20px] bg-black/30 p-4">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-app-secondary">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-cds-text-secondary">
               Barcode
             </p>
             <button
               type="button"
               aria-label="Close scanner"
               onClick={() => setOpen(false)}
-              className="flex size-8 items-center justify-center rounded-full bg-white/[0.06] text-app-muted transition hover:text-white"
+              className="flex size-8 items-center justify-center rounded-full bg-white/[0.06] text-cds-text-helper transition hover:text-white"
             >
               <X className="size-4" aria-hidden="true" />
             </button>
@@ -203,7 +204,7 @@ export function BarcodeScanner({ onFoodFound }: BarcodeScannerProps) {
                 <button
                   type="button"
                   onClick={() => void startCamera()}
-                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-app-green px-4 text-sm font-bold text-black transition hover:-translate-y-0.5"
+                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-cds-interactive px-4 text-sm font-bold text-black transition hover:-translate-y-0.5"
                 >
                   <Camera className="size-4" aria-hidden="true" />
                   Start camera
@@ -211,7 +212,7 @@ export function BarcodeScanner({ onFoodFound }: BarcodeScannerProps) {
               )}
             </div>
           ) : (
-            <p className="mt-3 text-xs font-semibold text-app-muted">
+            <p className="mt-3 text-xs font-semibold text-cds-text-helper">
               This browser can&apos;t use the camera scanner. Type the number
               from the package instead.
             </p>
@@ -225,7 +226,7 @@ export function BarcodeScanner({ onFoodFound }: BarcodeScannerProps) {
             }}
           >
             <input
-              className="min-h-11 flex-1 rounded-full border border-white/[0.06] bg-black/28 px-4 text-sm font-semibold text-white outline-none placeholder:text-app-muted focus:border-app-green/60"
+              className="min-h-11 flex-1 rounded-full border border-white/[0.06] bg-black/30 px-4 text-sm font-semibold text-white outline-none placeholder:text-cds-text-helper focus:border-cds-interactive"
               inputMode="numeric"
               placeholder="Enter barcode digits"
               value={manualCode}
@@ -234,14 +235,14 @@ export function BarcodeScanner({ onFoodFound }: BarcodeScannerProps) {
             <button
               type="submit"
               disabled={isLooking}
-              className="min-h-11 rounded-full bg-white px-4 text-sm font-bold text-black transition hover:bg-app-green disabled:opacity-50"
+              className="min-h-11 rounded-full bg-white px-4 text-sm font-bold text-black transition hover:bg-cds-interactive disabled:opacity-50"
             >
               Look up
             </button>
           </form>
 
           {status ? (
-            <p className="mt-3 text-xs font-semibold text-app-secondary">
+            <p className="mt-3 text-xs font-semibold text-cds-text-secondary">
               {status}
             </p>
           ) : null}

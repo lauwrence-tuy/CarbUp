@@ -1,52 +1,39 @@
-import Link from "next/link";
-import { ArrowRight, LockKeyhole } from "lucide-react";
-import { type AppSection, AppHeader } from "@/components/app-header";
+"use client";
+
+import { Button, Column, Grid } from "@carbon/react";
+import { ArrowRight } from "@carbon/icons-react";
+import { CarbonHeader } from "@/components/carbon/carbon-header";
 
 type StravaLoginRequiredPageProps = {
-  pageName: AppSection;
+  pageName: "Dashboard" | "Nutrition" | "Workouts" | "Trends";
 };
 
 export function StravaLoginRequiredPage({
   pageName
 }: StravaLoginRequiredPageProps) {
   return (
-    <main className="min-h-screen bg-app-bg text-white">
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-5 pb-24 pt-6 sm:px-8 lg:px-10">
-        <AppHeader isConnected={false} active={pageName} />
-
-        <section className="grid flex-1 place-items-center py-12">
-          <div className="w-full max-w-2xl rounded-[32px] border border-white/[0.04] bg-app-card p-7 text-center shadow-card sm:p-10">
-            <span className="mx-auto flex size-16 items-center justify-center rounded-[24px] bg-app-green text-black shadow-glow">
-              <LockKeyhole className="size-8" aria-hidden="true" />
-            </span>
-            <p className="mt-6 text-[0.78rem] font-bold uppercase tracking-[0.16em] text-app-secondary">
-              Strava required
-            </p>
-            <h1 className="mt-3 text-4xl font-bold leading-tight text-white sm:text-5xl">
-              Connect Strava to open {pageName}.
-            </h1>
-            <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-app-secondary">
+    <>
+      <CarbonHeader isConnected={false} />
+      <main id="main-content" className="min-h-screen bg-cds-background">
+        <Grid className="py-16 lg:py-24">
+          <Column sm={4} md={6} lg={10}>
+            <p className="cu-label">Strava required</p>
+            <h1 className="cu-display mt-4">Connect Strava to open {pageName}.</h1>
+            <p className="cu-body-02 mt-6 max-w-[40rem] text-cds-text-secondary">
               CarbUp uses your Strava activity history to calculate training
               calories, targets, workouts, and trends.
             </p>
-            <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link
-                href="/api/strava/auth"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-app-green px-6 text-sm font-bold text-black shadow-glow transition hover:-translate-y-0.5"
-              >
+            <div className="mt-10 flex flex-wrap gap-3">
+              <Button href="/api/strava/auth" kind="primary" size="lg" renderIcon={ArrowRight}>
                 Connect Strava
-                <ArrowRight className="size-4" aria-hidden="true" />
-              </Link>
-              <Link
-                href="/"
-                className="inline-flex min-h-12 items-center justify-center rounded-full bg-white/[0.08] px-6 text-sm font-bold text-white transition hover:bg-white/[0.12]"
-              >
+              </Button>
+              <Button href="/" kind="tertiary" size="lg">
                 Back home
-              </Link>
+              </Button>
             </div>
-          </div>
-        </section>
-      </div>
-    </main>
+          </Column>
+        </Grid>
+      </main>
+    </>
   );
 }
