@@ -1,9 +1,10 @@
-import { Plus, Trash2, Utensils } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
+import { Tag } from "@carbon/react";
 import type {
   FoodLogEntry,
   MealName
 } from "./nutrition-diary-storage";
-import { StatusBadge, type StatusBadgeProps } from "@/components/ui/status-badge";
+import type { StatusBadgeProps } from "@/components/ui/status-badge";
 import { meals } from "./meals";
 
 /** The day's log, grouped by meal. */
@@ -21,20 +22,15 @@ export function FoodDiary({
   onRemove: (logId: string) => void;
 }) {
   return (
-    <section className="animate-rise-in rounded-[28px] border border-white/[0.04] bg-app-card p-6 shadow-card">
+    <section className="animate-rise-in rounded-[28px] border border-white/[0.04] bg-cds-layer p-6 shadow-[var(--cu-shadow-card)]">
       <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span className="flex size-12 items-center justify-center rounded-2xl bg-app-green text-black">
-            <Utensils className="size-6" aria-hidden="true" />
-          </span>
-          <div>
-            <p className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-white">
-              Food diary
-            </p>
-            <p className="mt-1 text-sm text-app-muted">{dateLabel}</p>
-          </div>
+        <div>
+          <h2 className="cu-heading-02">Food diary</h2>
+          <p className="cu-helper mt-1">{dateLabel}</p>
         </div>
-        <StatusBadge label={status} />
+        <Tag type={status === "Complete" ? "green" : "cool-gray"} size="sm" className="shrink-0">
+          {status}
+        </Tag>
       </div>
 
       <div className="mt-6 divide-y divide-white/[0.06]">
@@ -54,13 +50,13 @@ export function FoodDiary({
                   </span>
                   <div className="min-w-0">
                     <h2 className="text-sm font-bold text-white">{meal.name}</h2>
-                    <p className="mt-1 text-xs font-semibold text-app-muted">
+                    <p className="mt-1 text-xs font-semibold text-cds-text-helper">
                       {mealCalories.toLocaleString()} kcal
                     </p>
                   </div>
                 </div>
                 <button
-                  className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-black transition hover:bg-app-green"
+                  className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-black transition hover:bg-cds-interactive"
                   type="button"
                   aria-label={`Add food to ${meal.name}`}
                   onClick={() => onSelectMeal(meal.name)}
@@ -92,15 +88,15 @@ function DiaryEntry({
   onRemove: (logId: string) => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-[18px] bg-black/24 px-4 py-3">
+    <div className="flex items-center justify-between gap-4 rounded-[18px] bg-black/30 px-4 py-3">
       <div className="min-w-0">
         <p className="truncate text-sm font-bold text-white">{food.name}</p>
-        <p className="mt-1 text-xs font-semibold text-app-muted">
+        <p className="mt-1 text-xs font-semibold text-cds-text-helper">
           {food.grams ? `${Math.round(food.grams)} g` : food.serving} - P{" "}
           {food.protein}g / C {food.carbs}g / F {food.fat}g
         </p>
         {food.source === "meal" && food.items?.length ? (
-          <p className="mt-1 text-xs font-semibold text-app-secondary">
+          <p className="mt-1 text-xs font-semibold text-cds-text-secondary">
             {food.items
               .map(
                 (item) =>
@@ -111,9 +107,9 @@ function DiaryEntry({
         ) : null}
       </div>
       <div className="flex shrink-0 items-center gap-3">
-        <span className="text-sm font-bold text-app-green">{food.calories} kcal</span>
+        <span className="text-sm font-bold text-cds-interactive">{food.calories} kcal</span>
         <button
-          className="flex size-9 items-center justify-center rounded-full bg-white/[0.06] text-app-muted transition hover:bg-app-red/20 hover:text-app-red"
+          className="flex size-9 items-center justify-center rounded-full bg-white/[0.06] text-cds-text-helper transition hover:bg-app-red/20 hover:text-app-red"
           type="button"
           aria-label={`Remove ${food.name}`}
           onClick={() => onRemove(food.logId)}

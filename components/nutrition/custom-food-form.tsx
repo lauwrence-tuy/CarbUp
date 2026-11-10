@@ -145,7 +145,7 @@ export function CustomFoodForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-full bg-black/28 px-4 text-xs font-bold text-app-secondary transition hover:bg-app-green/10 hover:text-app-green"
+        className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-full bg-black/30 px-4 text-xs font-bold text-cds-text-secondary transition hover:bg-white/[0.08] hover:text-white"
       >
         <Plus className="size-4" aria-hidden="true" />
         Create a food
@@ -154,9 +154,9 @@ export function CustomFoodForm({
   }
 
   return (
-    <div className="mt-3 rounded-[20px] bg-black/24 p-4">
+    <div className="mt-3 rounded-[20px] bg-black/30 p-4">
       <div className="flex items-center justify-between gap-3">
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-app-secondary">
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-cds-text-secondary">
           {isEditing ? (
             <Pencil className="size-4" aria-hidden="true" />
           ) : (
@@ -168,7 +168,7 @@ export function CustomFoodForm({
           type="button"
           aria-label="Close"
           onClick={close}
-          className="flex size-8 items-center justify-center rounded-full bg-white/[0.06] text-app-muted transition hover:text-white"
+          className="flex size-8 items-center justify-center rounded-full bg-white/[0.06] text-cds-text-helper transition hover:text-white"
         >
           <X className="size-4" aria-hidden="true" />
         </button>
@@ -215,7 +215,7 @@ export function CustomFoodForm({
           </Field>
         </div>
 
-        <p className="pt-1 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-app-muted">
+        <p className="pt-1 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-cds-text-helper">
           Per serving
         </p>
         <div className="grid grid-cols-4 gap-2">
@@ -260,7 +260,7 @@ export function CustomFoodForm({
         <button
           type="submit"
           disabled={busy}
-          className="mt-1 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-app-green px-4 text-sm font-bold text-black transition hover:-translate-y-0.5 disabled:opacity-50"
+          className="mt-1 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-cds-interactive px-4 text-sm font-bold text-black transition hover:-translate-y-0.5 disabled:opacity-50"
         >
           {isEditing ? "Save changes" : "Create food"}
         </button>
@@ -270,7 +270,7 @@ export function CustomFoodForm({
 }
 
 const inputClass =
-  "min-h-10 w-full rounded-2xl border border-white/[0.06] bg-black/28 px-3 text-sm font-semibold text-white outline-none placeholder:text-app-muted focus:border-app-green/60";
+  "min-h-10 w-full rounded-2xl border border-white/[0.06] bg-black/30 px-3 text-sm font-semibold text-white outline-none placeholder:text-cds-text-helper focus:border-cds-interactive";
 
 function Field({
   label,
@@ -281,7 +281,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-app-muted">
+      <span className="mb-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-cds-text-helper">
         {label}
       </span>
       {children}

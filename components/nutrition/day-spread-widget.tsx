@@ -53,7 +53,7 @@ export function DaySpreadWidget({
   return (
     <section
       aria-label="Seven day date spread"
-      className="mt-6 rounded-[28px] border border-white/[0.04] bg-app-card p-3 shadow-card sm:p-4"
+      className="mt-6 rounded-[28px] border border-white/[0.04] bg-cds-layer p-3 shadow-[var(--cu-shadow-card)] sm:p-4"
     >
       <div className="grid min-w-0 grid-cols-7 gap-1.5 sm:gap-2">
         {days.map((day) => (
@@ -62,10 +62,10 @@ export function DaySpreadWidget({
             type="button"
             className={`flex h-[74px] min-w-0 flex-col items-center justify-center rounded-[20px] border ${
               day.isCenter
-                ? "border-app-green bg-app-green text-black shadow-glow"
+                ? "border-cds-interactive bg-cds-interactive text-black shadow-[var(--cu-shadow-glow)]"
                 : day.isToday
-                  ? "border-app-green/45 bg-app-green/10 text-app-green"
-                  : "border-white/[0.04] bg-black/24 text-white hover:bg-app-hover"
+                  ? "border-cds-interactive bg-white/[0.08] text-cds-interactive"
+                  : "border-white/[0.04] bg-black/30 text-white hover:bg-cds-layer-hover"
             } transition duration-200 ease-out hover:-translate-y-0.5`}
             aria-label={`${day.letter}, ${day.date}`}
             aria-current={day.isToday ? "date" : undefined}
@@ -73,7 +73,7 @@ export function DaySpreadWidget({
           >
             <span
               className={`text-[0.78rem] font-bold leading-none ${
-                day.isCenter ? "text-black/70" : "text-app-secondary"
+                day.isCenter ? "text-black/70" : "text-cds-text-secondary"
               }`}
             >
               {day.letter}

@@ -27,11 +27,11 @@ export function DailySummary({
       : `${goalAdjustment > 0 ? "+" : "-"} ${Math.abs(goalAdjustment).toLocaleString()} goal `;
 
   return (
-    <section className="mt-5 rounded-[28px] border border-white/[0.04] bg-app-card p-5 shadow-card">
+    <section className="mt-5 rounded-[28px] border border-white/[0.04] bg-cds-layer p-5 shadow-[var(--cu-shadow-card)]">
       <div className="grid gap-4 lg:grid-cols-[minmax(260px,0.9fr)_minmax(0,1.1fr)]">
-        <div className="flex items-end justify-between gap-4 rounded-[24px] bg-black/24 p-5">
+        <div className="flex items-end justify-between gap-4 rounded-[24px] bg-black/30 p-5">
           <div>
-            <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-app-secondary">
+            <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-cds-text-secondary">
               Remaining
             </p>
             <div className="mt-3 flex items-end gap-2">
@@ -39,7 +39,7 @@ export function DailySummary({
                 value={remainingCalories}
                 className="text-5xl font-bold leading-none text-white"
               />
-              <span className="pb-1 text-base font-semibold text-app-muted">
+              <span className="pb-1 text-base font-semibold text-cds-text-helper">
                 kcal
               </span>
             </div>
@@ -85,13 +85,13 @@ export function DailySummary({
           label="Protein"
           eaten={totals.protein}
           target={macroTargets.protein}
-          color="blue"
+          color="yellow"
         />
         <MacroProgress
           label="Fat"
           eaten={totals.fat}
           target={macroTargets.fat}
-          color="purple"
+          color="yellow"
         />
       </div>
     </section>
@@ -110,15 +110,15 @@ function SummaryStat({
   detail: string;
 }) {
   return (
-    <div className="rounded-[24px] bg-black/24 p-5">
-      <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-app-secondary">
+    <div className="rounded-[24px] bg-black/30 p-5">
+      <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-cds-text-secondary">
         {label}
       </p>
       <p className="mt-3 text-3xl font-bold leading-none text-white">
         {prefix}
         <CountUp value={value} />
       </p>
-      <p className="mt-2 text-xs font-semibold leading-5 text-app-muted">
+      <p className="mt-2 text-xs font-semibold leading-5 text-cds-text-helper">
         {detail.trim()}
       </p>
     </div>
@@ -140,7 +140,7 @@ function MacroProgress({
     <div>
       <div className="mb-2 flex items-center justify-between gap-4">
         <span className="text-sm font-bold text-white">{label}</span>
-        <span className="text-sm font-semibold text-app-muted">
+        <span className="text-sm font-semibold text-cds-text-helper">
           {eaten}g / {target}g
         </span>
       </div>
