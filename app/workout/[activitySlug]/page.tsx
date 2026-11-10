@@ -4,8 +4,7 @@ import { getActivitySlug } from "@/lib/activity-slug";
 import { formatActivityTime, formatWorkoutDate } from "@/lib/date";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
-import { getFreshStravaAccessToken } from "@/lib/strava";
-import { getStravaActivityVisualData } from "@/lib/strava-activity-detail";
+import { getActivityVisualData } from "@/lib/activity-visual-cache";
 import {
   calculateActivityLoad,
   formatDistance,
@@ -40,12 +39,11 @@ export default async function ActivityRoute({ params }: ActivityRouteProps) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
-      id: true,
-      accessToken: true,
-      refreshToken: true,
-      tokenExpiresAt: true,
+      // The slug is derived from the name, so match on names only and load
+      // the full row for the one activity that matches.
       activities: {
-        orderBy: { startDate: "desc" }
+        orderBy: { startDate: "desc" },
+        select: { id: true, name: true }
       }
     }
   });
@@ -54,24 +52,36 @@ export default async function ActivityRoute({ params }: ActivityRouteProps) {
     notFound();
   }
 
-  const activities = user.activities as ActivityDetailRow[];
-  const activity = activities.find(
+  const match = user.activities.find(
     (item) => getActivitySlug(item.name) === activitySlug
   );
+  const activity: ActivityDetailRow | null = match
+    ? await prisma.activity.findUnique({
+        where: { id: match.id },
+        select: {
+          stravaActivityId: true,
+          name: true,
+          type: true,
+          calories: true,
+          movingTime: true,
+          sufferScore: true,
+          distance: true,
+          startDate: true
+        }
+      })
+    : null;
 
   if (!activity) {
     notFound();
   }
 
-  const visualData = await getFreshStravaAccessToken(user)
-    .then((accessToken) =>
-      getStravaActivityVisualData({
-        accessToken,
-        stravaActivityId: activity.stravaActivityId,
-        fallbackDistanceMeters: activity.distance
-      })
-    )
-    .catch(() => null);
+  // Not awaited: the page renders its stats straight away and streams in the
+  // route map and charts when Strava (or the cache) answers.
+  const visualData = getActivityVisualData({
+    userId,
+    stravaActivityId: activity.stravaActivityId,
+    fallbackDistanceMeters: activity.distance
+  });
 
   return (
     <ActivityDetailPage

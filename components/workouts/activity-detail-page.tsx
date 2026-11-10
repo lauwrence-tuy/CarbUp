@@ -4,6 +4,8 @@ import Link from "next/link";
 import {
   type PointerEvent,
   type WheelEvent,
+  Suspense,
+  use,
   useCallback,
   useEffect,
   useMemo,
@@ -18,6 +20,7 @@ import type {
   LatLngPoint
 } from "@/lib/strava-activity-detail";
 import { PageShell, PageTitle, StatTile } from "@/components/carbon/page-shell";
+import { SkeletonBlock, SkeletonStat, SkeletonTile } from "@/components/carbon/skeleton";
 
 // Route map colors. Strava-style orange route on a dark slate base, kept
 // separate from the app theme so the map reads like a map.
@@ -49,7 +52,8 @@ type ActivityDetailPageProps = {
     distanceLabel: string;
     effort: number;
   };
-  visualData: ActivityVisualData | null;
+  /** Streamed from the server: stats render first, map and charts follow. */
+  visualData: Promise<ActivityVisualData | null>;
 };
 
 type ProjectedPoint = {
@@ -80,10 +84,6 @@ type ChartDomain = {
   minX: number;
   maxX: number;
 };
-
-function formatDistanceValue(value: number | null) {
-  return value == null ? "--" : `${value.toFixed(value >= 100 ? 0 : 1)} mi`;
-}
 
 function formatElevationValue(value: number | null) {
   return value == null ? "--" : `${Math.round(value).toLocaleString()} ft`;
@@ -266,8 +266,6 @@ export function ActivityDetailPage({
   const [hoverRatio, setHoverRatio] = useState<number | null>(null);
   const frameRef = useRef<number | null>(null);
   const latestHoverRatioRef = useRef<number | null>(null);
-  const metricCharts = visualData?.charts ?? [];
-
   const handleHoverRatioChange = useCallback((ratio: number | null) => {
     latestHoverRatioRef.current = ratio;
 
@@ -288,11 +286,6 @@ export function ActivityDetailPage({
       }
     };
   }, []);
-
-  const distanceValue =
-    visualData?.totalDistanceMiles != null
-      ? formatDistanceValue(visualData.totalDistanceMiles)
-      : activity.distanceLabel;
 
   return (
     <PageShell isConnected>
@@ -330,26 +323,73 @@ export function ActivityDetailPage({
               accent
             />
             <StatTile label="Duration" value={activity.durationLabel} helper="moving time" />
-            <StatTile label="Distance" value={distanceValue} helper="route distance" />
-            <StatTile
-              label="Elevation"
-              value={formatElevationValue(visualData?.totalElevationFeet ?? null)}
-              helper={`effort ${activity.effort}`}
-            />
+            <StatTile label="Distance" value={activity.distanceLabel} helper="route distance" />
+            <Suspense fallback={<SkeletonStat />}>
+              <ElevationTile visualData={visualData} effort={activity.effort} />
+            </Suspense>
           </div>
+
+          <Suspense fallback={<ActivityVisualsSkeleton />}>
+            <ActivityVisuals
+              visualData={visualData}
+              hoverRatio={hoverRatio}
+              onHoverRatioChange={handleHoverRatioChange}
+            />
+          </Suspense>
+        </Column>
+      </Grid>
+    </PageShell>
+  );
+}
+
+function ElevationTile({
+  visualData,
+  effort
+}: {
+  visualData: Promise<ActivityVisualData | null>;
+  effort: number;
+}) {
+  const data = use(visualData);
+
+  return (
+    <StatTile
+      label="Elevation"
+      value={formatElevationValue(data?.totalElevationFeet ?? null)}
+      helper={`effort ${effort}`}
+    />
+  );
+}
+
+/** Route map and metric streams, shown once Strava (or the cache) answers. */
+function ActivityVisuals({
+  visualData,
+  hoverRatio,
+  onHoverRatioChange
+}: {
+  visualData: Promise<ActivityVisualData | null>;
+  hoverRatio: number | null;
+  onHoverRatioChange: (ratio: number | null) => void;
+}) {
+  const data = use(visualData);
+  const metricCharts = data?.charts ?? [];
+
+  return (
+    <>
 
           <Tile className="mt-4 overflow-hidden !p-0">
             <div className="flex items-center justify-between gap-4 px-6 py-5">
               <div>
                 <h2 className="cu-heading-02">Route map</h2>
                 <p className="cu-helper mt-1">
-                  {visualData?.route.length
+                  {data?.route.length
                     ? "Synced from Strava GPS data"
-                    : "No route stream available"}
+                    : data
+                      ? "No route stream available"
+                      : "Strava didn’t return this activity’s data. Try again later."}
                 </p>
               </div>
             </div>
-            <ActivityRouteMap hoverRatio={hoverRatio} route={visualData?.route ?? []} />
+            <ActivityRouteMap hoverRatio={hoverRatio} route={data?.route ?? []} />
           </Tile>
 
           <Tile className="mt-4 overflow-hidden !p-0">
@@ -364,14 +404,34 @@ export function ActivityDetailPage({
                   key={chart.label}
                   chart={chart}
                   hoverRatio={hoverRatio}
-                  onHoverRatioChange={handleHoverRatioChange}
+                  onHoverRatioChange={onHoverRatioChange}
                 />
               ))}
             </div>
           </Tile>
-        </Column>
-      </Grid>
-    </PageShell>
+    </>
+  );
+}
+
+function ActivityVisualsSkeleton() {
+  return (
+    <>
+      <SkeletonTile className="mt-4 !p-0">
+        <div className="px-6 py-5">
+          <SkeletonBlock className="h-3 w-24" />
+          <SkeletonBlock className="mt-3 h-3 w-48" />
+        </div>
+        <div className="aspect-[1200/420] w-full rounded-b-[28px] bg-white/[0.03] motion-safe:animate-pulse" />
+      </SkeletonTile>
+      <SkeletonTile className="mt-4">
+        {Array.from({ length: 4 }, (_, index) => (
+          <div key={index} className="flex items-center gap-6 py-4">
+            <SkeletonBlock className="h-3 w-24" />
+            <SkeletonBlock className="h-10 flex-1 !rounded-xl" />
+          </div>
+        ))}
+      </SkeletonTile>
+    </>
   );
 }
 
