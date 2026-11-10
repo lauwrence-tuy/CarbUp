@@ -1,12 +1,46 @@
 export const APP_TIMEZONE = process.env.APP_TIMEZONE ?? "America/Los_Angeles";
 
+// Building an Intl.DateTimeFormat is far slower than using one, and these
+// helpers run inside per-day and per-activity loops, so each formatter is
+// created once and reused.
+const datePartsFormatters = new Map<string, Intl.DateTimeFormat>();
+
+function getDatePartsFormatter(timeZone: string) {
+  let formatter = datePartsFormatters.get(timeZone);
+
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    });
+    datePartsFormatters.set(timeZone, formatter);
+  }
+
+  return formatter;
+}
+
+const activityTimeFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: APP_TIMEZONE,
+  hour: "numeric",
+  minute: "2-digit"
+});
+
+const shortWeekdayFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: APP_TIMEZONE,
+  weekday: "short"
+});
+
+const workoutDateFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: APP_TIMEZONE,
+  month: "short",
+  day: "numeric",
+  year: "numeric"
+});
+
 export function getDateParts(date: Date, timeZone = APP_TIMEZONE) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  }).formatToParts(date);
+  const parts = getDatePartsFormatter(timeZone).formatToParts(date);
 
   return {
     year: Number(parts.find((part) => part.type === "year")?.value),
@@ -33,18 +67,11 @@ export function isSameLocalDay(date: Date, comparisonDate = new Date()) {
 }
 
 export function formatActivityTime(date: Date) {
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: APP_TIMEZONE,
-    hour: "numeric",
-    minute: "2-digit"
-  }).format(date);
+  return activityTimeFormatter.format(date);
 }
 
 export function formatShortWeekday(date: Date) {
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: APP_TIMEZONE,
-    weekday: "short"
-  }).format(date);
+  return shortWeekdayFormatter.format(date);
 }
 
 export function getTrailingSevenLocalDays(referenceDate = new Date()) {
@@ -67,10 +94,5 @@ export function getTrailingSevenLocalDays(referenceDate = new Date()) {
 }
 
 export function formatWorkoutDate(date: Date) {
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: APP_TIMEZONE,
-    month: "short",
-    day: "numeric",
-    year: "numeric"
-  }).format(date);
+  return workoutDateFormatter.format(date);
 }

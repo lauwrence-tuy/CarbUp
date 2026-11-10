@@ -67,12 +67,15 @@ function normalizeLegacyEntry(entry: FoodLogEntry): FoodLogEntry {
 export function useLegacyStorageMigration({
   todayKey,
   initialLogsByDate,
+  loggedDateKeys,
   initialSavedMeals,
   onLogsMigrated,
   onSavedMealsMigrated
 }: {
   todayKey: string;
   initialLogsByDate: LogsByDate;
+  /** Dates the database has entries for, including ones outside the window. */
+  loggedDateKeys: string[];
   initialSavedMeals: SavedMeal[];
   onLogsMigrated: (logs: LogsByDate) => void;
   onSavedMealsMigrated: (meals: SavedMeal[]) => void;
@@ -83,9 +86,10 @@ export function useLegacyStorageMigration({
     }
 
     // Skip days the database already has entries for.
+    const loggedDates = new Set(loggedDateKeys);
     const toMigrate = Object.entries(readLegacyLogs(todayKey)).flatMap(
       ([dateKey, entries]) =>
-        (initialLogsByDate[dateKey]?.length ?? 0) > 0
+        loggedDates.has(dateKey) || (initialLogsByDate[dateKey]?.length ?? 0) > 0
           ? []
           : entries.map((entry) => ({ dateKey, entry }))
     );
@@ -130,7 +134,7 @@ export function useLegacyStorageMigration({
     };
     // Runs once per page load; the callbacks are intentionally not deps.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialLogsByDate, todayKey]);
+  }, [initialLogsByDate, loggedDateKeys, todayKey]);
 
   useEffect(() => {
     if (

@@ -43,12 +43,14 @@ function startOfLocalDay(date: Date) {
   return new Date(`${key}T12:00:00`);
 }
 
+const chartLabelFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: APP_TIMEZONE,
+  month: "short",
+  day: "numeric"
+});
+
 function formatChartLabel(date: Date) {
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: APP_TIMEZONE,
-    month: "short",
-    day: "numeric"
-  }).format(date);
+  return chartLabelFormatter.format(date);
 }
 
 function buildFitnessFreshnessPoints(
@@ -102,15 +104,12 @@ function buildFitnessFreshnessPoints(
 
     const key = getLocalDateKey(activity.startDate);
     const load = calculateActivityLoad(activity);
-    totals[key] = [
-      ...(totals[key] ?? []),
-      {
-        stravaActivityId: activity.stravaActivityId,
-        name: activity.name,
-        type: activity.type,
-        load
-      }
-    ];
+    (totals[key] ??= []).push({
+      stravaActivityId: activity.stravaActivityId,
+      name: activity.name,
+      type: activity.type,
+      load
+    });
 
     return totals;
   }, {});
@@ -153,10 +152,22 @@ export default async function TrendsRoute() {
   const user = userId
     ? await prisma.user.findUnique({
         where: { id: userId },
-        include: {
+        select: {
+          units: true,
+          weight: true,
           activities: {
             orderBy: { startDate: "desc" },
-            take: 3000
+            take: 3000,
+            select: {
+              stravaActivityId: true,
+              name: true,
+              type: true,
+              startDate: true,
+              distance: true,
+              movingTime: true,
+              calories: true,
+              sufferScore: true
+            }
           }
         }
       })

@@ -39,6 +39,10 @@ import { useSavedMeals } from "./use-saved-meals";
 type NutritionPageProps = {
   baseCalories: number;
   activityCaloriesByDate: Record<string, number>;
+  /** First date (YYYY-MM-DD) whose diary was loaded; paging stops here. */
+  historyStartKey: string;
+  /** Every date with diary entries, including ones older than the window. */
+  loggedDateKeys: string[];
   initialLogsByDate: LogsByDate;
   initialSavedMeals: SavedMeal[];
   initialRecentFoods: CatalogFood[];
@@ -70,6 +74,8 @@ export function NutritionPage({
   initialFrequentFoods,
   initialCustomFoods,
   goalAdjustment,
+  historyStartKey,
+  loggedDateKeys,
   isConnected
 }: NutritionPageProps) {
   // --- Selected day -----------------------------------------------------------
@@ -105,6 +111,9 @@ export function NutritionPage({
     };
   });
   const isCurrentWeek = formatDateKey(weekEnd) === todayKey;
+  // The previous week is only reachable while its first day is still inside
+  // the loaded history.
+  const canShowPreviousWeek = formatDateKey(addDays(weekEnd, -13)) >= historyStartKey;
 
   function showWeek(offsetDays: number) {
     const nextEnd = addDays(weekEnd, offsetDays);
@@ -122,6 +131,7 @@ export function NutritionPage({
   useLegacyStorageMigration({
     todayKey,
     initialLogsByDate,
+    loggedDateKeys,
     initialSavedMeals,
     onLogsMigrated: foodLog.mergeMissingDays,
     onSavedMealsMigrated: savedMeals.replaceAll
@@ -269,7 +279,7 @@ export function NutritionPage({
                 setSelectedDate(day.date);
               }
             }}
-            onPrevious={() => showWeek(-7)}
+            onPrevious={canShowPreviousWeek ? () => showWeek(-7) : undefined}
             onNext={isCurrentWeek ? undefined : () => showWeek(7)}
             days={weekDays.map((day) => ({
               key: day.key,

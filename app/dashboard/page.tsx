@@ -81,16 +81,41 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const params = await searchParams;
   const calendarBaseDays = getTrailingSevenLocalDays();
   const userId = await getCurrentUserId();
+  // Only the 7 days on screen: the week's activities (with a day of slack for
+  // time zones) and the week's food logs, plus the two profile fields used.
+  const weekStart = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
   const user = userId
     ? await prisma.user.findUnique({
         where: { id: userId },
-        include: {
+        select: {
+          maintenanceCalories: true,
+          goalAdjustment: true,
           activities: {
+            where: { startDate: { gte: weekStart } },
             orderBy: { startDate: "desc" },
-            take: 30
+            select: {
+              id: true,
+              name: true,
+              type: true,
+              calories: true,
+              movingTime: true,
+              sufferScore: true,
+              distance: true,
+              startDate: true
+            }
           },
           foodLogs: {
-            orderBy: { createdAt: "asc" }
+            where: { dateKey: { in: calendarBaseDays.map((day) => day.key) } },
+            orderBy: { createdAt: "asc" },
+            select: {
+              dateKey: true,
+              meal: true,
+              name: true,
+              calories: true,
+              protein: true,
+              carbs: true,
+              fat: true
+            }
           }
         }
       })
@@ -134,7 +159,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         return grouped;
       }
 
-      grouped[key] = [...(grouped[key] ?? []), mapActivityToWorkout(activity)];
+      (grouped[key] ??= []).push(mapActivityToWorkout(activity));
 
       return grouped;
     }, {});

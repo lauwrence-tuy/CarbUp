@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
 
 type StravaActivity = {
@@ -13,6 +14,11 @@ type StravaActivity = {
 };
 
 const SYNC_WINDOW_DAYS = 183;
+// After the first sync, only re-read this many days before the newest stored
+// activity: enough to pick up late uploads, renames and calories Strava adds
+// after processing, without re-reading six months every time.
+const INCREMENTAL_OVERLAP_DAYS = 7;
+const DAY_SECONDS = 24 * 60 * 60;
 const ACTIVITIES_PER_PAGE = 200;
 const DETAIL_BATCH_SIZE = 10;
 // Strava's read rate limit is shared across the whole app (100 requests / 15
@@ -30,6 +36,80 @@ function getSyncWindowStart() {
   date.setUTCDate(date.getUTCDate() - SYNC_WINDOW_DAYS);
 
   return Math.floor(date.getTime() / 1000);
+}
+
+/**
+ * Unix seconds to fetch activities after: the full window on a first sync,
+ * otherwise a short overlap before the newest activity already stored.
+ */
+async function getSyncStart(userId: string) {
+  const windowStart = getSyncWindowStart();
+  const newest = await prisma.activity.findFirst({
+    where: { userId },
+    orderBy: { startDate: "desc" },
+    select: { startDate: true }
+  });
+
+  if (!newest) {
+    return windowStart;
+  }
+
+  const overlapStart =
+    Math.floor(newest.startDate.getTime() / 1000) - INCREMENTAL_OVERLAP_DAYS * DAY_SECONDS;
+
+  return Math.max(windowStart, overlapStart);
+}
+
+type StoredActivity = {
+  stravaActivityId: string;
+  name: string;
+  type: string;
+  startDate: Date;
+  distance: number | null;
+  movingTime: number | null;
+  calories: number | null;
+  sufferScore: number | null;
+};
+
+function toActivityFields(activity: StravaActivity) {
+  return {
+    name: activity.name,
+    type: activity.sport_type ?? activity.type ?? "Activity",
+    startDate: new Date(activity.start_date),
+    distance: activity.distance ?? null,
+    movingTime: activity.moving_time ?? null,
+    calories: typeof activity.calories === "number" ? activity.calories : null,
+    sufferScore:
+      typeof activity.suffer_score === "number" ? activity.suffer_score : null
+  };
+}
+
+/**
+ * The fields to update on a stored activity, or null when nothing changed.
+ * calories / sufferScore are only written when Strava returned a value, so a
+ * summary-only record never blanks out data an earlier detailed sync stored.
+ */
+function getChangedFields(
+  stored: StoredActivity,
+  next: ReturnType<typeof toActivityFields>
+) {
+  const changes: Partial<ReturnType<typeof toActivityFields>> = {};
+
+  if (stored.name !== next.name) changes.name = next.name;
+  if (stored.type !== next.type) changes.type = next.type;
+  if (stored.startDate.getTime() !== next.startDate.getTime()) {
+    changes.startDate = next.startDate;
+  }
+  if (stored.distance !== next.distance) changes.distance = next.distance;
+  if (stored.movingTime !== next.movingTime) changes.movingTime = next.movingTime;
+  if (next.calories !== null && stored.calories !== next.calories) {
+    changes.calories = next.calories;
+  }
+  if (next.sufferScore !== null && stored.sufferScore !== next.sufferScore) {
+    changes.sufferScore = next.sufferScore;
+  }
+
+  return Object.keys(changes).length > 0 ? changes : null;
 }
 
 function isNearRateLimit(response: Response) {
@@ -89,7 +169,7 @@ export async function syncRecentStravaActivities({
   accessToken: string;
   userId: string;
 }) {
-  const windowStart = getSyncWindowStart();
+  const windowStart = await getSyncStart(userId);
   const activitySummaries: StravaActivity[] = [];
   let page = 1;
 
@@ -123,17 +203,28 @@ export async function syncRecentStravaActivities({
     page += 1;
   }
 
-  // Activities we've already stored calories for don't need a detail call —
-  // skipping them keeps most syncs well under the rate limit.
-  const storedActivities = await prisma.activity.findMany({
-    where: { userId },
-    select: { stravaActivityId: true, calories: true }
+  // Stored copies of the activities in this window: used to skip detail calls
+  // for activities that already have calories, and to write only what changed.
+  const storedActivities: StoredActivity[] = await prisma.activity.findMany({
+    where: {
+      userId,
+      stravaActivityId: {
+        in: activitySummaries.map((activity) => String(activity.id))
+      }
+    },
+    select: {
+      stravaActivityId: true,
+      name: true,
+      type: true,
+      startDate: true,
+      distance: true,
+      movingTime: true,
+      calories: true,
+      sufferScore: true
+    }
   });
-  const storedCalories = new Map(
-    storedActivities.map((activity) => [
-      activity.stravaActivityId,
-      activity.calories
-    ])
+  const storedById = new Map(
+    storedActivities.map((activity) => [activity.stravaActivityId, activity])
   );
 
   const activities: StravaActivity[] = [];
@@ -153,7 +244,7 @@ export async function syncRecentStravaActivities({
       batch.map(async (activity) => {
         const alreadyHaveCalories =
           typeof activity.calories === "number" ||
-          typeof storedCalories.get(String(activity.id)) === "number";
+          typeof storedById.get(String(activity.id))?.calories === "number";
 
         if (alreadyHaveCalories || rateLimited) {
           return activity;
@@ -183,46 +274,45 @@ export async function syncRecentStravaActivities({
     }
   }
 
-  await Promise.all(
-    activities.map((activity) => {
-      const type = activity.sport_type ?? activity.type ?? "Activity";
-      const distance = activity.distance ?? null;
-      const movingTime = activity.moving_time ?? null;
-      const calories =
-        typeof activity.calories === "number" ? activity.calories : null;
-      const sufferScore =
-        typeof activity.suffer_score === "number" ? activity.suffer_score : null;
+  const newActivities: Prisma.ActivityCreateManyInput[] = [];
+  const changedActivities: Array<{
+    stravaActivityId: string;
+    data: Prisma.ActivityUpdateInput;
+  }> = [];
 
-      return prisma.activity.upsert({
-        where: {
-          stravaActivityId: String(activity.id)
-        },
-        update: {
-          name: activity.name,
-          type,
-          startDate: new Date(activity.start_date),
-          distance,
-          movingTime,
-          // Only write calories / sufferScore when we actually have a value. A
-          // summary-only record (rate-limited run, or a detail call that never
-          // happened) must not blank out data an earlier detailed sync stored.
-          ...(calories !== null ? { calories } : {}),
-          ...(sufferScore !== null ? { sufferScore } : {})
-        },
-        create: {
-          userId,
-          stravaActivityId: String(activity.id),
-          name: activity.name,
-          type,
-          startDate: new Date(activity.start_date),
-          distance,
-          movingTime,
-          calories,
-          sufferScore
-        }
-      });
-    })
-  );
+  for (const activity of activities) {
+    const stravaActivityId = String(activity.id);
+    const fields = toActivityFields(activity);
+    const stored = storedById.get(stravaActivityId);
+
+    if (!stored) {
+      newActivities.push({ userId, stravaActivityId, ...fields });
+      continue;
+    }
+
+    const changes = getChangedFields(stored, fields);
+
+    if (changes) {
+      changedActivities.push({ stravaActivityId, data: changes });
+    }
+  }
+
+  // One insert for every new activity; individual updates only for the few
+  // that changed. skipDuplicates covers a sync racing another sync.
+  if (newActivities.length > 0) {
+    await prisma.activity.createMany({
+      data: newActivities,
+      skipDuplicates: true
+    });
+  }
+
+  if (changedActivities.length > 0) {
+    await prisma.$transaction(
+      changedActivities.map(({ stravaActivityId, data }) =>
+        prisma.activity.update({ where: { stravaActivityId }, data })
+      )
+    );
+  }
 
   return activities.length;
 }
