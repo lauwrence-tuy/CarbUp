@@ -59,5 +59,5 @@ export function useFoodLog(initialLogsByDate: LogsByDate, dateKey: string) {
     });
   }
 
-  return { log, addEntry, removeEntry, mergeMissingDays };
+  return { log, logsByDate, addEntry, removeEntry, mergeMissingDays };
 }

@@ -3,11 +3,12 @@
 import { useMemo, useState } from "react";
 import { Column, Grid, Search, Tile } from "@carbon/react";
 import { PageShell, PageTitle } from "@/components/carbon/page-shell";
+import { WeekBar } from "@/components/carbon/week-bar";
 import { BarcodeScanner } from "./barcode-scanner";
 import { CustomFoodForm } from "./custom-food-form";
 import {
+  addDays,
   createLocalNoonDate,
-  DaySpreadWidget,
   formatDateKey
 } from "./day-spread-widget";
 import {
@@ -85,6 +86,34 @@ export function NutritionPage({
 
   // --- Data ---------------------------------------------------------------------
   const foodLog = useFoodLog(initialLogsByDate, selectedDateKey);
+
+  // --- Week bar (same as the dashboard): 7 days ending at weekEnd -----------
+  const [weekEnd, setWeekEnd] = useState(initialToday);
+  const weekDays = Array.from({ length: 7 }, (_, index) => {
+    const date = addDays(weekEnd, index - 6);
+    const key = formatDateKey(date);
+    const eaten = Math.round(
+      (foodLog.logsByDate[key] ?? []).reduce((total, entry) => total + entry.calories, 0)
+    );
+
+    return {
+      key,
+      date,
+      weekday: date.toLocaleDateString("en-US", { weekday: "short" }),
+      dayOfMonth: date.getDate(),
+      eaten
+    };
+  });
+  const isCurrentWeek = formatDateKey(weekEnd) === todayKey;
+
+  function showWeek(offsetDays: number) {
+    const nextEnd = addDays(weekEnd, offsetDays);
+    // Never page past today.
+    const clampedEnd = nextEnd.getTime() > initialToday.getTime() ? initialToday : nextEnd;
+
+    setWeekEnd(clampedEnd);
+    setSelectedDate(clampedEnd);
+  }
   const savedMeals = useSavedMeals(initialSavedMeals);
   const mealBuilder = useMealBuilder();
   const search = useFoodSearch();
@@ -229,7 +258,28 @@ export function NutritionPage({
 
       <Grid className="mt-6">
         <Column sm={4} md={8} lg={16}>
-          <DaySpreadWidget selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+          <WeekBar
+            title={isCurrentWeek ? "Last 7 days" : `${weekDays[0].date.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${weekDays[6].date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
+            helper="Select a day to see and log its food"
+            selectedKey={selectedDateKey}
+            onSelect={(key) => {
+              const day = weekDays.find((item) => item.key === key);
+
+              if (day) {
+                setSelectedDate(day.date);
+              }
+            }}
+            onPrevious={() => showWeek(-7)}
+            onNext={isCurrentWeek ? undefined : () => showWeek(7)}
+            days={weekDays.map((day) => ({
+              key: day.key,
+              weekday: day.weekday,
+              date: day.dayOfMonth,
+              value: day.eaten,
+              valueLabel: day.eaten > 0 ? day.eaten.toLocaleString("en-US") : "–",
+              ariaLabel: `${day.date.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}, ${day.eaten.toLocaleString("en-US")} kcal eaten`
+            }))}
+          />
 
           <DailySummary
             totals={totals}

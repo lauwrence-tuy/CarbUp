@@ -24,6 +24,7 @@ import { getMacroTargets, resolveBaseCalories } from "@/lib/nutrition-targets";
 import { getEffortBadge } from "@/lib/workout-metrics";
 import { CarbonSyncButton } from "./sync-button";
 import { effortTagType } from "./page-shell";
+import { WeekBar } from "./week-bar";
 
 export type DashboardBodyProps = {
   baseCalories: number;
@@ -111,7 +112,6 @@ export function DashboardBody({
     { label: "Protein", eaten: totals.protein, target: macroTargets.protein, bar: "cu-bar-protein" },
     { label: "Fat", eaten: totals.fat, target: macroTargets.fat, bar: "cu-bar-fat" }
   ];
-  const maxLoad = Math.max(...calendarDays.map((day) => day.load), 1);
 
   const meals = mealsByDate[selectedKey] ?? {};
   const loggedCount = mealOrder.reduce((total, meal) => total + (meals[meal.name]?.length ?? 0), 0);
@@ -131,51 +131,21 @@ export function DashboardBody({
 
       <Column sm={4} md={8} lg={16} className="mt-8">
         {/* Week bar: pick a day; everything below follows it. */}
-        <Tile className="!p-4 sm:!p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="cu-heading-02">Last 7 days</h2>
-              <p className="cu-helper mt-1">Select a day to see its fuel, meals and workouts</p>
-            </div>
-            <DayIntensityTag day={selectedDay} />
-          </div>
-          <div className="mt-5 grid grid-cols-7 gap-1.5 sm:gap-3" role="group" aria-label="Choose a day">
-            {calendarDays.map((day) => {
-              const isSelected = day.key === selectedKey;
-
-              return (
-                <button
-                  key={day.key}
-                  type="button"
-                  onClick={() => setSelectedKey(day.key)}
-                  aria-pressed={isSelected}
-                  aria-label={`${formatDayLabel(day.key, "long")}, ${formatNumber(day.calories)} kcal burned`}
-                  className={`flex flex-col items-center rounded-[18px] px-1 pb-2 pt-3 outline-none transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cds-focus ${
-                    isSelected
-                      ? "bg-cds-interactive text-black shadow-[var(--cu-shadow-glow)]"
-                      : "bg-black/30 hover:-translate-y-0.5 hover:bg-cds-layer-hover"
-                  }`}
-                >
-                  <span className={`text-[0.68rem] font-bold uppercase tracking-[0.12em] ${isSelected ? "text-black/70" : "text-cds-text-helper"}`}>
-                    {day.day}
-                  </span>
-                  <span className="cu-mono mt-1 text-lg font-bold">{day.date}</span>
-                  <span className="mt-2 flex h-9 w-full items-end justify-center" aria-hidden="true">
-                    <span
-                      className={`w-2 rounded-full ${
-                        isSelected ? "bg-black/80" : day.load > 0 ? "bg-cds-interactive" : "bg-white/15"
-                      }`}
-                      style={{ height: `${Math.max(4, (day.load / maxLoad) * 36)}px` }}
-                    />
-                  </span>
-                  <span className={`cu-mono mt-2 text-[0.7rem] ${isSelected ? "text-black/70" : "text-cds-text-helper"}`}>
-                    {day.calories > 0 ? formatNumber(day.calories) : "–"}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </Tile>
+        <WeekBar
+          title="Last 7 days"
+          helper="Select a day to see its fuel, meals and workouts"
+          aside={<DayIntensityTag day={selectedDay} />}
+          selectedKey={selectedKey}
+          onSelect={setSelectedKey}
+          days={calendarDays.map((day) => ({
+            key: day.key,
+            weekday: day.day,
+            date: day.date,
+            value: day.load,
+            valueLabel: day.calories > 0 ? formatNumber(day.calories) : "–",
+            ariaLabel: `${formatDayLabel(day.key, "long")}, ${formatNumber(day.calories)} kcal burned`
+          }))}
+        />
 
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           {/* Fuel: what's left */}

@@ -27,7 +27,7 @@ export function DailySummary({
       : `${goalAdjustment > 0 ? "+" : "-"} ${Math.abs(goalAdjustment).toLocaleString()} goal `;
 
   return (
-    <section className="mt-5 rounded-[28px] border border-white/[0.04] bg-cds-layer p-5 shadow-[var(--cu-shadow-card)]">
+    <section className="mt-4 rounded-[28px] border border-white/[0.04] bg-cds-layer p-5 shadow-[var(--cu-shadow-card)]">
       <div className="grid gap-4 lg:grid-cols-[minmax(260px,0.9fr)_minmax(0,1.1fr)]">
         <div className="flex items-end justify-between gap-4 rounded-[24px] bg-black/30 p-5">
           <div>
