@@ -14,7 +14,7 @@ export default function SendFeedbackPage() {
         you were connected to Strava when you saw it.
       </InfoBlock>
       <Link
-        className="inline-flex min-h-12 w-fit items-center gap-2 rounded-full bg-app-green px-6 text-sm font-bold text-black shadow-glow transition hover:-translate-y-0.5"
+        className="inline-flex min-h-12 w-fit items-center gap-2 rounded-full bg-cds-interactive px-6 text-sm font-bold text-black shadow-[var(--cu-shadow-glow)] transition hover:-translate-y-0.5"
         href="mailto:?subject=CarbUp%20Feedback"
       >
         <Mail className="size-4" aria-hidden="true" />

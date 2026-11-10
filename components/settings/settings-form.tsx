@@ -8,14 +8,13 @@ import {
   ChevronDown,
   ChevronRight,
   Flame,
-  Link as LinkIcon,
   LogOut,
   Mail,
   Scale,
-  Settings,
   Shield,
   Target
 } from "lucide-react";
+import { Tag, Tile } from "@carbon/react";
 import type { SettingsActionState } from "@/app/settings/actions";
 import { APP_VERSION } from "@/lib/app-meta";
 import {
@@ -133,21 +132,13 @@ function Panel({
   className?: string;
 }) {
   return (
-    <section
-      className={`rounded-[24px] border border-white/[0.05] bg-app-card p-5 shadow-card ${className}`}
-    >
+    <Tile className={`!p-6 ${className}`}>
       <div>
-        <h2 className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-white">
-          {title}
-        </h2>
-        {description ? (
-          <p className="mt-2 text-sm leading-6 text-app-secondary">
-            {description}
-          </p>
-        ) : null}
+        <h2 className="cu-heading-02">{title}</h2>
+        {description ? <p className="cu-helper mt-1 max-w-[36rem]">{description}</p> : null}
       </div>
       <div className="mt-5">{children}</div>
-    </section>
+    </Tile>
   );
 }
 
@@ -160,10 +151,10 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-[0.72rem] font-bold uppercase tracking-[0.14em] text-app-secondary">
+      <span className="text-[0.72rem] font-bold uppercase tracking-[0.14em] text-cds-text-secondary">
         {label}
       </span>
-      <div className="mt-2 rounded-[16px] border border-white/[0.06] bg-black/24 px-4 py-3">
+      <div className="mt-2 rounded-[16px] border border-white/[0.06] bg-black/30 px-4 py-3">
         {children}
       </div>
     </label>
@@ -193,25 +184,27 @@ function AppSelect({
   return (
     <div className="relative">
       <input name={name} type="hidden" value={value} />
-      <span className="text-[0.72rem] font-bold uppercase tracking-[0.14em] text-app-secondary">
+      <span className="text-[0.72rem] font-bold uppercase tracking-[0.14em] text-cds-text-secondary">
         {label}
       </span>
       <button
-        className="mt-2 flex min-h-[58px] w-full items-center justify-between gap-4 rounded-[16px] border border-white/[0.06] bg-black/24 px-4 py-3 text-left transition hover:border-app-green/35 hover:bg-black/36"
+        className="mt-2 flex min-h-[58px] w-full items-center justify-between gap-4 rounded-[16px] border border-white/[0.06] bg-black/30 px-4 py-3 text-left transition hover:border-cds-interactive hover:bg-black/40"
         onBlur={() => window.setTimeout(() => setIsOpen(false), 120)}
         onClick={() => setIsOpen((current) => !current)}
         type="button"
+        aria-label={`${label}: ${selected.label}`}
+        aria-expanded={isOpen}
       >
         <span className="min-w-0">
           <span className="block truncate text-base font-bold text-white">
             {selected.label}
           </span>
-          <span className="mt-0.5 block truncate text-xs font-semibold text-app-muted">
+          <span className="mt-0.5 block truncate text-xs font-semibold text-cds-text-helper">
             {selected.description}
           </span>
         </span>
         <ChevronDown
-          className={`size-5 shrink-0 text-app-green transition ${
+          className={`size-5 shrink-0 text-cds-interactive transition ${
             isOpen ? "rotate-180" : ""
           }`}
           aria-hidden="true"
@@ -219,7 +212,7 @@ function AppSelect({
       </button>
 
       {isOpen ? (
-        <div className="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-[18px] border border-white/[0.08] bg-[#111214] p-1.5 shadow-card">
+        <div className="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-[18px] border border-white/[0.08] bg-cds-layer-2 p-1.5 shadow-[var(--cu-shadow-card)]">
           {options.map((option) => {
             const selectedOption = option.value === value;
 
@@ -227,7 +220,7 @@ function AppSelect({
               <button
                 className={`flex min-h-14 w-full items-center justify-between gap-3 rounded-[14px] px-3 py-2 text-left transition ${
                   selectedOption
-                    ? "bg-app-green text-black"
+                    ? "bg-cds-interactive text-black"
                     : "text-white hover:bg-white/[0.08]"
                 }`}
                 key={option.value}
@@ -244,7 +237,7 @@ function AppSelect({
                   </span>
                   <span
                     className={`mt-0.5 block truncate text-xs font-semibold ${
-                      selectedOption ? "text-black/65" : "text-app-muted"
+                      selectedOption ? "text-black/65" : "text-cds-text-helper"
                     }`}
                   >
                     {option.description}
@@ -273,15 +266,15 @@ function Stat({
 }) {
   const toneClass = {
     white: "text-white",
-    green: "text-app-green",
+    green: "text-cds-interactive",
     blue: "text-app-blue",
-    yellow: "text-app-yellow",
+    yellow: "text-cds-interactive",
     purple: "text-app-purple"
   }[tone];
 
   return (
-    <div className="rounded-[18px] border border-white/[0.05] bg-black/24 p-4">
-      <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-app-secondary">
+    <div className="rounded-[18px] border border-white/[0.05] bg-black/30 p-4">
+      <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-cds-text-secondary">
         {label}
       </p>
       <p className={`mt-2 text-3xl font-bold tracking-[-0.04em] ${toneClass}`}>
@@ -359,295 +352,257 @@ export function SettingsForm({
   }
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
-      <aside className="rounded-[28px] border border-white/[0.05] bg-app-card p-5 shadow-card xl:sticky xl:top-6 xl:self-start">
-        <span className="flex size-14 items-center justify-center rounded-2xl bg-app-green text-black">
-          <Settings className="size-7" aria-hidden="true" />
-        </span>
-        <p className="mt-6 text-[0.78rem] font-bold uppercase tracking-[0.16em] text-app-secondary">
-          Settings
-        </p>
-        <h1 className="mt-2 text-4xl font-bold leading-none tracking-[-0.04em] text-white">
-          Control center
-        </h1>
-        <p className="mt-4 text-sm leading-6 text-app-secondary">
-          Tune your calorie target, macro split, units, and connected services
-          from one desktop-friendly view.
-        </p>
-
-        <div className="mt-6 grid gap-3">
-          <div className="rounded-[18px] border border-white/[0.05] bg-black/24 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <span className="flex size-10 items-center justify-center rounded-2xl bg-app-green/15 text-app-green">
-                  <LinkIcon className="size-5" aria-hidden="true" />
-                </span>
-                <div>
-                  <p className="text-sm font-bold text-white">Strava</p>
-                  <p className="text-xs text-app-secondary">
-                    {isStravaConnected ? "Connected" : "Not connected"}
-                  </p>
-                </div>
-              </div>
-              {isStravaConnected ? (
-                <span className="rounded-full bg-app-green/15 px-3 py-1 text-xs font-bold text-app-green">
-                  Live
-                </span>
-              ) : null}
-            </div>
-
-            {isStravaConnected ? (
-              <form action="/api/strava/disconnect" className="mt-4" method="post">
-                <button
-                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-app-red/12 px-5 text-sm font-bold text-app-red transition hover:bg-app-red hover:text-white"
-                  type="submit"
-                >
-                  <LogOut className="size-4" aria-hidden="true" />
-                  Disconnect Strava
-                </button>
-              </form>
-            ) : (
-              <Link
-                className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-app-green px-5 text-sm font-bold text-black shadow-glow transition hover:-translate-y-0.5"
-                href="/api/strava/auth"
-              >
-                Connect Strava
-                <ChevronRight className="size-4" aria-hidden="true" />
-              </Link>
-            )}
-          </div>
-
-          <Link
-            href="/settings/changelog"
-            className="block rounded-[18px] border border-white/[0.05] bg-black/24 p-4 transition hover:border-white/[0.12] hover:bg-black/32"
-          >
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-[0.72rem] font-bold uppercase tracking-[0.14em] text-app-secondary">
-                Version
-              </p>
-              <ChevronRight className="size-4 text-app-secondary" aria-hidden="true" />
-            </div>
-            <p className="mt-2 text-2xl font-bold tracking-[-0.04em] text-white">
-              {appVersion}
-            </p>
-            <p className="mt-1 text-xs font-semibold text-app-secondary">
-              See what&apos;s new
-            </p>
-          </Link>
+    <div className="space-y-4">
+      {state.message ? (
+        <div
+          role="status"
+          className={`rounded-[24px] border px-5 py-4 ${
+            state.status === "success"
+              ? "cu-banner text-white"
+              : "border-app-red/20 bg-app-red/10 text-app-red"
+          }`}
+        >
+          <p className="text-sm font-bold">{state.message}</p>
         </div>
-      </aside>
+      ) : null}
 
-      <div className="space-y-5">
-        {state.message ? (
-          <div
-            className={`rounded-[20px] border px-5 py-4 ${
-              state.status === "success"
-                ? "border-app-green/20 bg-app-green/10 text-app-green"
-                : "border-app-red/20 bg-app-red/10 text-app-red"
-            }`}
-          >
-            <p className="text-sm font-bold">{state.message}</p>
+    <form action={formAction}>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Panel
+          title="Profile"
+          description="Activity level is separate from Strava workouts. Rides are added on top of your target automatically."
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <AppSelect
+              label="Activity Level"
+              name="everydayActivity"
+              onChange={setEverydayActivity}
+              options={activityOptions}
+              value={everydayActivity}
+            />
+
+            <AppSelect
+              label="Units"
+              name="units"
+              onChange={updateUnits}
+              options={unitOptions}
+              value={units}
+            />
+
+            <Field label="Weight">
+              <div className="flex items-center gap-2">
+                <Scale className="size-5 text-cds-interactive" aria-hidden="true" />
+                <input
+                  className="min-w-0 flex-1 bg-transparent text-base font-semibold text-white outline-none"
+                  inputMode="decimal"
+                  name="weight"
+                  onChange={(event) => setWeight(event.target.value)}
+                  type="number"
+                  value={weight}
+                />
+                <span className="text-sm font-semibold text-cds-text-secondary">
+                  {displayUnit}
+                </span>
+              </div>
+            </Field>
+
+            <Field label="Base TDEE">
+              <div className="flex items-center gap-2">
+                <Flame className="size-5 text-cds-interactive" aria-hidden="true" />
+                <input
+                  name="maintenanceCalories"
+                  type="hidden"
+                  value={baseTdee}
+                />
+                <span className="min-w-0 flex-1 text-base font-bold text-white">
+                  {baseTdee > 0 ? baseTdee.toLocaleString() : "--"}
+                </span>
+                <span className="text-sm font-semibold text-cds-text-secondary">
+                  kcal
+                </span>
+              </div>
+            </Field>
           </div>
-        ) : null}
+        </Panel>
 
-        <form action={formAction}>
-          <div className="grid gap-5 lg:grid-cols-2">
-            <Panel
-              title="Profile"
-              description="Activity level is separate from Strava workouts. Rides are added on top of your target automatically."
-            >
-              <div className="grid gap-4 sm:grid-cols-2">
-                <AppSelect
-                  label="Activity Level"
-                  name="everydayActivity"
-                  onChange={setEverydayActivity}
-                  options={activityOptions}
-                  value={everydayActivity}
-                />
+        <Panel title="Your Goal" description="Sets the base calorie adjustment before activity calories are added.">
+          {/* Submitted value. React 19 resets the form after the action runs, which
+              snaps the radios back to the goal the page loaded with; a hidden input
+              always carries the current choice (same pattern as AppSelect). */}
+          <input name="goalType" type="hidden" value={goalType} />
+          <div className="grid gap-3 sm:grid-cols-2">
+            {goals.map((goal) => {
+              const selected = goal.value === goalType;
 
-                <AppSelect
-                  label="Units"
-                  name="units"
-                  onChange={updateUnits}
-                  options={unitOptions}
-                  value={units}
-                />
-
-                <Field label="Weight">
-                  <div className="flex items-center gap-2">
-                    <Scale className="size-5 text-app-blue" aria-hidden="true" />
-                    <input
-                      className="min-w-0 flex-1 bg-transparent text-base font-semibold text-white outline-none"
-                      inputMode="decimal"
-                      name="weight"
-                      onChange={(event) => setWeight(event.target.value)}
-                      type="number"
-                      value={weight}
-                    />
-                    <span className="text-sm font-semibold text-app-secondary">
-                      {displayUnit}
-                    </span>
-                  </div>
-                </Field>
-
-                <Field label="Base TDEE">
-                  <div className="flex items-center gap-2">
-                    <Flame className="size-5 text-app-green" aria-hidden="true" />
-                    <input
-                      name="maintenanceCalories"
-                      type="hidden"
-                      value={baseTdee}
-                    />
-                    <span className="min-w-0 flex-1 text-base font-bold text-white">
-                      {baseTdee > 0 ? baseTdee.toLocaleString() : "--"}
-                    </span>
-                    <span className="text-sm font-semibold text-app-secondary">
-                      kcal
-                    </span>
-                  </div>
-                </Field>
-              </div>
-            </Panel>
-
-            <Panel title="Your Goal" description="Sets the base calorie adjustment before activity calories are added.">
-              <div className="grid gap-3 sm:grid-cols-2">
-                {goals.map((goal) => {
-                  const selected = goal.value === goalType;
-
-                  return (
-                    <label
-                      key={goal.value}
-                      className={`cursor-pointer rounded-[18px] border p-4 transition hover:bg-app-hover ${
-                        selected
-                          ? "border-app-green bg-app-green/10"
-                          : "border-white/[0.05] bg-black/24"
-                      }`}
-                    >
-                      <input
-                        checked={selected}
-                        className="sr-only"
-                        name="goalType"
-                        onChange={() => setGoalType(goal.value)}
-                        type="radio"
-                        value={goal.value}
-                      />
-                      <span className="flex items-start justify-between gap-3">
-                        <span>
-                          <span className="block text-base font-bold text-white">
-                            {goal.label}
-                          </span>
-                          <span className="mt-1 block text-sm leading-5 text-app-secondary">
-                            {getGoalDescription(goal.weeklyKg, units)}
-                          </span>
-                        </span>
-                        {selected ? (
-                          <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-app-green text-black">
-                            <Check className="size-4" aria-hidden="true" />
-                          </span>
-                        ) : null}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
-            </Panel>
-
-            <Panel title="Nutrition Preview" className="lg:col-span-2">
-              <div className="grid gap-4 sm:grid-cols-4">
-                <Stat
-                  label="Daily Target"
-                  value={calorieBudget.toLocaleString()}
-                  tone="green"
-                />
-                <Stat label="Protein" value={`${protein}g`} tone="blue" />
-                <Stat label="Carbs" value={`${carbs}g`} tone="yellow" />
-                <Stat label="Fat" value={`${fat}g`} tone="purple" />
-              </div>
-              <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-white/[0.05] bg-black/24 p-4">
-                <div className="flex items-center gap-3">
-                  <Target className="size-5 text-app-green" aria-hidden="true" />
-                  <span className="text-sm font-semibold text-app-secondary">
-                    {baseTdee.toLocaleString()} base{" "}
-                    {goalAdjustment === 0
-                      ? "+ 0 goal"
-                      : `${goalAdjustment > 0 ? "+" : "-"} ${Math.abs(goalAdjustment).toLocaleString()} goal`}{" "}
-                    = {calorieBudget.toLocaleString()} kcal before Strava
-                  </span>
-                </div>
-                <button
-                  className="inline-flex min-h-11 items-center justify-center rounded-full bg-app-green px-6 text-sm font-bold text-black shadow-glow transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={pending || !canSave}
-                  type="submit"
+              return (
+                <label
+                  key={goal.value}
+                  className={`cursor-pointer rounded-[18px] border p-4 transition hover:bg-cds-layer-hover ${
+                    selected
+                      ? "border-cds-interactive bg-white/[0.06]"
+                      : "border-white/[0.05] bg-black/30"
+                  }`}
                 >
-                  {pending ? "Saving" : "Save Settings"}
-                </button>
-              </div>
-            </Panel>
+                  <input
+                    checked={selected}
+                    className="sr-only"
+                    name="goalTypeChoice"
+                    onChange={() => setGoalType(goal.value)}
+                    type="radio"
+                    value={goal.value}
+                  />
+                  <span className="flex items-start justify-between gap-3">
+                    <span>
+                      <span className="block text-base font-bold text-white">
+                        {goal.label}
+                      </span>
+                      <span className="mt-1 block text-sm leading-5 text-cds-text-secondary">
+                        {getGoalDescription(goal.weeklyKg, units)}
+                      </span>
+                    </span>
+                    {selected ? (
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-cds-interactive text-black">
+                        <Check className="size-4" aria-hidden="true" />
+                      </span>
+                    ) : null}
+                  </span>
+                </label>
+              );
+            })}
           </div>
-        </form>
+        </Panel>
 
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-          <Panel title="Integrations">
-            <div className="grid gap-3">
-              <div className="flex min-h-16 items-center justify-between gap-4 rounded-[18px] border border-white/[0.05] bg-black/24 px-4 py-3">
+        <Panel title="Nutrition Preview" className="lg:col-span-2">
+          <div className="grid gap-4 sm:grid-cols-4">
+            <Stat
+              label="Daily Target"
+              value={calorieBudget.toLocaleString()}
+              tone="green"
+            />
+            <Stat label="Protein" value={`${protein}g`} tone="blue" />
+            <Stat label="Carbs" value={`${carbs}g`} tone="yellow" />
+            <Stat label="Fat" value={`${fat}g`} tone="purple" />
+          </div>
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-white/[0.05] bg-black/30 p-4">
+            <div className="flex items-center gap-3">
+              <Target className="size-5 text-cds-interactive" aria-hidden="true" />
+              <span className="text-sm font-semibold text-cds-text-secondary">
+                {baseTdee.toLocaleString()} base{" "}
+                {goalAdjustment === 0
+                  ? "+ 0 goal"
+                  : `${goalAdjustment > 0 ? "+" : "-"} ${Math.abs(goalAdjustment).toLocaleString()} goal`}{" "}
+                = {calorieBudget.toLocaleString()} kcal before Strava
+              </span>
+            </div>
+            <button
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-cds-interactive px-6 text-sm font-bold text-black shadow-[var(--cu-shadow-glow)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={pending || !canSave}
+              type="submit"
+            >
+              {pending ? "Saving" : "Save Settings"}
+            </button>
+          </div>
+        </Panel>
+      </div>
+    </form>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Panel title="Account & integrations">
+          <div className="grid gap-3">
+            <div className="rounded-[18px] border border-white/[0.05] bg-black/30 p-4">
+              <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <Activity className="size-5 text-app-orange" aria-hidden="true" />
+                  <Activity className="size-5 text-cds-interactive" aria-hidden="true" />
                   <div>
                     <p className="text-base font-bold text-white">Strava</p>
-                    <p className="text-sm text-app-secondary">
+                    <p className="text-sm text-cds-text-secondary">
                       {isStravaConnected
-                        ? "Sync rides and activity calories"
+                        ? "Syncing rides and activity calories"
                         : "Connect to import ride calories"}
                     </p>
                   </div>
                 </div>
-                <span className="text-sm font-bold text-app-green">
-                  {isStravaConnected ? "Connected" : "Available"}
-                </span>
+                <Tag type={isStravaConnected ? "green" : "cool-gray"} size="sm" className="shrink-0">
+                  {isStravaConnected ? "Connected" : "Not connected"}
+                </Tag>
               </div>
 
-              <div className="flex min-h-16 items-center justify-between gap-4 rounded-[18px] border border-white/[0.05] bg-black/24 px-4 py-3 opacity-70">
-                <div className="flex items-center gap-3">
-                  <Shield className="size-5 text-app-blue" aria-hidden="true" />
-                  <div>
-                    <p className="text-base font-bold text-white">TrainingPeaks</p>
-                    <p className="text-sm text-app-secondary">
-                      Calendar import support
-                    </p>
-                  </div>
-                </div>
-                <span className="text-sm font-bold text-app-secondary">
-                  Coming soon
-                </span>
-              </div>
-            </div>
-          </Panel>
-
-          <Panel title="Support & Legal">
-            <div className="grid gap-3 sm:grid-cols-2">
-              {settingsLinks.map((item) => (
-                <Link
-                  className="group flex min-h-16 items-center justify-between gap-4 rounded-[18px] border border-white/[0.05] bg-black/24 px-4 py-3 transition hover:border-app-green/40 hover:bg-app-hover"
-                  href={item.href}
-                  key={item.href}
+              {isStravaConnected ? (
+                <form action="/api/strava/disconnect" className="mt-4" method="post">
+                  <button
+                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-app-red/12 px-5 text-sm font-bold text-app-red transition hover:bg-app-red hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cds-focus"
+                    type="submit"
+                  >
+                    <LogOut className="size-4" aria-hidden="true" />
+                    Disconnect Strava
+                  </button>
+                </form>
+              ) : (
+                // Plain <a>: a Next <Link> to an API route fires a client fetch first,
+                // which hits /api/strava/auth twice and can mismatch the OAuth state.
+                <a
+                  className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-cds-interactive px-5 text-sm font-bold text-black shadow-[var(--cu-shadow-glow)] transition hover:-translate-y-0.5"
+                  href="/api/strava/auth"
                 >
-                  <span className="flex items-center gap-3 text-base font-bold text-white">
-                    {item.label === "Send Feedback" ? (
-                      <Mail className="size-5 text-app-blue" aria-hidden="true" />
-                    ) : (
-                      <Shield className="size-5 text-app-blue" aria-hidden="true" />
-                    )}
-                    {item.label}
-                  </span>
-                  <ChevronRight
-                    className="size-5 text-app-secondary transition group-hover:translate-x-0.5 group-hover:text-app-green"
-                    aria-hidden="true"
-                  />
-                </Link>
-              ))}
+                  Connect Strava
+                  <ChevronRight className="size-4" aria-hidden="true" />
+                </a>
+              )}
             </div>
-          </Panel>
-        </div>
+
+            <div className="flex min-h-16 items-center justify-between gap-4 rounded-[18px] border border-white/[0.05] bg-black/30 px-4 py-3 opacity-70">
+              <div className="flex items-center gap-3">
+                <Shield className="size-5 text-cds-text-secondary" aria-hidden="true" />
+                <div>
+                  <p className="text-base font-bold text-white">TrainingPeaks</p>
+                  <p className="text-sm text-cds-text-secondary">Calendar import support</p>
+                </div>
+              </div>
+              <span className="text-sm font-bold text-cds-text-secondary">Coming soon</span>
+            </div>
+
+            <Link
+              href="/settings/changelog"
+              className="group flex min-h-16 items-center justify-between gap-4 rounded-[18px] border border-white/[0.05] bg-black/30 px-4 py-3 transition hover:bg-cds-layer-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cds-focus"
+            >
+              <div>
+                <p className="cu-label">Version</p>
+                <p className="mt-1 text-base font-bold text-white">
+                  {appVersion} <span className="font-semibold text-cds-text-secondary">· See what&apos;s new</span>
+                </p>
+              </div>
+              <ChevronRight
+                className="size-5 text-cds-text-secondary transition group-hover:translate-x-0.5 group-hover:text-cds-interactive"
+                aria-hidden="true"
+              />
+            </Link>
+          </div>
+        </Panel>
+
+        <Panel title="Support & legal">
+          <div className="grid gap-3">
+            {settingsLinks.map((item) => (
+              <Link
+                className="group flex min-h-16 items-center justify-between gap-4 rounded-[18px] border border-white/[0.05] bg-black/30 px-4 py-3 transition hover:bg-cds-layer-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cds-focus"
+                href={item.href}
+                key={item.href}
+              >
+                <span className="flex items-center gap-3 text-base font-bold text-white">
+                  {item.label === "Send Feedback" ? (
+                    <Mail className="size-5 text-cds-interactive" aria-hidden="true" />
+                  ) : (
+                    <Shield className="size-5 text-cds-interactive" aria-hidden="true" />
+                  )}
+                  {item.label}
+                </span>
+                <ChevronRight
+                  className="size-5 text-cds-text-secondary transition group-hover:translate-x-0.5 group-hover:text-cds-interactive"
+                  aria-hidden="true"
+                />
+              </Link>
+            ))}
+          </div>
+        </Panel>
       </div>
     </div>
   );
