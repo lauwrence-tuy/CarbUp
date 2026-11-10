@@ -145,7 +145,7 @@ export function CustomFoodForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-full bg-black/30 px-4 text-xs font-bold text-cds-text-secondary transition hover:bg-white/[0.08] hover:text-white"
+        className="inline-flex min-h-10 items-center gap-2 rounded-full bg-black/30 px-3 text-xs sm:px-4 font-bold text-cds-text-secondary transition hover:bg-white/[0.08] hover:text-white"
       >
         <Plus className="size-4" aria-hidden="true" />
         Create a food
@@ -154,7 +154,7 @@ export function CustomFoodForm({
   }
 
   return (
-    <div className="mt-3 rounded-[20px] bg-black/30 p-4">
+    <div className="order-last w-full basis-full rounded-[20px] bg-black/30 p-4">
       <div className="flex items-center justify-between gap-3">
         <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-cds-text-secondary">
           {isEditing ? (

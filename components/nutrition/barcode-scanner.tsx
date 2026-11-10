@@ -164,18 +164,19 @@ export function BarcodeScanner({ onFoodFound }: BarcodeScannerProps) {
   }, [open, stopCamera]);
 
   return (
-    <div className="mt-3">
+    // `contents`: the button and panel sit directly in the parent's button row.
+    <div className="contents">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex min-h-10 items-center gap-2 rounded-full bg-black/30 px-4 text-xs font-bold text-cds-text-secondary transition hover:bg-white/[0.08] hover:text-white"
+        className="inline-flex min-h-10 items-center gap-2 rounded-full bg-black/30 px-3 text-xs sm:px-4 font-bold text-cds-text-secondary transition hover:bg-white/[0.08] hover:text-white"
       >
         <Barcode className="size-4" aria-hidden="true" />
         {open ? "Hide scanner" : "Scan a barcode"}
       </button>
 
       {open ? (
-        <div className="mt-3 rounded-[20px] bg-black/30 p-4">
+        <div className="order-last w-full basis-full rounded-[20px] bg-black/30 p-4">
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-cds-text-secondary">
               Barcode

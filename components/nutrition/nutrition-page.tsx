@@ -305,13 +305,16 @@ export function NutritionPage({
 
               {addMode === "food" ? (
                 <>
-                  <BarcodeScanner onFoodFound={handleScannedFood} />
-                  <CustomFoodForm
-                    key={editingCustomFood?.id ?? "new"}
-                    editing={editingCustomFood}
-                    onSaved={handleSavedCustomFood}
-                    onCancelEdit={() => setEditingCustomFood(null)}
-                  />
+                  {/* One row of buttons; an opened panel drops onto its own line below. */}
+                  <div className="mt-3 flex flex-wrap items-start gap-2">
+                    <CustomFoodForm
+                      key={editingCustomFood?.id ?? "new"}
+                      editing={editingCustomFood}
+                      onSaved={handleSavedCustomFood}
+                      onCancelEdit={() => setEditingCustomFood(null)}
+                    />
+                    <BarcodeScanner onFoodFound={handleScannedFood} />
+                  </div>
                   <FoodPicker
                     heading={listHeading}
                     isSearching={search.isSearching}
