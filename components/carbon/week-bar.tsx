@@ -22,8 +22,18 @@ export type WeekBarDay = {
  * Seven-day picker shared by the dashboard and Nutrition: rounded day pills
  * with a small bar and number, the selected day in yellow, today on the right.
  */
+/** Small "Today" pill for the week bar's corner. */
+export function TodayTag() {
+  return (
+    <span className="inline-flex min-h-6 items-center rounded-full bg-cds-interactive px-2.5 text-xs font-bold text-black">
+      Today
+    </span>
+  );
+}
+
 export function WeekBar({
   title,
+  titleAs = "h2",
   helper,
   aside,
   days,
@@ -35,6 +45,8 @@ export function WeekBar({
   nextLabel = "Next week"
 }: {
   title: ReactNode;
+  /** "h1" when the week bar is the page's heading (Dashboard, Nutrition). */
+  titleAs?: "h1" | "h2";
   helper?: ReactNode;
   aside?: ReactNode;
   days: WeekBarDay[];
@@ -49,15 +61,18 @@ export function WeekBar({
 }) {
   const maxValue = Math.max(...days.map((day) => day.value), 1);
   const hasArrows = Boolean(onPrevious) || Boolean(onNext);
+  const Heading = titleAs;
 
   return (
     <Tile className="!p-4 sm:!p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="cu-heading-02">{title}</h2>
+          <Heading className={titleAs === "h1" ? "cu-heading-03" : "cu-heading-02"}>
+            {title}
+          </Heading>
           {helper ? <p className="cu-helper mt-1">{helper}</p> : null}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
           {aside}
           {hasArrows ? (
             <>

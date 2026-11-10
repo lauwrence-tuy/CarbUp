@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { Column, Grid, Search, Tile } from "@carbon/react";
-import { PageShell, PageTitle } from "@/components/carbon/page-shell";
-import { WeekBar } from "@/components/carbon/week-bar";
+import { PageShell } from "@/components/carbon/page-shell";
+import { TodayTag, WeekBar } from "@/components/carbon/week-bar";
 import { BarcodeScanner } from "./barcode-scanner";
 import { CustomFoodForm } from "./custom-food-form";
 import {
@@ -250,17 +250,17 @@ export function NutritionPage({
 
   return (
     <PageShell isConnected={isConnected}>
-      <PageTitle
-        label="Nutrition"
-        title={selectedDateKey === todayKey ? "Today" : dateLabel}
-        description={dateLabel}
-      />
-
-      <Grid className="mt-6">
+      <Grid>
         <Column sm={4} md={8} lg={16}>
           <WeekBar
-            title={isCurrentWeek ? "Last 7 days" : `${weekDays[0].date.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${weekDays[6].date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
-            helper="Select a day to see and log its food"
+            title={dateLabel}
+            titleAs="h1"
+            aside={selectedDateKey === todayKey ? <TodayTag /> : null}
+            helper={`${
+              isCurrentWeek
+                ? "Last 7 days"
+                : `${weekDays[0].date.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${weekDays[6].date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+            } · select a day to see and log its food`}
             selectedKey={selectedDateKey}
             onSelect={(key) => {
               const day = weekDays.find((item) => item.key === key);

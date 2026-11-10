@@ -24,7 +24,7 @@ import { getMacroTargets, resolveBaseCalories } from "@/lib/nutrition-targets";
 import { getEffortBadge } from "@/lib/workout-metrics";
 import { CarbonSyncButton } from "./sync-button";
 import { effortTagType } from "./page-shell";
-import { WeekBar } from "./week-bar";
+import { TodayTag, WeekBar } from "./week-bar";
 
 export type DashboardBodyProps = {
   baseCalories: number;
@@ -37,6 +37,8 @@ export type DashboardBodyProps = {
   isConnected: boolean;
   /** Sample mode: workouts are not links and sync is hidden. */
   isSample?: boolean;
+  /** "h2" when embedded in a page that already has an h1 (landing preview). */
+  headingLevel?: "h1" | "h2";
 };
 
 const emptyTotals: NutritionTotals = { calories: 0, protein: 0, carbs: 0, fat: 0 };
@@ -84,7 +86,8 @@ export function DashboardBody({
   mealsByDate = {},
   calendarDays,
   isConnected,
-  isSample = false
+  isSample = false,
+  headingLevel = "h1"
 }: DashboardBodyProps) {
   const todayKey =
     calendarDays.find((day) => day.isToday)?.key ??
@@ -123,18 +126,18 @@ export function DashboardBody({
   return (
     <Grid>
       <Column sm={4} md={8} lg={16}>
-        <p className="cu-label">{isToday ? "Today" : "Selected day"}</p>
-        <h1 className="cu-heading-05 mt-2">
-          {selectedDay ? formatDayLabel(selectedDay.key, "long") : "Today"}
-        </h1>
-      </Column>
-
-      <Column sm={4} md={8} lg={16} className="mt-8">
         {/* Week bar: pick a day; everything below follows it. */}
+        {/* The week bar is the page heading: the selected date, with Today/intensity tags. */}
         <WeekBar
-          title="Last 7 days"
-          helper="Select a day to see its fuel, meals and workouts"
-          aside={<DayIntensityTag day={selectedDay} />}
+          title={selectedDay ? formatDayLabel(selectedDay.key, "long") : "Today"}
+          titleAs={headingLevel}
+          helper="Last 7 days · select a day to see its fuel, meals and workouts"
+          aside={
+            <>
+              {isToday ? <TodayTag /> : null}
+              <DayIntensityTag day={selectedDay} />
+            </>
+          }
           selectedKey={selectedKey}
           onSelect={setSelectedKey}
           days={calendarDays.map((day) => ({

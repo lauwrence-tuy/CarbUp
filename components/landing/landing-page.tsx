@@ -219,7 +219,7 @@ export function LandingPage({ authError, disconnected, sample }: LandingPageProp
               </h2>
             </Column>
           </Grid>
-          <DashboardBody {...sample} isConnected={false} isSample />
+          <DashboardBody {...sample} isConnected={false} isSample headingLevel="h2" />
         </section>
 
         {/* How it works */}
