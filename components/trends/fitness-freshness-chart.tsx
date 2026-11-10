@@ -7,7 +7,6 @@ export const chartHeight = 420;
 export const plotTop = 24;
 export const plotBottom = 360;
 export const plotHeight = plotBottom - plotTop;
-export const hoverTooltipY = -84;
 
 export function FreshnessMetric({
   label,
@@ -64,7 +63,29 @@ export function formatHoverDate(dateKey: string) {
   };
 }
 
-export function FreshnessHoverOverlay({
+/** Vertical guide line at the hovered day (inside the stretched SVG; lines scale fine). */
+export function FreshnessHoverLine({ index, count }: { index: number; count: number }) {
+  const x = getChartX(index, count);
+
+  return (
+    <line
+      className="pointer-events-none"
+      x1={x}
+      x2={x}
+      y1="0"
+      y2={chartHeight - 8}
+      stroke="rgba(255,255,255,0.46)"
+      strokeWidth="2"
+      vectorEffect="non-scaling-stroke"
+    />
+  );
+}
+
+/**
+ * Hover readout, drawn as HTML over the chart. The SVG uses
+ * preserveAspectRatio="none", which would squash any text drawn inside it.
+ */
+export function FreshnessHoverTooltip({
   point,
   index,
   count
@@ -72,114 +93,48 @@ export function FreshnessHoverOverlay({
   point: FitnessFreshnessPoint;
   index: number;
   count: number;
-  maxValue: number;
 }) {
-  const x = getChartX(index, count);
-  const width = 276;
-  const tooltipX = Math.max(8, Math.min(chartWidth - width - 8, x - width / 2));
+  const leftPercent = (getChartX(index, count) / chartWidth) * 100;
   const date = formatHoverDate(point.dateKey);
+  const tooltipWidth = 288;
 
   return (
-    <g className="pointer-events-none">
-      <line
-        x1={x}
-        x2={x}
-        y1="0"
-        y2={chartHeight - 8}
-        stroke="rgba(255,255,255,0.46)"
-        strokeWidth="2"
-        vectorEffect="non-scaling-stroke"
-      />
-      <rect
-        fill="rgba(0,0,0,0.86)"
-        height="58"
-        rx="12"
-        stroke="rgba(255,255,255,0.10)"
-        width={width}
-        x={tooltipX}
-        y={hoverTooltipY}
-      />
-      <text
-        fill="var(--cds-text-secondary)"
-        fontSize="10"
-        fontWeight="800"
-        textAnchor="middle"
-        x={tooltipX + 34}
-        y={hoverTooltipY + 20}
-      >
-        {date.weekday}
-      </text>
-      <text
-        fill="var(--cds-text-primary)"
-        fontSize="12"
-        fontWeight="900"
-        textAnchor="middle"
-        x={tooltipX + 34}
-        y={hoverTooltipY + 37}
-      >
-        {date.date}
-      </text>
-      <HoverValue
-        color="var(--cds-interactive)"
-        label="Fitness"
-        value={point.fitness}
-        x={tooltipX + 98}
-        y={hoverTooltipY}
-      />
-      <HoverValue
-        color="var(--cds-text-secondary)"
-        label="Fatigue"
-        value={point.fatigue}
-        x={tooltipX + 166}
-        y={hoverTooltipY}
-      />
-      <HoverValue
-        color="var(--blue)"
-        label="Form"
-        value={point.form}
-        x={tooltipX + 230}
-        y={hoverTooltipY}
-      />
-    </g>
+    <div
+      className="pointer-events-none absolute top-2 z-10 flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/90 px-4 py-3 shadow-[var(--cu-shadow-card)]"
+      style={{
+        width: tooltipWidth,
+        left: `clamp(0px, calc(${leftPercent}% - ${tooltipWidth / 2}px), calc(100% - ${tooltipWidth}px))`
+      }}
+    >
+      <div className="text-center">
+        <p className="text-[0.65rem] font-bold uppercase tracking-[0.12em] text-cds-text-helper">
+          {date.weekday}
+        </p>
+        <p className="whitespace-nowrap text-sm font-bold text-white">{date.date}</p>
+      </div>
+      <HoverValue label="Fitness" value={point.fitness} className="text-cds-interactive" />
+      <HoverValue label="Fatigue" value={point.fatigue} className="text-cds-text-secondary" />
+      <HoverValue label="Form" value={point.form} className="text-[color:var(--blue)]" />
+    </div>
   );
 }
 
-export function HoverValue({
+function HoverValue({
   label,
   value,
-  color,
-  x,
-  y
+  className
 }: {
   label: string;
   value: number;
-  color: string;
-  x: number;
-  y: number;
+  className: string;
 }) {
   return (
-    <>
-      <text
-        fill="var(--cds-text-secondary)"
-        fontSize="10"
-        fontWeight="800"
-        textAnchor="middle"
-        x={x}
-        y={y + 20}
-      >
+    <div className="text-center">
+      <p className="text-[0.65rem] font-bold uppercase tracking-[0.12em] text-cds-text-helper">
         {label}
-      </text>
-      <text
-        fill={color}
-        fontSize="13"
-        fontWeight="900"
-        textAnchor="middle"
-        x={x}
-        y={y + 38}
-      >
-        {value}
-      </text>
-    </>
+      </p>
+      <p className={`cu-mono text-base font-bold ${className}`}>{value}</p>
+    </div>
   );
 }
 
@@ -237,6 +192,7 @@ export function FreshnessLine({
   );
 }
 
+/** Daily activity dots, drawn as HTML over the chart so they stay round. */
 export function ActivityDots({ points }: { points: FitnessFreshnessPoint[] }) {
   if (points.length === 0) {
     return null;
@@ -245,69 +201,45 @@ export function ActivityDots({ points }: { points: FitnessFreshnessPoint[] }) {
   const dayWidth = chartWidth / points.length;
 
   return (
-    <g>
+    <>
       {points.flatMap((point, dayIndex) =>
         point.activities.map((activity, activityIndex) => {
           const x = dayIndex * dayWidth + dayWidth / 2;
           const y = chartHeight - 22 - activityIndex * 12;
           const dotY = Math.max(chartHeight - 70, y);
+          const leftPercent = (x / chartWidth) * 100;
+          const labelAlign =
+            leftPercent < 15
+              ? "left-0"
+              : leftPercent > 85
+                ? "right-0"
+                : "left-1/2 -translate-x-1/2";
 
           return (
             <a
               key={`${point.dateKey}-${activity.stravaActivityId}-${activityIndex}`}
-              className="group"
+              className="group absolute z-[5] size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/[0.16] transition hover:bg-cds-interactive focus-visible:bg-cds-interactive focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cds-focus"
+              style={{ left: `${leftPercent}%`, top: `${(dotY / chartHeight) * 100}%` }}
               href={`https://www.strava.com/activities/${activity.stravaActivityId}`}
               target="_blank"
               rel="noreferrer"
+              aria-label={`${activity.name}, ${activity.type}, load ${activity.load} (opens Strava)`}
             >
-              {/* One string child: split text nodes in <title> break hydration. */}
-              <title>{`${activity.name} - ${activity.type} - load ${activity.load}`}</title>
-              <g
-                className="pointer-events-none opacity-0 transition group-hover:opacity-100 group-focus:opacity-100"
-                transform={`translate(${Math.max(72, Math.min(chartWidth - 72, x))} ${Math.max(34, dotY - 34)})`}
+              <span
+                className={`pointer-events-none absolute bottom-full mb-2 hidden whitespace-nowrap rounded-xl border border-white/10 bg-black/90 px-3 py-2 text-center group-hover:block group-focus-visible:block ${labelAlign}`}
               >
-                <rect
-                  fill="rgba(0,0,0,0.86)"
-                  height="42"
-                  rx="10"
-                  stroke="rgba(255,255,255,0.10)"
-                  width="144"
-                  x="-72"
-                  y="-42"
-                />
-                <text
-                  fill="var(--cds-text-secondary)"
-                  fontSize="9"
-                  fontWeight="700"
-                  textAnchor="middle"
-                  x="0"
-                  y="-25"
-                >
+                <span className="block text-[0.65rem] font-bold uppercase tracking-[0.12em] text-cds-text-helper">
                   {point.label}
-                </text>
-                <text
-                  fill="var(--cds-text-primary)"
-                  fontSize="10"
-                  fontWeight="800"
-                  textAnchor="middle"
-                  x="0"
-                  y="-11"
-                >
+                </span>
+                <span className="block text-xs font-bold text-white">
                   {truncateActivityName(activity.name)}
-                </text>
-              </g>
-              <circle
-                cx={x}
-                cy={dotY}
-                fill="rgba(255,255,255,0.16)"
-                r={4}
-                className="transition hover:fill-cds-interactive"
-              />
+                </span>
+              </span>
             </a>
           );
         })
       )}
-    </g>
+    </>
   );
 }
 

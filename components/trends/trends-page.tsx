@@ -150,131 +150,135 @@ export function TrendsPage({
             selectedTimeframe={selectedTimeframe}
           />
 
-          <div className="mt-4 grid items-start gap-4 xl:grid-cols-[minmax(0,1.08fr)_minmax(420px,0.92fr)]">
-            <div className="space-y-4">
-              <Tile className="!p-6">
-                <CardHeading title="Weekly calories" helper={selectedTimeframe} />
-                <div className="mt-8 flex h-40 items-end gap-2 sm:gap-3">
-                  {weeklyPoints.map((point) => (
-                    <div key={point.label} className="flex h-full flex-1 flex-col justify-end gap-3">
-                      <div className="flex flex-1 items-end rounded-full bg-black/30 p-1">
-                        <div
-                          className="w-full rounded-full bg-cds-interactive"
-                          style={{
-                            height: `${Math.max(
-                              point.calories > 0 ? (point.calories / maxWeeklyCalories) * 100 : 0,
-                              point.calories > 0 ? 10 : 0
-                            )}%`
-                          }}
-                        />
-                      </div>
-                      <div className="text-center">
-                        <p className="cu-mono text-xs text-white">
-                          {formatCompactCalories(point.calories)}
-                        </p>
-                        <p className="mt-1 text-[0.65rem] font-bold uppercase tracking-wide text-cds-text-helper">
-                          {point.label}
-                        </p>
-                      </div>
+          {/* Paired rows keep the two columns the same height. */}
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <Tile className="flex h-full flex-col !p-6">
+              <CardHeading title="Weekly calories" helper={selectedTimeframe} />
+              <div className="mt-8 flex min-h-40 flex-1 items-end gap-2 sm:gap-3">
+                {weeklyPoints.map((point) => (
+                  <div key={point.label} className="flex h-full flex-1 flex-col justify-end gap-3">
+                    <div className="flex flex-1 items-end rounded-full bg-black/30 p-1">
+                      <div
+                        className="w-full rounded-full bg-cds-interactive"
+                        style={{
+                          height: `${Math.max(
+                            point.calories > 0 ? (point.calories / maxWeeklyCalories) * 100 : 0,
+                            point.calories > 0 ? 10 : 0
+                          )}%`
+                        }}
+                      />
                     </div>
-                  ))}
-                </div>
-              </Tile>
-
-              <Tile className="!p-6">
-                <CardHeading title="Load by period" helper={`${selectedTimeframe}, load proxy`} />
-                <div className="mt-6 space-y-4">
-                  {monthlyPoints.map((point) => (
-                    <div
-                      key={point.label}
-                      className="grid grid-cols-[64px_minmax(0,1fr)_56px] items-center gap-4"
-                    >
-                      <span className="text-sm font-bold text-cds-text-secondary">{point.label}</span>
-                      <div className="h-3 rounded-full bg-black/30">
-                        <div
-                          className="h-full rounded-full bg-white"
-                          style={{
-                            width: `${Math.max(
-                              point.load > 0 ? (point.load / maxMonthlyLoad) * 100 : 0,
-                              point.load > 0 ? 5 : 0
-                            )}%`
-                          }}
-                        />
-                      </div>
-                      <span className="cu-mono text-right text-sm text-white">{point.load}</span>
+                    <div className="text-center">
+                      <p className="cu-mono text-xs text-white">
+                        {formatCompactCalories(point.calories)}
+                      </p>
+                      <p className="mt-1 text-[0.65rem] font-bold uppercase tracking-wide text-cds-text-helper">
+                        {point.label}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              </Tile>
+                  </div>
+                ))}
+              </div>
+            </Tile>
 
-              <Tile className="!p-6">
-                <CardHeading title="Efficiency" helper="Past 4 weeks, one week per bucket" />
-                <div className="mt-6 grid gap-3 sm:grid-cols-4">
-                  {efficiencyPoints.map((point) => (
-                    <div key={point.label} className="rounded-[22px] bg-black/30 p-4">
+            <Tile className="h-full !p-6">
+              <CardHeading title="Load by period" helper={`${selectedTimeframe}, load proxy`} />
+              <div className="mt-6 space-y-4">
+                {monthlyPoints.map((point) => (
+                  <div
+                    key={point.label}
+                    className="grid grid-cols-[64px_minmax(0,1fr)_56px] items-center gap-4"
+                  >
+                    <span className="text-sm font-bold text-cds-text-secondary">{point.label}</span>
+                    <div className="h-3 rounded-full bg-black/30">
+                      <div
+                        className="h-full rounded-full bg-white"
+                        style={{
+                          width: `${Math.max(
+                            point.load > 0 ? (point.load / maxMonthlyLoad) * 100 : 0,
+                            point.load > 0 ? 5 : 0
+                          )}%`
+                        }}
+                      />
+                    </div>
+                    <span className="cu-mono text-right text-sm text-white">{point.load}</span>
+                  </div>
+                ))}
+              </div>
+            </Tile>
+
+            <Tile className="flex h-full flex-col !p-6">
+              <CardHeading title="Efficiency" helper="Past 4 weeks, one week per bucket" />
+              <div className="mt-6 grid flex-1 gap-3 sm:grid-cols-4">
+                {efficiencyPoints.map((point) => (
+                  <div
+                    key={point.label}
+                    className="flex flex-col justify-between gap-4 rounded-[22px] bg-black/30 p-4"
+                  >
+                    <div>
                       <p className="cu-label">{point.label}</p>
                       <p className="cu-number mt-3 !text-2xl">{point.workouts}</p>
                       <p className="cu-helper">workouts</p>
-                      <p className="mt-4 text-sm font-bold text-cds-interactive">
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-cds-interactive">
                         {formatCompactCalories(point.calories)} kcal
                       </p>
                       <p className="cu-helper mt-1">
                         {formatDuration(point.durationMinutes)} · {point.distanceMiles.toFixed(1)} mi
                       </p>
                     </div>
-                  ))}
-                </div>
-              </Tile>
-            </div>
+                  </div>
+                ))}
+              </div>
+            </Tile>
 
-            <aside className="space-y-4">
-              <Tile className="!p-6">
-                <CardHeading title="Insights" helper="Current readout" />
-                <div className="mt-5 space-y-3">
-                  {insights.map((insight) => (
-                    <div key={insight.label} className="rounded-[22px] bg-black/30 p-4">
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="text-sm font-bold text-white">{insight.label}</span>
-                        <Tag type={insightTagType[insight.tone]} size="sm" className="shrink-0">
-                          {insight.value}
-                        </Tag>
-                      </div>
-                      <p className="cu-helper mt-2">{insight.detail}</p>
+            <Tile className="h-full !p-6">
+              <CardHeading title="Insights" helper="Current readout" />
+              <div className="mt-5 space-y-3">
+                {insights.map((insight) => (
+                  <div key={insight.label} className="rounded-[22px] bg-black/30 p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-sm font-bold text-white">{insight.label}</span>
+                      <Tag type={insightTagType[insight.tone]} size="sm" className="shrink-0">
+                        {insight.value}
+                      </Tag>
                     </div>
-                  ))}
-                </div>
-              </Tile>
+                    <p className="cu-helper mt-2">{insight.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </Tile>
 
-              <Tile className="!p-6">
-                <CardHeading title="Sport mix" helper="Calories by type" />
-                <div className="mt-5 space-y-4">
-                  {sportTrends.length > 0 ? (
-                    sportTrends.map((sport) => (
-                      <div key={sport.type}>
-                        <div className="mb-2 flex items-center justify-between gap-4">
-                          <span className="text-sm font-bold text-white">{sport.type}</span>
-                          <span className="cu-mono text-sm text-cds-text-secondary">
-                            {sport.calories.toLocaleString("en-US")} kcal
-                          </span>
-                        </div>
-                        <div className="h-3 rounded-full bg-black/30">
-                          <div
-                            className="h-full rounded-full bg-cds-interactive"
-                            style={{
-                              width: `${Math.max((sport.calories / sportTotalCalories) * 100, 4)}%`
-                            }}
-                          />
-                        </div>
+            <Tile className="!p-6 lg:col-span-2">
+              <CardHeading title="Sport mix" helper="Calories by type" />
+              <div className="mt-5 space-y-4">
+                {sportTrends.length > 0 ? (
+                  sportTrends.map((sport) => (
+                    <div key={sport.type}>
+                      <div className="mb-2 flex items-center justify-between gap-4">
+                        <span className="text-sm font-bold text-white">{sport.type}</span>
+                        <span className="cu-mono text-sm text-cds-text-secondary">
+                          {sport.calories.toLocaleString("en-US")} kcal
+                        </span>
                       </div>
-                    ))
-                  ) : (
-                    <p className="cu-body-01 rounded-[22px] bg-black/30 p-4 text-cds-text-secondary">
-                      Connect Strava to see your sport mix.
-                    </p>
-                  )}
-                </div>
-              </Tile>
-            </aside>
+                      <div className="h-3 rounded-full bg-black/30">
+                        <div
+                          className="h-full rounded-full bg-cds-interactive"
+                          style={{
+                            width: `${Math.max((sport.calories / sportTotalCalories) * 100, 4)}%`
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="cu-body-01 rounded-[22px] bg-black/30 p-4 text-cds-text-secondary">
+                    Connect Strava to see your sport mix.
+                  </p>
+                )}
+              </div>
+            </Tile>
           </div>
         </Column>
       </Grid>

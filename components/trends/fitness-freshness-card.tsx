@@ -9,7 +9,8 @@ import {
   ChartLegend,
   chartHeight,
   chartWidth,
-  FreshnessHoverOverlay,
+  FreshnessHoverLine,
+  FreshnessHoverTooltip,
   FreshnessLine,
   FreshnessMetric,
   getFormZeroY
@@ -55,7 +56,7 @@ export function FitnessFreshnessCard({
       ? null
       : points[hoveredFreshnessIndex];
 
-  function handleFreshnessMouseMove(event: MouseEvent<SVGSVGElement>) {
+  function handleFreshnessMouseMove(event: MouseEvent<HTMLDivElement>) {
     if (points.length === 0) {
       return;
     }
@@ -106,14 +107,18 @@ export function FitnessFreshnessCard({
     </div>
 
     <div className="mt-6 h-[540px] rounded-[22px] bg-black/30 p-5">
+      {/* Lines live in a stretched SVG; tooltip and dots are HTML on top so they keep their shape. */}
+      <div
+        className="relative h-full w-full"
+        onMouseLeave={() => setHoveredFreshnessIndex(null)}
+        onMouseMove={handleFreshnessMouseMove}
+      >
       <svg
         className="h-full w-full overflow-visible"
         role="img"
         aria-label="Fitness, fatigue, form, and activity load chart"
         viewBox={`0 0 ${chartWidth} ${chartHeight}`}
         preserveAspectRatio="none"
-        onMouseLeave={() => setHoveredFreshnessIndex(null)}
-        onMouseMove={handleFreshnessMouseMove}
       >
         <rect
           fill="transparent"
@@ -129,9 +134,6 @@ export function FitnessFreshnessCard({
           y2={getFormZeroY(maxFreshnessValue)}
           stroke="rgba(255,255,255,0.12)"
           strokeDasharray="8 8"
-        />
-        <ActivityDots
-          points={points}
         />
         <FreshnessLine
           points={points}
@@ -151,15 +153,19 @@ export function FitnessFreshnessCard({
           metric="form"
           color="var(--blue)"
         />
-        {hoveredFreshnessPoint && hoveredFreshnessIndex != null ? (
-          <FreshnessHoverOverlay
-            count={points.length}
-            index={hoveredFreshnessIndex}
-            maxValue={maxFreshnessValue}
-            point={hoveredFreshnessPoint}
-          />
+        {hoveredFreshnessIndex != null ? (
+          <FreshnessHoverLine count={points.length} index={hoveredFreshnessIndex} />
         ) : null}
       </svg>
+      <ActivityDots points={points} />
+      {hoveredFreshnessPoint && hoveredFreshnessIndex != null ? (
+        <FreshnessHoverTooltip
+          count={points.length}
+          index={hoveredFreshnessIndex}
+          point={hoveredFreshnessPoint}
+        />
+      ) : null}
+      </div>
     </div>
 
     <div className="mt-4 flex flex-wrap gap-4 text-xs font-bold uppercase tracking-[0.14em] text-cds-text-helper">
