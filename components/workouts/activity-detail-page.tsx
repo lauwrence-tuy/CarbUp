@@ -10,22 +10,14 @@ import {
   useRef,
   useState
 } from "react";
-import {
-  ArrowLeft,
-  Bike,
-  Flame,
-  MapPinned,
-  Mountain,
-  Route,
-  Timer
-} from "lucide-react";
+import { ArrowLeft, Bike } from "lucide-react";
+import { Column, Grid, Tile } from "@carbon/react";
 import type {
   ActivityChart,
   ActivityVisualData,
   LatLngPoint
 } from "@/lib/strava-activity-detail";
-import { MetricCard } from "@/components/ui/metric-card";
-import { AppHeader } from "@/components/app-header";
+import { PageShell, PageTitle, StatTile } from "@/components/carbon/page-shell";
 
 // Route map colors. Strava-style orange route on a dark slate base, kept
 // separate from the app theme so the map reads like a map.
@@ -297,123 +289,89 @@ export function ActivityDetailPage({
     };
   }, []);
 
-  return (
-    <main className="min-h-screen bg-app-bg text-white">
-      <div className="mx-auto min-h-screen w-full max-w-7xl px-5 pb-24 pt-6 sm:px-8 lg:px-10">
-        <AppHeader isConnected active="Workouts" />
+  const distanceValue =
+    visualData?.totalDistanceMiles != null
+      ? formatDistanceValue(visualData.totalDistanceMiles)
+      : activity.distanceLabel;
 
-        <section className="mt-8">
+  return (
+    <PageShell isConnected>
+      <Grid>
+        <Column sm={4} md={8} lg={16}>
           <Link
             href="/workouts"
-            className="inline-flex min-h-10 items-center gap-2 rounded-full bg-app-card px-4 text-sm font-bold text-app-secondary transition hover:bg-app-hover hover:text-white"
+            className="inline-flex min-h-10 items-center gap-2 rounded-full bg-cds-layer px-4 text-sm font-bold text-cds-text-secondary transition hover:bg-cds-layer-hover hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cds-focus"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />
             Workouts
           </Link>
+        </Column>
+      </Grid>
 
-          <div className="mt-5 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-[0.78rem] font-bold uppercase tracking-[0.16em] text-app-secondary">
-                {activity.type}
-              </p>
-              <h1 className="mt-3 text-4xl font-bold leading-none tracking-[-0.04em] text-white sm:text-6xl">
-                {activity.name}
-              </h1>
-              <p className="mt-3 text-base font-semibold text-app-muted">
-                {activity.dateLabel} at {activity.startTime}
-              </p>
-            </div>
+      <div className="mt-6">
+        <PageTitle
+          label={activity.type}
+          title={activity.name}
+          description={`${activity.dateLabel} at ${activity.startTime}`}
+        />
+      </div>
+
+      <Grid className="mt-8">
+        <Column sm={4} md={8} lg={16}>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatTile
+              label="Calories"
+              value={
+                activity.calories == null
+                  ? "—"
+                  : activity.calories.toLocaleString("en-US")
+              }
+              helper="activity burn"
+              accent
+            />
+            <StatTile label="Duration" value={activity.durationLabel} helper="moving time" />
+            <StatTile label="Distance" value={distanceValue} helper="route distance" />
+            <StatTile
+              label="Elevation"
+              value={formatElevationValue(visualData?.totalElevationFeet ?? null)}
+              helper={`effort ${activity.effort}`}
+            />
           </div>
-        </section>
 
-        <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard
-            label="Calories"
-            value={
-              activity.calories == null
-                ? "--"
-                : activity.calories.toLocaleString()
-            }
-            detail="activity burn"
-            icon={Flame}
-            tone="green"
-          />
-          <MetricCard
-            label="Duration"
-            value={activity.durationLabel}
-            detail="moving time"
-            icon={Timer}
-            tone="blue"
-          />
-          <MetricCard
-            label="Distance"
-            value={
-              visualData?.totalDistanceMiles != null
-                ? formatDistanceValue(visualData.totalDistanceMiles)
-                : activity.distanceLabel
-            }
-            detail="route distance"
-            icon={Route}
-            tone="orange"
-          />
-          <MetricCard
-            label="Elevation"
-            value={formatElevationValue(visualData?.totalElevationFeet ?? null)}
-            detail={`effort ${activity.effort}`}
-            icon={Mountain}
-            tone="purple"
-          />
-        </section>
-
-        <section className="mt-6 overflow-hidden rounded-[28px] border border-white/[0.04] bg-app-card shadow-card">
-          <div className="flex items-center justify-between gap-4 border-b border-white/[0.06] px-5 py-4">
-            <div className="flex items-center gap-3">
-              <span className="flex size-11 items-center justify-center rounded-2xl bg-app-green text-black">
-                <MapPinned className="size-5" aria-hidden="true" />
-              </span>
+          <Tile className="mt-4 overflow-hidden !p-0">
+            <div className="flex items-center justify-between gap-4 px-6 py-5">
               <div>
-                <h2 className="text-[0.8rem] font-bold uppercase tracking-[0.16em] text-white">
-                  Route map
-                </h2>
-                <p className="mt-1 text-sm text-app-muted">
+                <h2 className="cu-heading-02">Route map</h2>
+                <p className="cu-helper mt-1">
                   {visualData?.route.length
                     ? "Synced from Strava GPS data"
                     : "No route stream available"}
                 </p>
               </div>
             </div>
-          </div>
-          <ActivityRouteMap
-            hoverRatio={hoverRatio}
-            route={visualData?.route ?? []}
-          />
-        </section>
+            <ActivityRouteMap hoverRatio={hoverRatio} route={visualData?.route ?? []} />
+          </Tile>
 
-        <section className="mt-6 overflow-hidden rounded-[28px] border border-white/[0.04] bg-app-card shadow-card">
-          <div className="grid border-b border-white/[0.06] bg-black/20 px-5 py-4 sm:grid-cols-[160px_minmax(0,1fr)_110px]">
-            <div className="text-[0.72rem] font-bold uppercase tracking-[0.16em] text-app-secondary">
-              Metric
+          <Tile className="mt-4 overflow-hidden !p-0">
+            <div className="grid border-b border-[color:var(--cds-border-subtle-00)] px-6 py-4 sm:grid-cols-[160px_minmax(0,1fr)_110px]">
+              <div className="cu-label">Metric</div>
+              <div className="cu-label hidden sm:block">Activity stream</div>
+              <div className="cu-label hidden text-right sm:block">Max / avg</div>
             </div>
-            <div className="hidden text-[0.72rem] font-bold uppercase tracking-[0.16em] text-app-secondary sm:block">
-              Activity stream
+            <div className="divide-y divide-[color:var(--cds-border-subtle-00)]">
+              {metricCharts.map((chart) => (
+                <MetricStreamRow
+                  key={chart.label}
+                  chart={chart}
+                  hoverRatio={hoverRatio}
+                  onHoverRatioChange={handleHoverRatioChange}
+                />
+              ))}
             </div>
-            <div className="hidden text-right text-[0.72rem] font-bold uppercase tracking-[0.16em] text-app-secondary sm:block">
-              Max / avg
-            </div>
-          </div>
-          <div className="divide-y divide-white/[0.06]">
-            {metricCharts.map((chart) => (
-              <MetricStreamRow
-                key={chart.label}
-                chart={chart}
-                hoverRatio={hoverRatio}
-                onHoverRatioChange={handleHoverRatioChange}
-              />
-            ))}
-          </div>
-        </section>
-      </div>
-    </main>
+          </Tile>
+        </Column>
+      </Grid>
+    </PageShell>
   );
 }
 
@@ -612,11 +570,9 @@ function ActivityRouteMap({
     return (
       <div className="flex min-h-[360px] items-center justify-center bg-black/30 p-6 text-center">
         <div>
-          <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-app-orange text-white">
-            <Bike className="size-7" aria-hidden="true" />
-          </span>
+          <Bike className="mx-auto size-8 text-cds-interactive" aria-hidden="true" />
           <h3 className="mt-4 text-xl font-bold text-white">No GPS map found</h3>
-          <p className="mt-2 max-w-md text-sm text-app-secondary">
+          <p className="mt-2 max-w-md text-sm text-cds-text-secondary">
             Strava did not return route points for this activity.
           </p>
         </div>
@@ -710,7 +666,7 @@ function ActivityRouteMap({
         ) : null}
       </svg>
       <div
-        className={`pointer-events-none absolute right-4 top-4 rounded-2xl border border-white/[0.08] bg-black/70 px-4 py-3 text-xs text-white shadow-card backdrop-blur transition-opacity duration-1000 ease-out ${
+        className={`pointer-events-none absolute right-4 top-4 rounded-2xl border border-white/[0.08] bg-black/70 px-4 py-3 text-xs text-white shadow-[var(--cu-shadow-card)] backdrop-blur transition-opacity duration-1000 ease-out ${
           showControlsHint ? "opacity-100" : "opacity-0"
         }`}
       >
@@ -748,7 +704,7 @@ function MetricStreamRow({
     <div className="grid gap-4 px-5 py-4 sm:grid-cols-[160px_minmax(0,1fr)_110px] sm:items-center">
       <div>
         <h3 className="text-sm font-bold text-white">{chart.label}</h3>
-        <p className="mt-1 text-xs text-app-muted">
+        <p className="mt-1 text-xs text-cds-text-helper">
           Max {chart.maxLabel}
           <br />
           Avg {chart.averageLabel}
@@ -792,7 +748,7 @@ function MetricStreamRow({
             )}
           </svg>
         ) : (
-          <div className="flex h-[76px] items-center justify-center text-xs font-bold uppercase tracking-[0.14em] text-app-muted">
+          <div className="flex h-[76px] items-center justify-center text-xs font-bold uppercase tracking-[0.14em] text-cds-text-helper">
             No stream
           </div>
         )}
@@ -801,7 +757,7 @@ function MetricStreamRow({
         <p className="text-lg font-bold text-white">
           {chart.points.length > 0 ? displayValue : "--"}
         </p>
-        <p className="text-xs font-bold text-app-muted">{chart.unit}</p>
+        <p className="text-xs font-bold text-cds-text-helper">{chart.unit}</p>
       </div>
     </div>
   );
