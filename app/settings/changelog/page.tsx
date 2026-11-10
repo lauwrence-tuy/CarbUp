@@ -66,6 +66,25 @@ export default function ChangelogPage() {
             together in one card.
           </li>
           <li>
+            Faster everywhere: pages load only what they show, and each page
+            now shows its layout the moment you click instead of waiting.
+          </li>
+          <li>
+            Strava sync is much quicker: after your first import it only
+            fetches recent activities and saves only what changed.
+          </li>
+          <li>
+            Workout pages show your stats straight away, with the route map
+            and charts filling in a moment later, and open almost instantly
+            the second time.
+          </li>
+          <li>
+            Nutrition keeps the last 12 weeks; the week arrows stop there.
+          </li>
+          <li>
+            Fixed: older Nutrition weeks could be missing your ride calories.
+          </li>
+          <li>
             Fixed: saving Settings a second time could switch your goal back to
             the one the page opened with.
           </li>

@@ -35,14 +35,31 @@ feature work.
   period" (its buckets are about two weeks).
 - Settings: one-column flow with an "Account & integrations" card replacing
   the sidebar and the separate Integrations card.
+- Faster pages: each page loads only the rows and columns it shows
+  (Dashboard: the week's activities and food logs; Nutrition: the last 12
+  weeks, which is now how far week paging goes; Trends/Workouts: only the
+  columns they use, no tokens). Date formatters in `lib/date.ts` are created
+  once instead of on every call.
+- Strava sync is incremental: after the first 183-day import it fetches from
+  7 days before the newest stored activity, and writes only new activities
+  (one `createMany`) and changed ones, instead of re-upserting every row.
+- Workout detail renders its stats immediately and streams the route map and
+  charts (`Suspense` + `use`). Route and streams are thinned and rounded on
+  the server (the page was ~5 MB of HTML, now ~330 KB) and cached per
+  activity for 30 days (`lib/activity-visual-cache.ts`, `unstable_cache`).
 
 ### Added
+- Loading screens (`loading.tsx`) for Dashboard, Nutrition, Workouts, Trends,
+  workout detail and Settings, built from `components/carbon/skeleton.tsx`
+  and `components/carbon/page-skeletons.tsx`.
 - `/sample`: full dashboard with sample data anchored on the current date
   (`lib/sample-day.ts`); sample meals sum to the sample's eaten calories.
 - `lib/dashboard-types.ts` (`Workout`, `CalendarDay`, `MealEntry`,
   `MealsByDate`).
 
 ### Fixed
+- Nutrition: weeks more than about 30 activities back lost their ride
+  calories (the page only loaded the 30 most recent activities).
 - Settings: React 19 resets the form after a server action, snapping the goal
   radios back to the page-load value, so a second Save stored the old goal.
   The goal is now submitted through a hidden input.
