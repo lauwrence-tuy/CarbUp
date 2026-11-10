@@ -6,7 +6,8 @@ Live app: [https://carb-up-lilac.vercel.app/](https://carb-up-lilac.vercel.app/)
 
 Core features:
 
-- Landing page at `/`
+- Landing page at `/` (signed-in visitors go to `/dashboard`)
+- Sample dashboard with made-up data at `/sample`
 - Dashboard page at `/dashboard`
 - Nutrition logging page at `/nutrition`
 - Workout history and trends pages at `/workouts` and `/trends`
@@ -92,14 +93,16 @@ Settings are saved in Postgres on the authenticated `User` record.
 
 The `/dashboard` page shows:
 
-- Calories card using `maintenanceCalories + activityCalories + goalAdjustment`
-- Calendar card
+- A 7-day week bar (the page heading) for picking a day, with each day's
+  Strava calories and an intensity tag on the same scale as workouts
+- Fuel card: calories remaining from
+  `maintenanceCalories + activityCalories + goalAdjustment`, plus macros
+- Today's meals card: foods logged per meal for the selected day
 - Workouts card synced from Strava
-- Training load indicator card
 
-Use the Sync Strava button on the workouts page to fetch recent activities. If
-Strava does not provide calories for an activity, the dashboard shows
-`Calories unavailable` and does not invent a calorie number.
+Use the Sync Strava button on the dashboard's or the workouts page's workout
+list to fetch recent activities. If Strava does not provide calories for an
+activity, the list shows a dash (—) and does not invent a calorie number.
 
 ## Security notes
 
