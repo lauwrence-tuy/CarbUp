@@ -1,5 +1,4 @@
-import type { CalendarDay } from "@/components/dashboard/weekly-calendar";
-import type { Workout } from "@/components/dashboard/workout-history-card";
+import type { CalendarDay, Workout } from "@/lib/dashboard-types";
 import type { NutritionTotals } from "@/components/nutrition/nutrition-diary-storage";
 import { getTrailingSevenLocalDays } from "@/lib/date";
 import { getEffortBadge } from "@/lib/workout-metrics";

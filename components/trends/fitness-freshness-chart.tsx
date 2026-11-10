@@ -120,14 +120,14 @@ export function FreshnessHoverOverlay({
         {date.date}
       </text>
       <HoverValue
-        color="var(--orange)"
+        color="var(--cds-interactive)"
         label="Fitness"
         value={point.fitness}
         x={tooltipX + 98}
         y={hoverTooltipY}
       />
       <HoverValue
-        color="var(--text-secondary)"
+        color="var(--cds-text-secondary)"
         label="Fatigue"
         value={point.fatigue}
         x={tooltipX + 166}

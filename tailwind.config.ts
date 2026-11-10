@@ -9,7 +9,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Carbon g100 theme tokens (CSS custom properties from app/carbon.scss).
+        // Theme tokens: CSS custom properties set in app/carbon.scss (Carbon g100
+        // re-skinned to the CarbUp palette).
         cds: {
           background: "var(--cds-background)",
           layer: "var(--cds-layer-01)",
@@ -27,40 +28,16 @@ const config: Config = {
           "support-warning": "var(--cds-support-warning)",
           "support-info": "var(--cds-support-info)"
         },
+        // Accent colours that need Tailwind opacity modifiers (e.g. bg-app-red/10),
+        // plus the macro colours (protein blue, fat purple).
         app: {
-          bg: "#000000",
-          surface: "#111111",
-          card: "#17181c",
-          hover: "#1e2025",
-          border: "rgba(255,255,255,0.06)",
-          primary: "#ffffff",
-          secondary: "#b5b5b5",
-          muted: "#777777",
           green: "#FFDD00",
-          "green-soft": "#FFE766",
+          yellow: "#FFDD00",
           orange: "#f97316",
           red: "#ef4444",
           purple: "#a855f7",
-          blue: "#60a5fa",
-          yellow: "#FFDD00"
-        },
-        ember: {
-          50: "#fff7ed",
-          100: "#ffedd5",
-          500: "#f97316",
-          600: "#ea580c"
-        },
-        pine: {
-          50: "#fffce5",
-          500: "#FFDD00",
-          700: "#b89f00"
-        },
-        ink: "#111827"
-      },
-      boxShadow: {
-        soft: "0 20px 60px rgba(17, 24, 39, 0.12)",
-        card: "0 8px 30px rgba(0,0,0,0.35)",
-        glow: "0 0 0 8px rgba(255,221,0,0.12), 0 16px 44px rgba(255,221,0,0.34)"
+          blue: "#60a5fa"
+        }
       }
     }
   },

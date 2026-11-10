@@ -16,8 +16,7 @@ import {
   Tile
 } from "@carbon/react";
 import { ArrowRight } from "@carbon/icons-react";
-import type { CalendarDay } from "@/components/dashboard/weekly-calendar";
-import type { Workout } from "@/components/dashboard/workout-history-card";
+import type { CalendarDay, Workout } from "@/lib/dashboard-types";
 import type { NutritionTotals } from "@/components/nutrition/nutrition-diary-storage";
 import { getMacroTargets, resolveBaseCalories } from "@/lib/nutrition-targets";
 import { CarbonSyncButton } from "./sync-button";

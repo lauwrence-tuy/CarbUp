@@ -1,5 +1,15 @@
 "use client";
 
+// Shown when the root layout itself fails, so the app's stylesheets may not be
+// loaded. Inline styles mirror the CarbUp palette from app/carbon.scss.
+const colors = {
+  background: "#000000",
+  card: "#17181c",
+  text: "#ffffff",
+  textSecondary: "#b5b5b5",
+  yellow: "#ffdd00"
+};
+
 export default function GlobalError({
   reset
 }: {
@@ -8,42 +18,61 @@ export default function GlobalError({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body style={{ margin: 0 }}>
         <main
           style={{
             alignItems: "center",
-            background: "#0b0f14",
-            color: "white",
+            background: colors.background,
+            color: colors.text,
             display: "flex",
-            fontFamily: "Arial, sans-serif",
+            fontFamily:
+              'Inter, "SF Pro Display", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
             justifyContent: "center",
             minHeight: "100vh",
-            padding: 20
+            padding: 16
           }}
         >
           <section
             style={{
-              background: "#171d25",
-              border: "1px solid rgba(255,255,255,0.08)",
+              background: colors.card,
+              border: "1px solid rgba(255,255,255,0.04)",
               borderRadius: 28,
-              maxWidth: 520,
-              padding: 28,
-              textAlign: "center"
+              boxShadow: "0 8px 30px rgba(0,0,0,0.35)",
+              maxWidth: 512,
+              padding: 32,
+              textAlign: "center",
+              width: "100%"
             }}
           >
-            <h1 style={{ fontSize: 28, margin: 0 }}>CarbUp needs a refresh</h1>
-            <p style={{ color: "#96a0ad", lineHeight: 1.6 }}>
+            <p style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.04em", margin: 0 }}>
+              Carb<span style={{ color: colors.yellow }}>Up</span>
+            </p>
+            <h1
+              style={{
+                fontSize: 32,
+                fontWeight: 700,
+                letterSpacing: "-0.03em",
+                margin: "24px 0 0"
+              }}
+            >
+              CarbUp needs a refresh
+            </h1>
+            <p style={{ color: colors.textSecondary, fontSize: 14, lineHeight: 1.6 }}>
               The app hit a temporary error while loading.
             </p>
             <button
               onClick={reset}
               style={{
-                background: "#9ee86f",
+                background: colors.yellow,
                 border: 0,
                 borderRadius: 999,
-                color: "black",
+                boxShadow:
+                  "0 0 0 8px rgba(255,221,0,0.12), 0 16px 44px rgba(255,221,0,0.34)",
+                color: "#000000",
                 cursor: "pointer",
+                fontSize: 14,
                 fontWeight: 700,
+                marginTop: 16,
                 minHeight: 44,
                 padding: "0 20px"
               }}

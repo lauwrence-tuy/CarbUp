@@ -4,7 +4,6 @@ import type {
   FoodLogEntry,
   MealName
 } from "./nutrition-diary-storage";
-import type { StatusBadgeProps } from "@/components/ui/status-badge";
 import { meals } from "./meals";
 
 /** The day's log, grouped by meal. */
@@ -17,7 +16,7 @@ export function FoodDiary({
 }: {
   log: FoodLogEntry[];
   dateLabel: string;
-  status: StatusBadgeProps["label"];
+  status: "Ready" | "Active" | "Complete";
   onSelectMeal: (meal: MealName) => void;
   onRemove: (logId: string) => void;
 }) {

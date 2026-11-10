@@ -2,11 +2,10 @@
 
 import { Button, Column, Grid } from "@carbon/react";
 import { ArrowRight } from "@carbon/icons-react";
-import type { AppSection } from "@/components/app-header";
 import { CarbonHeader } from "@/components/carbon/carbon-header";
 
 type StravaLoginRequiredPageProps = {
-  pageName: AppSection;
+  pageName: "Dashboard" | "Nutrition" | "Workouts" | "Trends";
 };
 
 export function StravaLoginRequiredPage({

@@ -1,6 +1,6 @@
 import { CarbonDashboard } from "@/components/carbon/carbon-dashboard";
 import { StravaLoginRequiredPage } from "@/components/strava/strava-login-required-page";
-import type { Workout } from "@/components/dashboard/workout-history-card";
+import type { Workout } from "@/lib/dashboard-types";
 import { getActivitySlug } from "@/lib/activity-slug";
 import {
   formatActivityTime,
