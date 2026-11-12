@@ -1,12 +1,14 @@
 import { CarbonDashboard } from "@/components/carbon/carbon-dashboard";
 import { StravaLoginRequiredPage } from "@/components/strava/strava-login-required-page";
 import type { MealsByDate, Workout } from "@/lib/dashboard-types";
+import { sumActivityCaloriesByDate } from "@/lib/activity-calories";
 import { getActivitySlug } from "@/lib/activity-slug";
 import {
   formatActivityTime,
   getLocalDateKey,
   getTrailingSevenLocalDays
 } from "@/lib/date";
+import { getEffectiveGoalAdjustment } from "@/lib/nutrition-targets";
 import { prisma } from "@/lib/prisma";
 import {
   calculateActivityLoad,
@@ -127,17 +129,13 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   const activities = (user?.activities ?? []) as ActivityRow[];
   const foodLogs = (user?.foodLogs ?? []) as FoodLogRow[];
+  const activityCaloriesByDate = sumActivityCaloriesByDate(activities);
   const calendarDays = calendarBaseDays.map((day) => {
     const activitiesForDay =
       activities.filter(
         (activity) => getLocalDateKey(activity.startDate) === day.key
       );
-    const calories = Math.round(
-      activitiesForDay.reduce(
-        (total, activity) => total + (activity.calories ?? 0),
-        0
-      )
-    );
+    const calories = activityCaloriesByDate[day.key] ?? 0;
     const load = activitiesForDay.reduce(
       (total, activity) => total + calculateActivityLoad(activity),
       0
@@ -209,7 +207,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       authStatus={params.connected === "strava" ? "connected" : undefined}
       authError={params.auth_error}
       baseCalories={user?.maintenanceCalories ?? 0}
-      goalAdjustment={user?.maintenanceCalories == null ? 0 : user.goalAdjustment}
+      goalAdjustment={getEffectiveGoalAdjustment(user)}
       workoutsByDate={workoutsByDate}
       nutritionTotalsByDate={nutritionTotalsByDate}
       mealsByDate={mealsByDate}

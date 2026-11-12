@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   estimateActivityCalories,
   getActivityCalories,
-  getActivityWeightKg
+  getActivityWeightKg,
+  sumActivityCaloriesByDate
 } from "./activity-calories";
 
 describe("getActivityWeightKg", () => {
@@ -59,5 +60,24 @@ describe("getActivityCalories", () => {
     expect(
       getActivityCalories({ calories: 0, movingTime: 3600, type: "Run", weightKg: 70 })
     ).toBe(720);
+  });
+});
+
+describe("sumActivityCaloriesByDate", () => {
+  it("totals calories per day and rounds once per day", () => {
+    expect(
+      sumActivityCaloriesByDate([
+        { startDate: new Date("2026-06-30T15:00:00Z"), calories: 300.4 },
+        { startDate: new Date("2026-06-30T22:00:00Z"), calories: 200.4 },
+        { startDate: new Date("2026-06-29T22:00:00Z"), calories: null }
+      ])
+    ).toEqual({ "2026-06-30": 501, "2026-06-29": 0 });
+  });
+
+  it("groups a late-evening activity by the app's time zone day", () => {
+    // 05:30 UTC on July 1 is 22:30 on June 30 in Los Angeles.
+    expect(
+      sumActivityCaloriesByDate([{ startDate: new Date("2026-07-01T05:30:00Z"), calories: 400 }])
+    ).toEqual({ "2026-06-30": 400 });
   });
 });

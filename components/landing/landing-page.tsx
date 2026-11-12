@@ -20,7 +20,7 @@ import {
 import { CarbonHeader } from "@/components/carbon/carbon-header";
 import { DashboardBody } from "@/components/carbon/dashboard-body";
 import { authErrorCopy } from "@/components/carbon/auth-error-copy";
-import { resolveBaseCalories } from "@/lib/nutrition-targets";
+import { getDailyCalorieTarget, resolveBaseCalories } from "@/lib/nutrition-targets";
 import type { SampleDay } from "@/lib/sample-day";
 
 type LandingPageProps = {
@@ -77,7 +77,11 @@ function HeroToday({ sample }: { sample: SampleDay }) {
   const workouts = sample.workoutsByDate[today.key] ?? [];
   const eaten = sample.nutritionTotalsByDate[today.key]?.calories ?? 0;
   const base = resolveBaseCalories(sample.baseCalories);
-  const target = base + today.calories + sample.goalAdjustment;
+  const target = getDailyCalorieTarget({
+    baseCalories: sample.baseCalories,
+    activityCalories: today.calories,
+    goalAdjustment: sample.goalAdjustment
+  });
 
   return (
     <Tile className="!p-6">

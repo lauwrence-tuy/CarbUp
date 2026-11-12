@@ -22,7 +22,7 @@ import {
   createMealLogEntry,
   getDefaultServingGrams
 } from "@/lib/nutrition-portions";
-import { resolveBaseCalories } from "@/lib/nutrition-targets";
+import { getDailyCalorieTarget, resolveBaseCalories } from "@/lib/nutrition-targets";
 import { DailySummary } from "./daily-summary";
 import { FoodDiary } from "./food-diary";
 import { type BrowseTab, FoodPicker, SelectedFoodCard } from "./food-picker";
@@ -158,7 +158,11 @@ export function NutritionPage({
   const activityCalories = isFuture ? 0 : (activityCaloriesByDate[selectedDateKey] ?? 0);
   const dayGoalAdjustment = isFuture ? 0 : goalAdjustment;
   const resolvedBaseCalories = resolveBaseCalories(baseCalories);
-  const targetCalories = resolvedBaseCalories + activityCalories + dayGoalAdjustment;
+  const targetCalories = getDailyCalorieTarget({
+    baseCalories,
+    activityCalories,
+    goalAdjustment: dayGoalAdjustment
+  });
   const diaryStatus =
     totals.calories >= targetCalories
       ? "Complete"

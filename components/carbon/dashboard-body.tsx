@@ -20,7 +20,12 @@ import { Plus } from "lucide-react";
 import type { CalendarDay, MealsByDate, Workout } from "@/lib/dashboard-types";
 import { meals as mealOrder } from "@/components/nutrition/meals";
 import type { NutritionTotals } from "@/components/nutrition/nutrition-diary-storage";
-import { getMacroTargets, resolveBaseCalories } from "@/lib/nutrition-targets";
+import {
+  getCalorieBalance,
+  getDailyCalorieTarget,
+  getMacroTargets,
+  resolveBaseCalories
+} from "@/lib/nutrition-targets";
 import { getEffortBadge } from "@/lib/workout-metrics";
 import { CarbonSyncButton } from "./sync-button";
 import { effortTagType } from "./page-shell";
@@ -106,9 +111,12 @@ export function DashboardBody({
   const totals = nutritionTotalsByDate[selectedKey] ?? emptyTotals;
 
   const base = resolveBaseCalories(baseCalories);
-  const target = base + exerciseCalories + goalAdjustment;
-  const remaining = Math.max(target - totals.calories, 0);
-  const over = Math.max(totals.calories - target, 0);
+  const target = getDailyCalorieTarget({
+    baseCalories,
+    activityCalories: exerciseCalories,
+    goalAdjustment
+  });
+  const { remaining, over } = getCalorieBalance(target, totals.calories);
   const macroTargets = getMacroTargets(target);
   const macros = [
     { label: "Carbs", eaten: totals.carbs, target: macroTargets.carbs, bar: "cu-bar-carbs" },
