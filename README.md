@@ -45,6 +45,8 @@ Core features:
    DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE?sslmode=require"
    TOKEN_ENCRYPTION_KEY="generate_a_long_random_secret"
    SESSION_SECRET="generate_a_different_long_random_secret"
+   USDA_FDC_API_KEY="your_usda_fdc_api_key"   # optional, falls back to DEMO_KEY
+   # APP_TIMEZONE="America/Los_Angeles"       # optional, decides day boundaries
    ```
 
    Strava `STRAVA_CLIENT_ID` must be the numeric Client ID shown in your
@@ -73,6 +75,29 @@ Core features:
    ```
 
 8. Open [http://localhost:3000](http://localhost:3000).
+
+## Development
+
+```bash
+pnpm test        # Vitest unit tests in lib/
+pnpm lint        # ESLint
+pnpm exec tsc --noEmit
+pnpm build
+```
+
+The nutrition and training math lives in pure functions in `lib/` with no
+database or React code, so it can be unit tested on its own:
+
+- `lib/nutrition-targets.ts`: daily calorie target, remaining/over, macro split
+- `lib/calorie-settings.ts`: maintenance calories and goal adjustments
+- `lib/activity-calories.ts`: activity calories (Strava value or MET estimate) and per-day totals
+- `lib/workout-metrics.ts`: activity load and effort badges
+- `lib/training-load.ts`: fitness, fatigue and form (42-day and 7-day weighted averages)
+- `lib/trends.ts`: weekly, monthly and per-sport trend buckets
+- `lib/nutrition-portions.ts`: scaling foods to a portion
+
+Pages in `app/` load data with Prisma and pass it through these functions;
+components only format the results.
 
 ## Settings
 

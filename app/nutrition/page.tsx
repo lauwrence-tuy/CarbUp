@@ -1,5 +1,6 @@
 import { NutritionPage } from "@/components/nutrition/nutrition-page";
 import { StravaLoginRequiredPage } from "@/components/strava/strava-login-required-page";
+import { sumActivityCaloriesByDate } from "@/lib/activity-calories";
 import { getLocalDateKey } from "@/lib/date";
 import {
   frequentFoodsFromLogs,
@@ -7,6 +8,7 @@ import {
   recentFoodsFromLogs
 } from "@/lib/food-catalog";
 import { groupFoodLogsByDate, savedMealRowToRecord } from "@/lib/nutrition-db";
+import { getEffectiveGoalAdjustment } from "@/lib/nutrition-targets";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 
@@ -94,14 +96,7 @@ export default async function NutritionRoute() {
   const activities = (user?.activities ?? []) as ActivityRow[];
   const foodLogs = (user?.foodLogs ?? []) as FoodLogRow[];
   const savedMeals = (user?.savedMeals ?? []) as SavedMealRow[];
-  const activityCaloriesByDate =
-    activities.reduce<Record<string, number>>((totals, activity) => {
-      const key = getLocalDateKey(activity.startDate);
-
-      totals[key] = (totals[key] ?? 0) + Math.round(activity.calories ?? 0);
-
-      return totals;
-    }, {});
+  const activityCaloriesByDate = sumActivityCaloriesByDate(activities);
 
   return (
     <NutritionPage
@@ -112,7 +107,7 @@ export default async function NutritionRoute() {
       initialRecentFoods={recentFoodsFromLogs(foodLogs)}
       initialFrequentFoods={frequentFoodsFromLogs(foodLogs)}
       initialCustomFoods={(user.customFoods ?? []).map(projectFood)}
-      goalAdjustment={user?.maintenanceCalories == null ? 0 : user.goalAdjustment}
+      goalAdjustment={getEffectiveGoalAdjustment(user)}
       historyStartKey={historyStartKey}
       loggedDateKeys={loggedDateKeys}
       isConnected={Boolean(user)}

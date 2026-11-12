@@ -4,9 +4,10 @@ import {
   getActivityCalories,
   getActivityWeightKg
 } from "@/lib/activity-calories";
-import { APP_TIMEZONE, getLocalDateKey } from "@/lib/date";
+import { getLocalDateKey } from "@/lib/date";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
+import { buildFitnessFreshnessSeries } from "@/lib/training-load";
 import { calculateActivityLoad, metersToMiles } from "@/lib/workout-metrics";
 
 export const dynamic = "force-dynamic";
@@ -21,131 +22,6 @@ type ActivityMetric = {
   calories: number | null;
   sufferScore: number | null;
 };
-
-type FitnessFreshnessPoint = {
-  dateKey: string;
-  label: string;
-  load: number;
-  activities: Array<{
-    stravaActivityId: string;
-    name: string;
-    type: string;
-    load: number;
-  }>;
-  fitness: number;
-  fatigue: number;
-  form: number;
-};
-
-function startOfLocalDay(date: Date) {
-  const key = getLocalDateKey(date);
-
-  return new Date(`${key}T12:00:00`);
-}
-
-const chartLabelFormatter = new Intl.DateTimeFormat("en-US", {
-  timeZone: APP_TIMEZONE,
-  month: "short",
-  day: "numeric"
-});
-
-function formatChartLabel(date: Date) {
-  return chartLabelFormatter.format(date);
-}
-
-function buildFitnessFreshnessPoints(
-  activities: ActivityMetric[],
-  referenceDate: Date
-) {
-  const earliestActivity = activities.reduce<ActivityMetric | null>(
-    (earliest, activity) =>
-      !earliest || activity.startDate < earliest.startDate ? activity : earliest,
-    null
-  );
-  const rangeStart = earliestActivity
-    ? startOfLocalDay(earliestActivity.startDate)
-    : startOfLocalDay(referenceDate);
-
-  if (!earliestActivity) {
-    rangeStart.setDate(rangeStart.getDate() - 89);
-  }
-
-  const loadByDate = activities.reduce<Record<string, number>>(
-    (totals, activity) => {
-      const activityDate = startOfLocalDay(activity.startDate);
-
-      if (activityDate < rangeStart) {
-        return totals;
-      }
-
-      const key = getLocalDateKey(activity.startDate);
-      totals[key] = (totals[key] ?? 0) + calculateActivityLoad(activity);
-
-      return totals;
-    },
-    {}
-  );
-  const activitiesByDate = activities.reduce<
-    Record<
-      string,
-      Array<{
-        stravaActivityId: string;
-        name: string;
-        type: string;
-        load: number;
-      }>
-    >
-  >((totals, activity) => {
-    const activityDate = startOfLocalDay(activity.startDate);
-
-    if (activityDate < rangeStart) {
-      return totals;
-    }
-
-    const key = getLocalDateKey(activity.startDate);
-    const load = calculateActivityLoad(activity);
-    (totals[key] ??= []).push({
-      stravaActivityId: activity.stravaActivityId,
-      name: activity.name,
-      type: activity.type,
-      load
-    });
-
-    return totals;
-  }, {});
-  const points: FitnessFreshnessPoint[] = [];
-  let fitness = 0;
-  let fatigue = 0;
-  const rangeEnd = startOfLocalDay(referenceDate);
-  const dayCount =
-    Math.max(
-      0,
-      Math.round((rangeEnd.getTime() - rangeStart.getTime()) / 86400000)
-    ) + 1;
-
-  for (let dayIndex = 0; dayIndex < dayCount; dayIndex += 1) {
-    const date = new Date(rangeStart);
-    date.setDate(rangeStart.getDate() + dayIndex);
-
-    const dateKey = getLocalDateKey(date);
-    const load = loadByDate[dateKey] ?? 0;
-
-    fitness += (load - fitness) / 42;
-    fatigue += (load - fatigue) / 7;
-
-    points.push({
-      dateKey,
-      label: formatChartLabel(date),
-      load,
-      activities: activitiesByDate[dateKey] ?? [],
-      fitness: Math.round(fitness),
-      fatigue: Math.round(fatigue),
-      form: Math.round(fitness - fatigue)
-    });
-  }
-
-  return points;
-}
 
 export default async function TrendsRoute() {
   const userId = await getCurrentUserId();
@@ -179,7 +55,7 @@ export default async function TrendsRoute() {
 
   const activities = (user?.activities ?? []) as ActivityMetric[];
   const referenceDate = new Date();
-  const fitnessFreshnessPoints = buildFitnessFreshnessPoints(
+  const fitnessFreshnessPoints = buildFitnessFreshnessSeries(
     activities,
     referenceDate
   );

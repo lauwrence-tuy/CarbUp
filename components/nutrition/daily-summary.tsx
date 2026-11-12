@@ -1,7 +1,11 @@
 import { CountUp } from "@/components/ui/count-up";
 import type { NutritionTotals } from "./nutrition-diary-storage";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { getMacroTargets } from "@/lib/nutrition-targets";
+import {
+  getCalorieBalance,
+  getDailyCalorieTarget,
+  getMacroTargets
+} from "@/lib/nutrition-targets";
 
 /** Remaining calories, the target breakdown, and macro progress for one day. */
 export function DailySummary({
@@ -15,10 +19,14 @@ export function DailySummary({
   activityCalories: number;
   goalAdjustment: number;
 }) {
-  const targetCalories = baseCalories + activityCalories + goalAdjustment;
+  const targetCalories = getDailyCalorieTarget({
+    baseCalories,
+    activityCalories,
+    goalAdjustment
+  });
   const macroTargets = getMacroTargets(targetCalories);
-  const remainingCalories = Math.max(targetCalories - totals.calories, 0);
-  const overTargetCalories = Math.max(totals.calories - targetCalories, 0);
+  const { remaining: remainingCalories, over: overTargetCalories } =
+    getCalorieBalance(targetCalories, totals.calories);
   const calorieProgress =
     targetCalories > 0 ? (totals.calories / targetCalories) * 100 : 0;
   const goalText =

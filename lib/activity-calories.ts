@@ -1,4 +1,5 @@
 import { POUNDS_PER_KILOGRAM } from "@/lib/calorie-settings";
+import { getLocalDateKey } from "@/lib/date";
 
 const DEFAULT_WEIGHT_KG = 70;
 
@@ -118,4 +119,25 @@ export function getActivityCalories({
     type,
     weightKg
   });
+}
+
+/**
+ * Strava activity calories per app-time-zone day, rounded once per day.
+ * Activities without calories count as 0 (nothing is estimated here).
+ */
+export function sumActivityCaloriesByDate(
+  activities: Array<{ startDate: Date; calories: number | null }>
+) {
+  const totals: Record<string, number> = {};
+
+  for (const activity of activities) {
+    const key = getLocalDateKey(activity.startDate);
+    totals[key] = (totals[key] ?? 0) + (activity.calories ?? 0);
+  }
+
+  for (const key of Object.keys(totals)) {
+    totals[key] = Math.round(totals[key]);
+  }
+
+  return totals;
 }
