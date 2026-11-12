@@ -16,3 +16,6 @@ tmp/
 output/
 tools/
 .vercel/
+.next-e2e
+test-results/
+playwright-report/
