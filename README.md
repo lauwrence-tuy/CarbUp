@@ -79,11 +79,37 @@ Core features:
 ## Development
 
 ```bash
-pnpm test        # Vitest unit tests in lib/
-pnpm lint        # ESLint
+pnpm test              # unit + integration tests (Vitest)
+pnpm test:unit         # lib/ unit tests only, no database
+pnpm test:integration  # API routes against a real Postgres
+pnpm test:coverage     # both, with a coverage report in coverage/
+pnpm test:e2e          # Playwright: sign in, log a meal, dashboard updates
+pnpm lint              # ESLint
 pnpm exec tsc --noEmit
 pnpm build
 ```
+
+### How the tests run
+
+- **Unit tests** (`lib/**/*.test.ts`) cover the pure nutrition, training-load,
+  date and auth helpers. Their `DATABASE_URL` points nowhere, so they can
+  never touch a real database.
+- **Integration tests** (`tests/integration/`) call every API route handler
+  with a real signed session cookie against a real Postgres 17 with the app's
+  migrations applied. With no `TEST_DATABASE_URL` set, they start an embedded
+  Postgres (the `embedded-postgres` package, no Docker needed) and delete it
+  afterwards. They refuse to run against anything but a local or `*test*`
+  database, because every test wipes the tables.
+- **Outside APIs are mocked with MSW** (`tests/msw/`): Strava, USDA and Open
+  Food Facts. A request without a mock fails the test, so tests never reach
+  the real network.
+- **End-to-end tests** (`tests/e2e/`) start the app on port 3100 with its own
+  build folder (`.next-e2e`) and its own embedded Postgres, so they can run
+  next to `pnpm dev`. They sign in by setting a session cookie directly
+  instead of going through Strava. Locally they use your installed Google
+  Chrome; in CI, run `pnpm exec playwright install chromium` first.
+- Day boundaries use the app's time zone, so run `TZ=UTC pnpm test` too
+  before pushing date logic: CI runs in UTC.
 
 The nutrition and training math lives in pure functions in `lib/` with no
 database or React code, so it can be unit tested on its own:

@@ -11,6 +11,8 @@ allowBuilds:
   '@carbon/themes': false
   '@carbon/type': false
   '@carbon/utilities': false
+  '@embedded-postgres/darwin-arm64': true
+  '@embedded-postgres/linux-x64': true
   '@ibm/plex': false
   '@ibm/plex-mono': false
   '@ibm/plex-sans': false
@@ -24,6 +26,7 @@ allowBuilds:
   '@prisma/client': true
   '@prisma/engines': true
   esbuild: false
+  msw: false
   prisma: true
   sharp: true
   unrs-resolver: true
