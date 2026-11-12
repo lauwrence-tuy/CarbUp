@@ -363,21 +363,38 @@ async function fetchLocalCandidates(
 ): Promise<FoodWithServings[]> {
   const likeAllWords = `%${queryTokens(query).join("%")}%`;
 
-  const ranked = await prisma.$queryRaw<{ id: string }[]>`
-    SELECT id
-    FROM "Food"
-    WHERE ("createdBy" IS NULL OR "createdBy" = ${userId})
-      AND (
-        name ILIKE ${likeAllWords}
-        OR word_similarity(${query}, name) >= ${TRGM_SIMILARITY_FLOOR}
-      )
-    ORDER BY
-      (name ILIKE ${likeAllWords}) DESC,
-      word_similarity(${query}, name) DESC,
-      "verified" DESC,
-      "usageCount" DESC
-    LIMIT ${take}
-  `;
+  // `name %> query` means word_similarity(query, name) >= the
+  // pg_trgm.word_similarity_threshold setting, and unlike the function call it
+  // (like ILIKE) can use the trigram GIN index on name. Postgres prices
+  // word_similarity as cheap, so on its own it prefers scanning every row,
+  // which measured ~5x slower than the index here. Both settings are
+  // SET LOCAL (third argument `true`): they last only for this transaction
+  // and never leak onto a pooled connection. enable_seqscan = off only
+  // discourages a full scan; Postgres still uses one if nothing else works.
+  // The owner check is written so it can't use the createdBy index, which
+  // would otherwise win and still evaluate word_similarity on every row.
+  const [, ranked] = await prisma.$transaction([
+    prisma.$queryRaw`
+      SELECT
+        set_config('pg_trgm.word_similarity_threshold', ${String(TRGM_SIMILARITY_FLOOR)}, true),
+        set_config('enable_seqscan', 'off', true)
+    `,
+    prisma.$queryRaw<{ id: string }[]>`
+      SELECT id
+      FROM "Food"
+      WHERE COALESCE("createdBy", '') IN ('', ${userId})
+        AND (
+          name ILIKE ${likeAllWords}
+          OR name %> ${query}
+        )
+      ORDER BY
+        (name ILIKE ${likeAllWords}) DESC,
+        word_similarity(${query}, name) DESC,
+        "verified" DESC,
+        "usageCount" DESC
+      LIMIT ${take}
+    `
+  ]);
 
   if (ranked.length === 0) {
     return [];

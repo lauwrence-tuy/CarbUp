@@ -156,6 +156,54 @@ describe("POST /api/strava/sync", () => {
     expect(await prisma.activity.count()).toBe(2);
   });
 
+  it("stays under Strava's rate limit, then fetches the rest on the next sync", async () => {
+    const user = await createUser();
+    signInAs(user.id);
+    const limit = 30;
+    let used = 0;
+    let throttled = 0;
+    const summaries = Array.from({ length: 40 }, (_, i) =>
+      stravaActivity({ id: 500 + i, start_date: new Date(Date.now() - (i + 1) * DAY_MS).toISOString() })
+    );
+    const rateLimitHeaders = () => ({
+      "x-ratelimit-usage": `${used},${used}`,
+      "x-ratelimit-limit": `${limit},1000`
+    });
+    server.use(
+      http.get(STRAVA.activities, ({ request: req }) => {
+        used += 1;
+        const after = Number(new URL(req.url).searchParams.get("after")) * 1000;
+        const page = Number(new URL(req.url).searchParams.get("page"));
+        const hits = summaries.filter((a) => Date.parse(a.start_date) > after);
+        return HttpResponse.json(page === 1 ? hits : [], { headers: rateLimitHeaders() });
+      }),
+      http.get(STRAVA.activity, ({ params }) => {
+        used += 1;
+        if (used > limit) {
+          throttled += 1;
+          return new HttpResponse(null, { status: 429 });
+        }
+        const summary = summaries.find((a) => a.id === Number(params.id));
+        return HttpResponse.json({ ...summary, calories: 600 }, { headers: rateLimitHeaders() });
+      })
+    );
+    const withCalories = () => prisma.activity.count({ where: { calories: { not: null } } });
+
+    expect((await runSync()).status).toBe(200);
+    expect(throttled).toBe(0);
+    expect(used).toBeLessThanOrEqual(limit - 5);
+    expect(await prisma.activity.count()).toBe(40);
+    const afterFirst = await withCalories();
+    expect(afterFirst).toBeLessThan(40);
+
+    // A new 15-minute window: the next sync fetches only what is still missing.
+    used = 0;
+    expect((await runSync()).status).toBe(200);
+    expect(throttled).toBe(0);
+    expect(used).toBe(1 + (40 - afterFirst));
+    expect(await withCalories()).toBe(40);
+  }, 30_000);
+
   it("reports a Strava outage as a 500 without storing anything", async () => {
     const user = await createUser();
     signInAs(user.id);

@@ -21,3 +21,6 @@ tools/
 .next-e2e
 test-results/
 playwright-report/
+
+# macOS
+.DS_Store
