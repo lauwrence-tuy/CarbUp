@@ -57,7 +57,22 @@ async function getSyncStart(userId: string) {
   const overlapStart =
     Math.floor(newest.startDate.getTime() / 1000) - INCREMENTAL_OVERLAP_DAYS * DAY_SECONDS;
 
-  return Math.max(windowStart, overlapStart);
+  // A sync that stopped at the rate limit leaves activities without calories.
+  // Reach back far enough to fetch their detail on this sync.
+  const oldestMissingCalories = await prisma.activity.findFirst({
+    where: {
+      userId,
+      calories: null,
+      startDate: { gte: new Date(windowStart * 1000) }
+    },
+    orderBy: { startDate: "asc" },
+    select: { startDate: true }
+  });
+  const resumeStart = oldestMissingCalories
+    ? Math.floor(oldestMissingCalories.startDate.getTime() / 1000) - 1
+    : overlapStart;
+
+  return Math.max(windowStart, Math.min(overlapStart, resumeStart));
 }
 
 type StoredActivity = {
@@ -112,30 +127,35 @@ function getChangedFields(
   return Object.keys(changes).length > 0 ? changes : null;
 }
 
-function isNearRateLimit(response: Response) {
+/**
+ * Requests left in Strava's 15-minute window before the safety buffer, read
+ * from a response's rate-limit headers. `null` when the headers are missing.
+ */
+function getRequestBudget(response: Response): number | null {
   const usage = response.headers.get("x-ratelimit-usage");
   const limit = response.headers.get("x-ratelimit-limit");
 
   if (!usage || !limit) {
-    return false;
+    return null;
   }
 
   const used15 = Number(usage.split(",")[0]?.trim());
   const limit15 = Number(limit.split(",")[0]?.trim());
 
   if (!Number.isFinite(used15) || !Number.isFinite(limit15)) {
-    return false;
+    return null;
   }
 
-  return used15 >= limit15 - RATE_LIMIT_BUFFER;
+  return Math.max(limit15 - RATE_LIMIT_BUFFER - used15, 0);
 }
 
 type DetailFetch = {
   // `null` means the detail call failed but the summary is still usable.
   activity: StravaActivity | null;
-  // `true` means we hit (or are about to hit) the rate limit — stop calling the
-  // detail endpoint for the rest of this sync.
+  // `true` means Strava throttled us: stop calling the detail endpoint.
   rateLimited: boolean;
+  // Requests left before the safety buffer, when Strava reported it.
+  budget: number | null;
 };
 
 async function fetchActivityDetail(
@@ -148,18 +168,19 @@ async function fetchActivityDetail(
     },
     cache: "no-store"
   });
+  const budget = getRequestBudget(response);
 
   if (response.status === 429) {
-    return { activity: null, rateLimited: true };
+    return { activity: null, rateLimited: true, budget: 0 };
   }
 
   if (!response.ok) {
-    return { activity: null, rateLimited: false };
+    return { activity: null, rateLimited: false, budget };
   }
 
   const detail = (await response.json()) as StravaActivity;
 
-  return { activity: detail, rateLimited: isNearRateLimit(response) };
+  return { activity: detail, rateLimited: false, budget };
 }
 
 export async function syncRecentStravaActivities({
@@ -172,6 +193,8 @@ export async function syncRecentStravaActivities({
   const windowStart = await getSyncStart(userId);
   const activitySummaries: StravaActivity[] = [];
   let page = 1;
+  // Requests left before the safety buffer; null until Strava reports usage.
+  let budget: number | null = null;
 
   while (true) {
     const activitiesUrl = new URL(
@@ -192,6 +215,8 @@ export async function syncRecentStravaActivities({
       const body = await response.text();
       throw new Error(`Strava activity sync failed: ${response.status} ${body}`);
     }
+
+    budget = getRequestBudget(response) ?? budget;
 
     const pageSummaries = (await response.json()) as StravaActivity[];
     activitySummaries.push(...pageSummaries);
@@ -227,52 +252,70 @@ export async function syncRecentStravaActivities({
     storedActivities.map((activity) => [activity.stravaActivityId, activity])
   );
 
-  const activities: StravaActivity[] = [];
-  let rateLimited = false;
+  // Only activities without calories (from Strava or already stored) need the
+  // detail endpoint; everything else syncs from its summary.
+  const needsDetail = activitySummaries.filter(
+    (activity) =>
+      typeof activity.calories !== "number" &&
+      typeof storedById.get(String(activity.id))?.calories !== "number"
+  );
+  const detailById = new Map<number, StravaActivity>();
 
-  for (
-    let startIndex = 0;
-    startIndex < activitySummaries.length;
-    startIndex += DETAIL_BATCH_SIZE
-  ) {
-    const batch = activitySummaries.slice(
-      startIndex,
-      startIndex + DETAIL_BATCH_SIZE
-    );
+  for (let next = 0; next < needsDetail.length; ) {
+    // Never send more parallel requests than the budget left: a batch must not
+    // be able to push the 15-minute usage past the limit minus the buffer.
+    const batchSize = Math.min(DETAIL_BATCH_SIZE, budget ?? DETAIL_BATCH_SIZE);
 
-    const detailedBatch = await Promise.all(
-      batch.map(async (activity) => {
-        const alreadyHaveCalories =
-          typeof activity.calories === "number" ||
-          typeof storedById.get(String(activity.id))?.calories === "number";
-
-        if (alreadyHaveCalories || rateLimited) {
-          return activity;
-        }
-
-        const result = await fetchActivityDetail(accessToken, activity.id);
-
-        if (result.rateLimited) {
-          rateLimited = true;
-        }
-
-        return result.activity ?? activity;
-      })
-    );
-
-    activities.push(...detailedBatch);
-
-    if (rateLimited) {
-      // Persist the remaining summaries so their metadata still syncs; the
-      // null-guard on the upsert keeps previously-stored calories intact.
-      activities.push(...activitySummaries.slice(startIndex + DETAIL_BATCH_SIZE));
+    if (batchSize <= 0) {
+      // Out of budget: the rest sync from their summaries and get their detail
+      // on a later sync (see getSyncStart).
       break;
     }
 
-    if (startIndex + DETAIL_BATCH_SIZE < activitySummaries.length) {
+    const batch = needsDetail.slice(next, next + batchSize);
+    next += batch.length;
+
+    const results = await Promise.all(
+      batch.map((activity) => fetchActivityDetail(accessToken, activity.id))
+    );
+    let throttled = false;
+
+    batch.forEach((activity, index) => {
+      const result = results[index];
+
+      if (result.activity) {
+        detailById.set(activity.id, result.activity);
+      }
+      if (result.rateLimited) {
+        throttled = true;
+      }
+    });
+
+    if (throttled) {
+      break;
+    }
+
+    // Responses in a parallel batch can arrive out of order: trust the lowest
+    // budget any of them reported, and otherwise count the requests just sent.
+    const reported = results
+      .map((result) => result.budget)
+      .filter((value): value is number => value !== null);
+    if (reported.length > 0) {
+      budget = Math.min(...reported);
+    } else if (budget !== null) {
+      budget -= batch.length;
+    }
+
+    if (next < needsDetail.length) {
       await sleep(DETAIL_BATCH_DELAY_MS);
     }
   }
+
+  // The null-guard on the update keeps previously stored calories intact for
+  // activities that only have a summary this time.
+  const activities = activitySummaries.map(
+    (activity) => detailById.get(activity.id) ?? activity
+  );
 
   const newActivities: Prisma.ActivityCreateManyInput[] = [];
   const changedActivities: Array<{
