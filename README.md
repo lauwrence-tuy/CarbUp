@@ -111,6 +111,25 @@ pnpm build
 - Day boundaries use the app's time zone, so run `TZ=UTC pnpm test` too
   before pushing date logic: CI runs in UTC.
 
+### Continuous integration
+
+Every pull request (and every push to `main`) runs four GitHub Actions jobs
+in `.github/workflows/ci.yml`, in parallel:
+
+- **Lint and type check**: ESLint, then `tsc --noEmit` (the only check that
+  type-checks test files, since `next build` skips them).
+- **Unit and integration tests**: all Vitest tests with coverage, against a
+  `postgres:17` service container (`TEST_DATABASE_URL`). The coverage table
+  goes in the job summary and the HTML report is uploaded as an artifact.
+- **End-to-end tests**: builds the app and runs Playwright against
+  `next start` and its own `postgres:17` container. The Playwright report is
+  uploaded when a test fails.
+- **Production build**: `next build`.
+
+Dependabot (`.github/dependabot.yml`) opens weekly grouped updates for npm
+packages and GitHub Actions; major upgrades of Next, React and Prisma are
+left for manual upgrades.
+
 The nutrition and training math lives in pure functions in `lib/` with no
 database or React code, so it can be unit tested on its own:
 
