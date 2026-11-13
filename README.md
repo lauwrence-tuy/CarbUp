@@ -127,8 +127,8 @@ in `.github/workflows/ci.yml`, in parallel:
 - **Production build**: `next build`.
 
 Dependabot (`.github/dependabot.yml`) opens weekly grouped updates for npm
-packages and GitHub Actions; major upgrades of Next, React and Prisma are
-left for manual upgrades.
+packages and GitHub Actions. Major versions are skipped and upgraded by hand on
+their own branch, since they usually need code or config changes.
 
 The nutrition and training math lives in pure functions in `lib/` with no
 database or React code, so it can be unit tested on its own:
