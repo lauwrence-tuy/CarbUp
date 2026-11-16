@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "vercel-build": "sh scripts/vercel-build.sh",
     "start": "next start",
     "postinstall": "prisma generate",
     "lint": "eslint .",

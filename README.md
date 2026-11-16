@@ -127,8 +127,8 @@ in `.github/workflows/ci.yml`, in parallel:
 - **Production build**: `next build`.
 
 Dependabot (`.github/dependabot.yml`) opens weekly grouped updates for npm
-packages and GitHub Actions; major upgrades of Next, React and Prisma are
-left for manual upgrades.
+packages and GitHub Actions. Major versions are skipped and upgraded by hand on
+their own branch, since they usually need code or config changes.
 
 The nutrition and training math lives in pure functions in `lib/` with no
 database or React code, so it can be unit tested on its own:
@@ -189,14 +189,15 @@ Before publishing the repository:
 - Rotate any Strava client secret that was ever stored in a tracked or shared file.
 - Keep `.env` local and commit only `.env.example`.
 - Run `pnpm lint` and `pnpm build`.
-- Run `pnpm prisma:migrate` against the production database during deployment.
+- Production deploys on Vercel apply migrations automatically (see below).
 - Commit `pnpm-lock.yaml` and all Prisma migrations.
 - Do not commit local build or data artifacts such as `.next`, `node_modules`, `tmp`, `output`, or `prisma/dev.db`.
 
 For a live deployment, configure these production environment variables:
 
 ```bash
-DATABASE_URL="..."
+DATABASE_URL="..."   # Neon pooled connection string (host ends in -pooler)
+DIRECT_URL="..."     # Neon direct connection string, used only for migrations
 STRAVA_CLIENT_ID="..."
 STRAVA_CLIENT_SECRET="..."
 STRAVA_REDIRECT_URI="https://carbup.dev/api/strava/callback"
@@ -206,3 +207,14 @@ SESSION_SECRET="different_long_random_secret"
 ```
 
 The Prisma datasource is Postgres for production-friendly deployment on hosts such as Vercel. Use a hosted Postgres database such as Neon for the live app.
+
+### Migrations on deploy
+
+Vercel runs `pnpm vercel-build` (`scripts/vercel-build.sh`) instead of
+`pnpm build`. On production deploys (`VERCEL_ENV=production`) it runs
+`prisma migrate deploy` against `DIRECT_URL` before `next build`, so new code
+never goes live against an old schema, and a failed migration fails the
+deploy while the current one keeps serving. Preview builds never migrate.
+`DIRECT_URL` must be the non-pooled Neon URL: Prisma Migrate's advisory lock
+doesn't work through the pooler. Leave Vercel's Build Command setting on its
+default, or Vercel won't use `vercel-build`.

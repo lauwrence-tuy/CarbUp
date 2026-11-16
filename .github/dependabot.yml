@@ -11,18 +11,11 @@ updates:
       minor-and-patch:
         update-types: [minor, patch]
     ignore:
-      # Major upgrades of the framework stack are done by hand.
-      - dependency-name: next
-        update-types: [version-update:semver-major]
-      - dependency-name: eslint-config-next
-        update-types: [version-update:semver-major]
-      - dependency-name: react
-        update-types: [version-update:semver-major]
-      - dependency-name: react-dom
-        update-types: [version-update:semver-major]
-      - dependency-name: "@prisma/client"
-        update-types: [version-update:semver-major]
-      - dependency-name: prisma
+      # Major upgrades are done by hand, on their own branch: they usually
+      # need code or config changes (Tailwind 4, TypeScript 6), and
+      # @types/node has to match the Node 22 runtime, not the newest Node.
+      # Security updates still arrive for any version.
+      - dependency-name: "*"
         update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
