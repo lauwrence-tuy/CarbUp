@@ -91,3 +91,31 @@ export function offProduct(code: string, name: string, brands = "Test Brand") {
     }
   };
 }
+
+export const ANTHROPIC_MESSAGES = "https://api.anthropic.com/v1/messages";
+
+/**
+ * A Messages API response whose text block is `output` as JSON, the way a
+ * structured-output call returns it.
+ */
+export function anthropicMessage(
+  output: unknown,
+  overrides: { stop_reason?: string; model?: string; input_tokens?: number; output_tokens?: number } = {}
+) {
+  return {
+    id: "msg_test",
+    type: "message",
+    role: "assistant",
+    model: overrides.model ?? "claude-opus-5-5",
+    content: [{ type: "text", text: JSON.stringify(output) }],
+    stop_reason: overrides.stop_reason ?? "end_turn",
+    stop_sequence: null,
+    stop_details: null,
+    usage: {
+      input_tokens: overrides.input_tokens ?? 900,
+      output_tokens: overrides.output_tokens ?? 400,
+      cache_creation_input_tokens: 0,
+      cache_read_input_tokens: 0
+    }
+  };
+}

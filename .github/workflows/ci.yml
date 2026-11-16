@@ -78,6 +78,11 @@ jobs:
             console.log(["### Coverage (lib/)", "", "| Metric | % | Covered |", "|---|---|---|",
               ...["lines", "statements", "branches", "functions"].map(row)].join("\n"));
           ' >> "$GITHUB_STEP_SUMMARY"
+      - name: Meal parsing eval (recorded outputs)
+        # Free and deterministic: scores the outputs saved by the live eval
+        # (ai-eval.yml). Fails when the parser's prompt version has changed
+        # and the recording wasn't refreshed.
+        run: pnpm eval:meals
       - name: Upload coverage report
         if: always() && hashFiles('coverage/index.html') != ''
         uses: actions/upload-artifact@v4

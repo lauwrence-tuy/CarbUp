@@ -23,6 +23,7 @@ model User {
   foodLogs            FoodLog[]
   savedMeals          SavedMeal[]
   customFoods         Food[]
+  aiRequests          AiRequest[]
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 }
@@ -129,4 +130,29 @@ model SavedMeal {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+/// One LLM call (or cache hit) made for a user. Drives the per-user rate
+/// limit, the app-wide monthly spend cap, and the response cache.
+model AiRequest {
+  id           String   @id @default(cuid())
+  userId       String
+  kind         String // "meal-parse"
+  /// sha256 of model + prompt version + normalized input; the cache key.
+  inputHash    String
+  model        String
+  /// The parsed, schema-validated output, reused on cache hits.
+  outputJson   String
+  cached       Boolean  @default(false)
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  /// Cost in millionths of a US dollar (0 for cache hits).
+  costMicroUsd Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([kind, inputHash, createdAt])
+  @@index([createdAt])
 }

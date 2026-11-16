@@ -46,6 +46,7 @@ Core features:
    TOKEN_ENCRYPTION_KEY="generate_a_long_random_secret"
    SESSION_SECRET="generate_a_different_long_random_secret"
    USDA_FDC_API_KEY="your_usda_fdc_api_key"   # optional, falls back to DEMO_KEY
+   # ANTHROPIC_API_KEY="sk-ant-..."           # optional, turns on "Describe a meal"
    # APP_TIMEZONE="America/Los_Angeles"       # optional, decides day boundaries
    ```
 
@@ -100,8 +101,8 @@ pnpm build
   Postgres (the `embedded-postgres` package, no Docker needed) and delete it
   afterwards. They refuse to run against anything but a local or `*test*`
   database, because every test wipes the tables.
-- **Outside APIs are mocked with MSW** (`tests/msw/`): Strava, USDA and Open
-  Food Facts. A request without a mock fails the test, so tests never reach
+- **Outside APIs are mocked with MSW** (`tests/msw/`): Strava, USDA, Open
+  Food Facts and the Claude API. A request without a mock fails the test, so tests never reach
   the real network.
 - **End-to-end tests** (`tests/e2e/`) start the app on port 3100 with its own
   build folder (`.next-e2e`) and its own embedded Postgres, so they can run
@@ -126,6 +127,11 @@ in `.github/workflows/ci.yml`, in parallel:
   uploaded when a test fails.
 - **Production build**: `next build`.
 
+The tests job also scores the meal-parsing eval from recorded outputs
+(`pnpm eval:meals`, free). `.github/workflows/ai-eval.yml` runs the same eval
+against the real Claude API on pushes to `main` that touch `lib/ai/` or
+`evals/`, and on demand; it needs an `ANTHROPIC_API_KEY` repository secret.
+
 Dependabot (`.github/dependabot.yml`) opens weekly grouped updates for npm
 packages and GitHub Actions. Major versions are skipped and upgraded by hand on
 their own branch, since they usually need code or config changes.
@@ -143,6 +149,46 @@ database or React code, so it can be unit tested on its own:
 
 Pages in `app/` load data with Prisma and pass it through these functions;
 components only format the results.
+
+## Describe a meal (AI meal logging)
+
+On `/nutrition`, **Describe a meal** turns one sentence ("2 eggs, toast with
+butter and a latte") into foods with amounts. Nothing is saved until the user
+reviews the list, fixes any amounts and confirms.
+
+How it works (`app/api/ai/parse-meal/route.ts`, `lib/ai/`):
+
+1. **Parse**: Claude returns the foods as JSON through structured outputs,
+   validated with Zod (`lib/ai/meal-parser.ts`), then range-checked: no zero
+   or 3 kg portions, at most 20 items. The user's text is treated as data, so
+   it can't redirect the prompt.
+2. **Match**: each food is looked up in the food catalog (USDA), and the
+   catalog's per-100 g numbers are used when they roughly agree with the
+   model's estimate (within 2x). Otherwise the estimate is kept and labeled
+   (`lib/ai/meal-resolver.ts`).
+3. **Guardrails** (`lib/ai/guardrails.ts`, `AiRequest` table): identical
+   descriptions are answered from a 30-day cache; each user gets 20 live
+   calls an hour and 60 a day; and live calls stop for the month once the
+   app-wide spend reaches `AI_MONTHLY_BUDGET_USD` (default $5), priced from
+   the token counts the API reports (`lib/ai/pricing.ts`). Every result says
+   it's an estimate and not medical or dietary advice.
+
+### The eval
+
+`evals/meals.json` holds 30 cases: 28 meals with reference macros worked out
+from USDA and label values, a sentence where a ride must be ignored, and a
+prompt-injection attempt that must return no food. A case passes when the
+estimated totals are within ±25% on calories and ±35% (or ±5 g) on protein,
+carbs and fat; the run fails below an 80% pass rate.
+
+```bash
+pnpm eval:meals                   # score the recorded outputs (no API key)
+pnpm eval:meals --live            # call the API
+pnpm eval:meals --live --record   # call the API and save outputs for CI
+```
+
+Changing the prompt or schema means bumping `MEAL_PARSER_VERSION` and
+re-recording, or the recorded eval in CI fails.
 
 ## Settings
 

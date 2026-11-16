@@ -20,7 +20,10 @@ export default defineConfig({
       STRAVA_CLIENT_SECRET: "test-strava-client-secret",
       STRAVA_REDIRECT_URI: "http://localhost:3000/api/strava/callback",
       APP_URL: "http://localhost:3000",
-      USDA_FDC_API_KEY: "test-usda-key"
+      USDA_FDC_API_KEY: "test-usda-key",
+      ANTHROPIC_API_KEY: "test-anthropic-key",
+      ANTHROPIC_MODEL: "claude-opus-5-5",
+      AI_MONTHLY_BUDGET_USD: "5"
     },
     coverage: {
       provider: "v8",
