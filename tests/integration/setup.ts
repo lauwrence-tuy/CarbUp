@@ -25,7 +25,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   cookieJar.clear();
   await prisma.$executeRawUnsafe(
-    'TRUNCATE "User", "Activity", "FoodLog", "Food", "FoodServing", "SavedMeal" CASCADE'
+    'TRUNCATE "User", "Activity", "FoodLog", "Food", "FoodServing", "SavedMeal", "AiRequest" CASCADE'
   );
 });
 

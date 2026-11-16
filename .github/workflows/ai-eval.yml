@@ -1,0 +1,56 @@
+name: AI eval
+
+# Runs the 30-meal parsing eval against the real Claude API. PRs score the
+# recorded outputs instead (see the "Unit and integration tests" job in ci.yml),
+# so this only spends money on main and when started by hand.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lib/ai/**"
+      - "evals/**"
+      - "scripts/eval-meals.ts"
+      - ".github/workflows/ai-eval.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ai-eval-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  live:
+    name: Meal parsing eval (live API)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - name: Check for the API key
+        if: env.ANTHROPIC_API_KEY == ''
+        run: |
+          echo "::warning::Add an ANTHROPIC_API_KEY repository secret to run the live eval."
+      - uses: actions/checkout@v4
+        if: env.ANTHROPIC_API_KEY != ''
+      - uses: pnpm/action-setup@v4
+        if: env.ANTHROPIC_API_KEY != ''
+      - uses: actions/setup-node@v4
+        if: env.ANTHROPIC_API_KEY != ''
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        if: env.ANTHROPIC_API_KEY != ''
+      - name: Run the eval
+        if: env.ANTHROPIC_API_KEY != ''
+        run: pnpm eval:meals --live --record
+      - name: Upload the outputs
+        if: always() && env.ANTHROPIC_API_KEY != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: meal-eval-outputs
+          path: evals/recordings/meal-parse.json
+          if-no-files-found: ignore
+          retention-days: 30
