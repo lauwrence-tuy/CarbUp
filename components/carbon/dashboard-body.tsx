@@ -26,7 +26,9 @@ import {
   getMacroTargets,
   resolveBaseCalories
 } from "@/lib/nutrition-targets";
+import { buildFuelingPlan } from "@/lib/fueling";
 import { getEffortBadge } from "@/lib/workout-metrics";
+import { FuelingCoachCard } from "./fueling-coach-card";
 import { CarbonSyncButton } from "./sync-button";
 import { effortTagType } from "./page-shell";
 import { TodayTag, WeekBar } from "./week-bar";
@@ -34,6 +36,8 @@ import { TodayTag, WeekBar } from "./week-bar";
 export type DashboardBodyProps = {
   baseCalories: number;
   goalAdjustment: number;
+  /** Body weight in kg for fueling targets, or null when unset. */
+  weightKg: number | null;
   workoutsByDate: Record<string, Workout[]>;
   nutritionTotalsByDate: Record<string, NutritionTotals>;
   /** Logged foods per day, grouped by meal. */
@@ -86,6 +90,7 @@ function DayIntensityTag({ day }: { day: CalendarDay | undefined }) {
 export function DashboardBody({
   baseCalories,
   goalAdjustment,
+  weightKg,
   workoutsByDate,
   nutritionTotalsByDate,
   mealsByDate = {},
@@ -123,6 +128,16 @@ export function DashboardBody({
     { label: "Protein", eaten: totals.protein, target: macroTargets.protein, bar: "cu-bar-protein" },
     { label: "Fat", eaten: totals.fat, target: macroTargets.fat, bar: "cu-bar-fat" }
   ];
+
+  const fuelingPlan = buildFuelingPlan({
+    weightKg,
+    trainingMinutes: selectedDay?.trainingMinutes ?? 0,
+    load: selectedDay?.load ?? 0,
+    longestRideMinutes: selectedDay?.longestRideMinutes ?? 0,
+    carbsEaten: totals.carbs,
+    proteinEaten: totals.protein,
+    isToday
+  });
 
   const meals = mealsByDate[selectedKey] ?? {};
   const loggedCount = mealOrder.reduce((total, meal) => total + (meals[meal.name]?.length ?? 0), 0);
@@ -251,6 +266,9 @@ export function DashboardBody({
             ) : null}
           </Tile>
         </div>
+
+        {/* Fueling coach: training-based targets, explained on request. */}
+        <FuelingCoachCard key={selectedKey} plan={fuelingPlan} dateKey={selectedKey} isSample={isSample} />
 
         {/* Workouts */}
         <Tile className="mt-4 !p-6">

@@ -8,6 +8,7 @@ import {
   getLocalDateKey,
   getTrailingSevenLocalDays
 } from "@/lib/date";
+import { summarizeTraining, toWeightKg } from "@/lib/fueling";
 import { getEffectiveGoalAdjustment } from "@/lib/nutrition-targets";
 import { prisma } from "@/lib/prisma";
 import {
@@ -84,7 +85,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const calendarBaseDays = getTrailingSevenLocalDays();
   const userId = await getCurrentUserId();
   // Only the 7 days on screen: the week's activities (with a day of slack for
-  // time zones) and the week's food logs, plus the two profile fields used.
+  // time zones) and the week's food logs, plus the profile fields used.
   const weekStart = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
   const user = userId
     ? await prisma.user.findUnique({
@@ -92,6 +93,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         select: {
           maintenanceCalories: true,
           goalAdjustment: true,
+          weight: true,
+          units: true,
           activities: {
             where: { startDate: { gte: weekStart } },
             orderBy: { startDate: "desc" },
@@ -136,15 +139,12 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         (activity) => getLocalDateKey(activity.startDate) === day.key
       );
     const calories = activityCaloriesByDate[day.key] ?? 0;
-    const load = activitiesForDay.reduce(
-      (total, activity) => total + calculateActivityLoad(activity),
-      0
-    );
+    const training = summarizeTraining(activitiesForDay);
 
     return {
       ...day,
       calories,
-      load,
+      ...training,
       activityCount: activitiesForDay.length
     };
   });
@@ -208,6 +208,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       authError={params.auth_error}
       baseCalories={user?.maintenanceCalories ?? 0}
       goalAdjustment={getEffectiveGoalAdjustment(user)}
+      weightKg={toWeightKg(user.weight, user.units)}
       workoutsByDate={workoutsByDate}
       nutritionTotalsByDate={nutritionTotalsByDate}
       mealsByDate={mealsByDate}

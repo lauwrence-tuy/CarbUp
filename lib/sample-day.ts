@@ -6,7 +6,7 @@ import { getEffortBadge } from "@/lib/workout-metrics";
 /** Sample workouts keyed by how many days ago they happened. */
 const sampleWorkoutsByDaysAgo: Record<
   number,
-  Omit<Workout, "id" | "slug" | "badge">[]
+  (Omit<Workout, "id" | "slug" | "badge"> & { minutes: number })[]
 > = {
   0: [
     {
@@ -14,6 +14,7 @@ const sampleWorkoutsByDaysAgo: Record<
       type: "Ride",
       calories: 1540,
       duration: "2h 22m",
+      minutes: 142,
       distance: "42.8 mi",
       startTime: "7:12 AM",
       effort: 98
@@ -23,6 +24,7 @@ const sampleWorkoutsByDaysAgo: Record<
       type: "Ride",
       calories: 303,
       duration: "31 min",
+      minutes: 31,
       distance: "8.4 mi",
       startTime: "5:48 PM",
       effort: 112
@@ -34,6 +36,7 @@ const sampleWorkoutsByDaysAgo: Record<
       type: "Run",
       calories: 610,
       duration: "52 min",
+      minutes: 52,
       distance: "7.1 mi",
       startTime: "6:05 AM",
       effort: 70
@@ -45,6 +48,7 @@ const sampleWorkoutsByDaysAgo: Record<
       type: "Ride",
       calories: 420,
       duration: "45 min",
+      minutes: 45,
       distance: "12.1 mi",
       startTime: "6:30 AM",
       effort: 42
@@ -54,6 +58,7 @@ const sampleWorkoutsByDaysAgo: Record<
 
 export type SampleDay = {
   baseCalories: number;
+  weightKg: number;
   goalAdjustment: number;
   activityCalories: number;
   workoutsByDate: Record<string, Workout[]>;
@@ -85,19 +90,30 @@ export function buildSampleDay(now = new Date()): SampleDay {
     const daysAgo = baseDays.length - 1 - index;
     const workouts = sampleWorkoutsByDaysAgo[daysAgo] ?? [];
 
-    workoutsByDate[day.key] = workouts.map((workout, workoutIndex) => ({
-      ...workout,
-      id: `sample-${day.key}-${workoutIndex}`,
-      slug: "",
-      badge: getEffortBadge(workout.effort)
-    }));
+    // Minutes feed the calendar day below; a Workout only shows the duration text.
+    workoutsByDate[day.key] = workouts.map((workout, workoutIndex) => {
+      const { minutes, ...shown } = workout;
+      void minutes;
+
+      return {
+        ...shown,
+        id: `sample-${day.key}-${workoutIndex}`,
+        slug: "",
+        badge: getEffortBadge(workout.effort)
+      };
+    });
   });
 
-  const calendarDays: CalendarDay[] = baseDays.map((day) => {
+  const calendarDays: CalendarDay[] = baseDays.map((day, index) => {
     const workouts = workoutsByDate[day.key] ?? [];
+    const minutes = (sampleWorkoutsByDaysAgo[baseDays.length - 1 - index] ?? []).map(
+      (workout) => workout.minutes
+    );
 
     return {
       ...day,
+      trainingMinutes: minutes.reduce((total, value) => total + value, 0),
+      longestRideMinutes: Math.max(0, ...minutes),
       calories: sumCalories(workouts),
       load: workouts.reduce((total, workout) => total + workout.effort, 0),
       activityCount: workouts.length
@@ -108,6 +124,7 @@ export function buildSampleDay(now = new Date()): SampleDay {
 
   return {
     baseCalories: 2400,
+    weightKg: 70,
     goalAdjustment: 0,
     activityCalories: sumCalories(workoutsByDate[todayKey] ?? []),
     workoutsByDate,
