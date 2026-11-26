@@ -52,6 +52,14 @@ describe("validateParsedMeal", () => {
     expect(() => validateParsedMeal(meal([item({ grams: 0 })]))).toThrow(/No foods/);
   });
 
+  it("drops an item the model repeated word for word", () => {
+    const result = validateParsedMeal(
+      meal([item(), item({ name: "Banana ", quantity: "1 MEDIUM" }), item({ grams: 236 })])
+    );
+
+    expect(result.items.map((entry) => entry.grams)).toEqual([118, 236]);
+  });
+
   it("caps the number of items", () => {
     const many = Array.from({ length: 30 }, (_, i) => item({ name: `food ${i}` }));
 

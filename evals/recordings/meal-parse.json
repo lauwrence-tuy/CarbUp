@@ -1,0 +1,815 @@
+{
+  "promptVersion": "meal-parse-v2",
+  "model": "claude-haiku-5-5",
+  "recordedAt": "2026-11-26T08:23:41.114Z",
+  "outputs": {
+    "banana": {
+      "meal": {
+        "title": "Medium banana",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "A medium banana",
+            "searchTerm": "banana, raw",
+            "quantity": "1 medium",
+            "grams": 118,
+            "calories": 105,
+            "protein": 1.3,
+            "carbs": 27,
+            "fat": 0.4
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "eggs-toast": {
+      "meal": {
+        "title": "Scrambled eggs and buttered whole wheat toast",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "2 large scrambled eggs",
+            "searchTerm": "egg, scrambled",
+            "quantity": "2 large",
+            "grams": 122,
+            "calories": 180,
+            "protein": 13,
+            "carbs": 2,
+            "fat": 13
+          },
+          {
+            "name": "a slice of whole wheat toast",
+            "searchTerm": "bread, whole wheat, toasted",
+            "quantity": "1 slice",
+            "grams": 28,
+            "calories": 75,
+            "protein": 4,
+            "carbs": 13,
+            "fat": 1
+          },
+          {
+            "name": "butter",
+            "searchTerm": "butter, salted",
+            "quantity": "1 pat (assumed 5 g)",
+            "grams": 5,
+            "calories": 36,
+            "protein": 0,
+            "carbs": 0,
+            "fat": 4
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "oatmeal-honey": {
+      "meal": {
+        "title": "Oatmeal with honey",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "1/2 cup dry oats, made with water",
+            "searchTerm": "oats, dry",
+            "quantity": "1/2 cup dry",
+            "grams": 40,
+            "calories": 152,
+            "protein": 5.3,
+            "carbs": 27,
+            "fat": 2.7
+          },
+          {
+            "name": "1 tablespoon honey",
+            "searchTerm": "honey",
+            "quantity": "1 tablespoon",
+            "grams": 21,
+            "calories": 64,
+            "protein": 0.1,
+            "carbs": 17.3,
+            "fat": 0
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "turkey-sandwich": {
+      "meal": {
+        "title": "Turkey sandwich on white bread with cheddar and mustard",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "2 slices white bread",
+            "searchTerm": "bread, white, commercially prepared",
+            "quantity": "2 slices",
+            "grams": 64,
+            "calories": 170,
+            "protein": 5.6,
+            "carbs": 31.4,
+            "fat": 2.2
+          },
+          {
+            "name": "turkey sandwich meat",
+            "searchTerm": "turkey breast, sliced, deli",
+            "quantity": "typical sandwich portion",
+            "grams": 56,
+            "calories": 60,
+            "protein": 11.5,
+            "carbs": 1.5,
+            "fat": 0.8
+          },
+          {
+            "name": "1 slice cheddar cheese",
+            "searchTerm": "cheese, cheddar",
+            "quantity": "1 slice",
+            "grams": 28,
+            "calories": 114,
+            "protein": 7.1,
+            "carbs": 0.4,
+            "fat": 9.4
+          },
+          {
+            "name": "mustard",
+            "searchTerm": "mustard, prepared, yellow",
+            "quantity": "1 serving",
+            "grams": 5,
+            "calories": 3,
+            "protein": 0.2,
+            "carbs": 0.3,
+            "fat": 0.2
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "chipotle-burrito": {
+      "meal": {
+        "title": "Chipotle chicken burrito",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "Chipotle chicken burrito",
+            "searchTerm": "burrito, chicken",
+            "quantity": "1 burrito",
+            "grams": 600,
+            "calories": 1000,
+            "protein": 50,
+            "carbs": 100,
+            "fat": 35
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "grande-latte": {
+      "meal": {
+        "title": "Grande caffe latte with 2% milk",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "Grande caffe latte with 2% milk",
+            "searchTerm": "coffee latte, with 2% milk",
+            "quantity": "1 grande (16 fl oz)",
+            "grams": 473,
+            "calories": 190,
+            "protein": 12,
+            "carbs": 18,
+            "fat": 7
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "pizza": {
+      "meal": {
+        "title": "Two slices of pepperoni pizza",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "2 slices pepperoni pizza (large pizza)",
+            "searchTerm": "pizza, pepperoni, regular crust",
+            "quantity": "2 slices",
+            "grams": 220,
+            "calories": 590,
+            "protein": 24,
+            "carbs": 60,
+            "fat": 27
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "clif-bar": {
+      "meal": {
+        "title": "Chocolate chip Clif Bar",
+        "mealHint": "Snacks",
+        "items": [
+          {
+            "name": "Chocolate chip Clif Bar",
+            "searchTerm": "energy bar, chocolate chip",
+            "quantity": "1 bar",
+            "grams": 68,
+            "calories": 250,
+            "protein": 10,
+            "carbs": 44,
+            "fat": 5
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "rice-chicken-broccoli": {
+      "meal": {
+        "title": "Grilled chicken breast with white rice and steamed broccoli",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "1 cup cooked white rice",
+            "searchTerm": "rice, white, cooked",
+            "quantity": "1 cup",
+            "grams": 158,
+            "calories": 205,
+            "protein": 4.3,
+            "carbs": 44.5,
+            "fat": 0.4
+          },
+          {
+            "name": "4 oz grilled chicken breast",
+            "searchTerm": "chicken, broilers or fryers, breast, meat only, cooked, grilled",
+            "quantity": "4 oz",
+            "grams": 113,
+            "calories": 187,
+            "protein": 35.2,
+            "carbs": 0,
+            "fat": 4.1
+          },
+          {
+            "name": "1 cup steamed broccoli",
+            "searchTerm": "broccoli, cooked, boiled, drained",
+            "quantity": "1 cup",
+            "grams": 156,
+            "calories": 55,
+            "protein": 3.7,
+            "carbs": 11.2,
+            "fat": 0.6
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "gatorade": {
+      "meal": {
+        "title": "Gatorade sports drink",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "500 ml bottle of Gatorade",
+            "searchTerm": "sports drink, lemon-lime",
+            "quantity": "500 ml bottle",
+            "grams": 500,
+            "calories": 160,
+            "protein": 0,
+            "carbs": 40,
+            "fat": 0
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "yogurt-blueberries": {
+      "meal": {
+        "title": "Plain nonfat Greek yogurt with blueberries",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "170 g cup of plain nonfat Greek yogurt",
+            "searchTerm": "yogurt, Greek, plain, nonfat",
+            "quantity": "170 g cup",
+            "grams": 170,
+            "calories": 100,
+            "protein": 17,
+            "carbs": 6,
+            "fat": 0.4
+          },
+          {
+            "name": "a handful of blueberries",
+            "searchTerm": "blueberries, raw",
+            "quantity": "1 handful (about 50 g)",
+            "grams": 50,
+            "calories": 29,
+            "protein": 0.4,
+            "carbs": 7.5,
+            "fat": 0.2
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "spaghetti-marinara": {
+      "meal": {
+        "title": "Spaghetti with marinara sauce",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "1.5 cups cooked spaghetti",
+            "searchTerm": "spaghetti, cooked, enriched",
+            "quantity": "1.5 cups",
+            "grams": 137,
+            "calories": 197,
+            "protein": 7.2,
+            "carbs": 40.2,
+            "fat": 1.2
+          },
+          {
+            "name": "1/2 cup marinara sauce",
+            "searchTerm": "spaghetti sauce, marinara, ready-to-serve",
+            "quantity": "1/2 cup",
+            "grams": 125,
+            "calories": 74,
+            "protein": 2,
+            "carbs": 11,
+            "fat": 3
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "pbj": {
+      "meal": {
+        "title": "Peanut butter and jelly sandwich on white bread",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "2 slices white bread",
+            "searchTerm": "bread, white, commercially prepared",
+            "quantity": "2 slices",
+            "grams": 56,
+            "calories": 148,
+            "protein": 4.5,
+            "carbs": 28,
+            "fat": 2
+          },
+          {
+            "name": "Peanut butter",
+            "searchTerm": "peanut butter, smooth style, without salt",
+            "quantity": "2 tablespoons",
+            "grams": 32,
+            "calories": 188,
+            "protein": 8,
+            "carbs": 6.5,
+            "fat": 16
+          },
+          {
+            "name": "Jelly",
+            "searchTerm": "jams and preserves",
+            "quantity": "1 tablespoon",
+            "grams": 20,
+            "calories": 50,
+            "protein": 0,
+            "carbs": 13,
+            "fat": 0
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "big-mac-fries": {
+      "meal": {
+        "title": "Big Mac and medium fries",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "Big Mac",
+            "searchTerm": "hamburger, double patty, sandwich, fast food",
+            "quantity": "1 Big Mac",
+            "grams": 219,
+            "calories": 550,
+            "protein": 25,
+            "carbs": 45,
+            "fat": 30
+          },
+          {
+            "name": "medium fries",
+            "searchTerm": "french fried potatoes, fast food",
+            "quantity": "1 medium",
+            "grams": 111,
+            "calories": 365,
+            "protein": 4,
+            "carbs": 48,
+            "fat": 17
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "salmon-quinoa": {
+      "meal": {
+        "title": "Baked salmon with quinoa",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "3 oz baked salmon fillet",
+            "searchTerm": "salmon, Atlantic, farmed, cooked, dry heat",
+            "quantity": "3 oz",
+            "grams": 85,
+            "calories": 175,
+            "protein": 21,
+            "carbs": 0,
+            "fat": 10
+          },
+          {
+            "name": "half a cup of cooked quinoa",
+            "searchTerm": "quinoa, cooked",
+            "quantity": "1/2 cup",
+            "grams": 92,
+            "calories": 111,
+            "protein": 4,
+            "carbs": 20,
+            "fat": 2
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "energy-gels": {
+      "meal": {
+        "title": "Energy gels during ride",
+        "mealHint": "Snacks",
+        "items": [
+          {
+            "name": "2 energy gels",
+            "searchTerm": "energy gel",
+            "quantity": "2 gels",
+            "grams": 92,
+            "calories": 220,
+            "protein": 0,
+            "carbs": 54,
+            "fat": 0
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "apple-pb": {
+      "meal": {
+        "title": "Apple with peanut butter",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "An apple",
+            "searchTerm": "apple, raw, with skin",
+            "quantity": "1 medium",
+            "grams": 182,
+            "calories": 95,
+            "protein": 0.5,
+            "carbs": 25,
+            "fat": 0.3
+          },
+          {
+            "name": "2 tablespoons of peanut butter",
+            "searchTerm": "peanut butter, smooth style",
+            "quantity": "2 tablespoons",
+            "grams": 32,
+            "calories": 188,
+            "protein": 8,
+            "carbs": 6.4,
+            "fat": 16
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "bagel-cream-cheese": {
+      "meal": {
+        "title": "Plain bagel with cream cheese",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "Plain bagel",
+            "searchTerm": "bagel, plain, enriched, toasted",
+            "quantity": "1 medium (about 3 oz)",
+            "grams": 85,
+            "calories": 230,
+            "protein": 9,
+            "carbs": 45,
+            "fat": 1.5
+          },
+          {
+            "name": "Cream cheese",
+            "searchTerm": "cheese, cream",
+            "quantity": "1 tbsp",
+            "grams": 14.5,
+            "calories": 50,
+            "protein": 1,
+            "carbs": 0.6,
+            "fat": 5
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "orange-juice": {
+      "meal": {
+        "title": "Orange juice",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "12 oz glass of orange juice",
+            "searchTerm": "orange juice, raw",
+            "quantity": "12 oz",
+            "grams": 340,
+            "calories": 152,
+            "protein": 2.5,
+            "carbs": 36.4,
+            "fat": 0.6
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "chicken-caesar": {
+      "meal": {
+        "title": "Chicken Caesar salad",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "2 cups romaine",
+            "searchTerm": "lettuce, romaine, raw",
+            "quantity": "2 cups",
+            "grams": 94,
+            "calories": 16,
+            "protein": 1.2,
+            "carbs": 3.1,
+            "fat": 0.2
+          },
+          {
+            "name": "4 oz grilled chicken",
+            "searchTerm": "chicken breast, grilled",
+            "quantity": "4 oz",
+            "grams": 113,
+            "calories": 186,
+            "protein": 35,
+            "carbs": 0,
+            "fat": 4
+          },
+          {
+            "name": "2 tbsp Caesar dressing",
+            "searchTerm": "salad dressing, caesar dressing",
+            "quantity": "2 tbsp",
+            "grams": 30,
+            "calories": 150,
+            "protein": 0.5,
+            "carbs": 1,
+            "fat": 16
+          },
+          {
+            "name": "2 tbsp grated parmesan",
+            "searchTerm": "cheese, parmesan, grated",
+            "quantity": "2 tbsp",
+            "grams": 5,
+            "calories": 21,
+            "protein": 1.9,
+            "carbs": 0.2,
+            "fat": 1.4
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "hard-boiled-egg": {
+      "meal": {
+        "title": "Hard-boiled egg",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "One hard-boiled egg",
+            "searchTerm": "egg, whole, cooked, hard-boiled",
+            "quantity": "1 large",
+            "grams": 50,
+            "calories": 78,
+            "protein": 6.3,
+            "carbs": 0.6,
+            "fat": 5.3
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "cheerios": {
+      "meal": {
+        "title": "Cheerios with 2% milk",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "1 cup of Cheerios",
+            "searchTerm": "oat cereal, ready-to-eat, Cheerios",
+            "quantity": "1 cup",
+            "grams": 28,
+            "calories": 105,
+            "protein": 3.1,
+            "carbs": 20.5,
+            "fat": 1.9
+          },
+          {
+            "name": "half a cup of 2% milk",
+            "searchTerm": "milk, lowfat, 2% milkfat",
+            "quantity": "0.5 cup",
+            "grams": 122,
+            "calories": 61,
+            "protein": 3.9,
+            "carbs": 5.9,
+            "fat": 2.4
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "milk": {
+      "meal": {
+        "title": "Milk, 2%",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "A cup of 2% milk",
+            "searchTerm": "milk, reduced fat, fluid, 2% milkfat",
+            "quantity": "1 cup",
+            "grams": 244,
+            "calories": 122,
+            "protein": 8.1,
+            "carbs": 11.7,
+            "fat": 4.8
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "almonds": {
+      "meal": {
+        "title": "Almonds",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "1 oz of almonds",
+            "searchTerm": "almonds, raw",
+            "quantity": "1 oz",
+            "grams": 28,
+            "calories": 164,
+            "protein": 6,
+            "carbs": 6.1,
+            "fat": 14.2
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "waffles-syrup": {
+      "meal": {
+        "title": "Frozen toaster waffles with maple syrup",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "2 frozen toaster waffles",
+            "searchTerm": "waffle, frozen, toaster",
+            "quantity": "2 waffles",
+            "grams": 70,
+            "calories": 380,
+            "protein": 8,
+            "carbs": 46,
+            "fat": 16
+          },
+          {
+            "name": "2 tablespoons maple syrup",
+            "searchTerm": "maple syrup",
+            "quantity": "2 tablespoons",
+            "grams": 40,
+            "calories": 104,
+            "protein": 0,
+            "carbs": 27,
+            "fat": 0
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "recovery-shake": {
+      "meal": {
+        "title": "Post-ride recovery shake",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "1 scoop whey protein",
+            "searchTerm": "whey protein powder",
+            "quantity": "1 scoop (about 30 g)",
+            "grams": 30,
+            "calories": 120,
+            "protein": 24,
+            "carbs": 3,
+            "fat": 1.5
+          },
+          {
+            "name": "300 ml low-fat chocolate milk",
+            "searchTerm": "chocolate milk, low fat",
+            "quantity": "300 ml",
+            "grams": 306,
+            "calories": 240,
+            "protein": 10,
+            "carbs": 42,
+            "fat": 3
+          }
+        ],
+        "notFood": [
+          "Post-ride recovery"
+        ]
+      }
+    },
+    "avocado-toast": {
+      "meal": {
+        "title": "Avocado toast",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "1 slice sourdough bread",
+            "searchTerm": "bread, sourdough",
+            "quantity": "1 slice",
+            "grams": 43,
+            "calories": 116,
+            "protein": 4.3,
+            "carbs": 22,
+            "fat": 0.6
+          },
+          {
+            "name": "half an avocado",
+            "searchTerm": "avocados, raw, all commercial varieties",
+            "quantity": "1/2 avocado",
+            "grams": 68,
+            "calories": 109,
+            "protein": 1.4,
+            "carbs": 5.8,
+            "fat": 10
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "prompt-injection": {
+      "error": "no-food"
+    },
+    "ribeye-potato": {
+      "meal": {
+        "title": "Ribeye with baked potato and butter",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "8 oz cooked ribeye",
+            "searchTerm": "beef, rib eye, steak, cooked",
+            "quantity": "8 oz",
+            "grams": 227,
+            "calories": 660,
+            "protein": 50,
+            "carbs": 0,
+            "fat": 50
+          },
+          {
+            "name": "medium baked potato",
+            "searchTerm": "potato, baked, flesh and skin",
+            "quantity": "1 medium",
+            "grams": 173,
+            "calories": 161,
+            "protein": 4.3,
+            "carbs": 37,
+            "fat": 0.2
+          },
+          {
+            "name": "tablespoon of butter",
+            "searchTerm": "butter, salted",
+            "quantity": "1 tablespoon",
+            "grams": 14,
+            "calories": 102,
+            "protein": 0.1,
+            "carbs": 0,
+            "fat": 11.5
+          }
+        ],
+        "notFood": []
+      }
+    },
+    "ride-then-banana": {
+      "meal": {
+        "title": "Banana",
+        "mealHint": null,
+        "items": [
+          {
+            "name": "1 banana",
+            "searchTerm": "banana, raw",
+            "quantity": "1 medium",
+            "grams": 118,
+            "calories": 105,
+            "protein": 1.3,
+            "carbs": 27,
+            "fat": 0.4
+          }
+        ],
+        "notFood": [
+          "Rode 60 km this morning"
+        ]
+      }
+    }
+  }
+}
