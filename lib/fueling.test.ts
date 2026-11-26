@@ -5,6 +5,7 @@ import {
   DEFAULT_WEIGHT_KG,
   formatMinutes,
   summarizeTraining,
+  summarizeTrainingByDate,
   toWeightKg,
   type FuelingDayInput
 } from "./fueling";
@@ -134,6 +135,21 @@ describe("summarizeTraining", () => {
 
   it("is a rest day with no activities", () => {
     expect(summarizeTraining([])).toEqual({ trainingMinutes: 0, load: 0, longestRideMinutes: 0 });
+  });
+});
+
+describe("summarizeTrainingByDate", () => {
+  it("groups activities by local day", () => {
+    const byDate = summarizeTrainingByDate([
+      { startDate: new Date("2026-11-20T15:00:00Z"), movingTime: 3600, calories: 600, sufferScore: 50 },
+      { startDate: new Date("2026-11-20T23:00:00Z"), movingTime: 1800, calories: 300, sufferScore: 20 },
+      { startDate: new Date("2026-11-22T16:00:00Z"), movingTime: 5400, calories: 900, sufferScore: 80 }
+    ]);
+
+    expect(byDate).toEqual({
+      "2026-11-20": { trainingMinutes: 90, load: 70, longestRideMinutes: 60 },
+      "2026-11-22": { trainingMinutes: 90, load: 80, longestRideMinutes: 90 }
+    });
   });
 });
 

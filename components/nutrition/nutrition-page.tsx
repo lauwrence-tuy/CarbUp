@@ -24,6 +24,7 @@ import {
   getDefaultServingGrams
 } from "@/lib/nutrition-portions";
 import { getDailyCalorieTarget, resolveBaseCalories } from "@/lib/nutrition-targets";
+import { buildFuelingPlan, NO_TRAINING, type TrainingSummary } from "@/lib/fueling";
 import { DailySummary } from "./daily-summary";
 import { FoodDiary } from "./food-diary";
 import { type BrowseTab, FoodPicker, SelectedFoodCard } from "./food-picker";
@@ -40,6 +41,10 @@ import { useSavedMeals } from "./use-saved-meals";
 type NutritionPageProps = {
   baseCalories: number;
   activityCaloriesByDate: Record<string, number>;
+  /** Each day's training, for the carb and protein targets. */
+  trainingByDate: Record<string, TrainingSummary>;
+  /** Body weight in kg, or null when unset. */
+  weightKg: number | null;
   /** First date (YYYY-MM-DD) whose diary was loaded; paging stops here. */
   historyStartKey: string;
   /** Every date with diary entries, including ones older than the window. */
@@ -69,6 +74,8 @@ const BROWSE_TAB_LABELS: Record<BrowseTab, string> = {
 export function NutritionPage({
   baseCalories,
   activityCaloriesByDate,
+  trainingByDate,
+  weightKg,
   initialLogsByDate,
   initialSavedMeals,
   initialRecentFoods,
@@ -163,6 +170,14 @@ export function NutritionPage({
     baseCalories,
     activityCalories,
     goalAdjustment: dayGoalAdjustment
+  });
+  // Same carb and protein targets as the dashboard and its fueling coach.
+  const fuelingPlan = buildFuelingPlan({
+    weightKg,
+    ...(isFuture ? NO_TRAINING : (trainingByDate[selectedDateKey] ?? NO_TRAINING)),
+    carbsEaten: totals.carbs,
+    proteinEaten: totals.protein,
+    isToday: selectedDateKey === todayKey
   });
   const diaryStatus =
     totals.calories >= targetCalories
@@ -301,6 +316,7 @@ export function NutritionPage({
             baseCalories={resolvedBaseCalories}
             activityCalories={activityCalories}
             goalAdjustment={dayGoalAdjustment}
+            fueling={fuelingPlan}
           />
 
           {/* Phones: diary, Add food, then Selected food under the list.

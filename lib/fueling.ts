@@ -1,4 +1,5 @@
 import { POUNDS_PER_KILOGRAM } from "@/lib/calorie-settings";
+import { getLocalDateKey } from "@/lib/date";
 import { calculateActivityLoad } from "@/lib/workout-metrics";
 
 /**
@@ -98,14 +99,26 @@ export function toWeightKg(weight: number | null | undefined, units: string) {
   return units === "metric" ? weight : weight / POUNDS_PER_KILOGRAM;
 }
 
+type TrainingActivity = {
+  movingTime: number | null;
+  calories: number | null;
+  sufferScore: number | null;
+};
+
+export type TrainingSummary = {
+  trainingMinutes: number;
+  load: number;
+  longestRideMinutes: number;
+};
+
+export const NO_TRAINING: TrainingSummary = { trainingMinutes: 0, load: 0, longestRideMinutes: 0 };
+
 /**
  * A day's training from its activities: total moving minutes, total load and
  * the longest single session. Moving time is stored in seconds.
  */
-export function summarizeTraining(
-  activities: { movingTime: number | null; calories: number | null; sufferScore: number | null }[]
-) {
-  return activities.reduce(
+export function summarizeTraining(activities: TrainingActivity[]): TrainingSummary {
+  return activities.reduce<TrainingSummary>(
     (summary, activity) => {
       const minutes = Math.round((activity.movingTime ?? 0) / 60);
 
@@ -115,7 +128,22 @@ export function summarizeTraining(
         longestRideMinutes: Math.max(summary.longestRideMinutes, minutes)
       };
     },
-    { trainingMinutes: 0, load: 0, longestRideMinutes: 0 }
+    NO_TRAINING
+  );
+}
+
+/** summarizeTraining for each local day that has activities. */
+export function summarizeTrainingByDate(
+  activities: (TrainingActivity & { startDate: Date })[]
+): Record<string, TrainingSummary> {
+  const byDate: Record<string, TrainingActivity[]> = {};
+
+  for (const activity of activities) {
+    (byDate[getLocalDateKey(activity.startDate)] ??= []).push(activity);
+  }
+
+  return Object.fromEntries(
+    Object.entries(byDate).map(([dateKey, dayActivities]) => [dateKey, summarizeTraining(dayActivities)])
   );
 }
 
