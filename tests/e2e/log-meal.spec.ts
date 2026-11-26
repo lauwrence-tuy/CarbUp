@@ -15,7 +15,7 @@ const FOOD = "E2E Overnight Oats";
 
 test.beforeEach(async ({ context }) => {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE "User", "Activity", "FoodLog", "Food", "FoodServing", "SavedMeal" CASCADE'
+    'TRUNCATE "User", "Activity", "FoodLog", "Food", "FoodServing", "SavedMeal", "AiRequest" CASCADE'
   );
 
   const user = await prisma.user.create({
@@ -77,6 +77,57 @@ test("logging a meal on Nutrition updates the dashboard", async ({ page }) => {
   await expect(page.getByText("350 of 2,000 kcal")).toBeVisible();
   await expect(page.getByText("1,650", { exact: true })).toBeVisible();
   await expect(page.getByText(FOOD)).toBeVisible();
+});
+
+test("a described meal is shown for review, then logged after confirming", async ({ page }) => {
+  // The model call is mocked at the browser: this test covers the confirm
+  // step and saving, not the parser (that's the integration tests and eval).
+  await page.route("**/api/ai/parse-meal", (route) =>
+    route.fulfill({
+      json: {
+        title: "Oats and banana",
+        mealHint: "Breakfast",
+        cached: false,
+        disclaimer: "Amounts and macros are estimates. Not medical or dietary advice.",
+        notFood: [],
+        totals: { calories: 409, protein: 12, carbs: 81, fat: 6 },
+        items: [
+          {
+            name: "a bowl of oats", quantity: "80 g", grams: 80, source: "catalog",
+            calories: 304, protein: 10.6, carbs: 54, fat: 5.5,
+            per100g: { calories: 380, protein: 13.2, carbs: 67.5, fat: 6.9 },
+            match: { id: "food-oats", name: "Oats", brand: "USDA" }
+          },
+          {
+            name: "a banana", quantity: "1 medium", grams: 118, source: "estimate",
+            calories: 105, protein: 1.3, carbs: 27, fat: 0.4,
+            per100g: { calories: 89, protein: 1.1, carbs: 22.9, fat: 0.3 },
+            match: null
+          }
+        ]
+      }
+    })
+  );
+
+  await page.goto("/nutrition");
+  await page.getByRole("button", { name: "Describe a meal" }).click();
+  await page.getByLabel("What did you eat?").fill("oats and a banana for breakfast");
+  await page.getByRole("button", { name: "Read meal" }).click();
+
+  // Nothing is saved until the user confirms; they can fix an amount first.
+  await expect(page.getByText("Matched Oats")).toBeVisible();
+  await page.getByLabel("Grams of a banana").fill("236");
+  await expect(page.getByTestId("described-meal-totals")).toContainText("514 kcal");
+  expect(await prisma.foodLog.count({ where: { name: "Oats and banana" } })).toBe(0);
+
+  const saved = page.waitForResponse(
+    (response) => response.url().endsWith("/api/nutrition/logs") && response.request().method() === "POST"
+  );
+  await page.getByRole("button", { name: "Log this meal to Breakfast" }).click();
+  expect((await saved).status()).toBe(200);
+
+  const row = await prisma.foodLog.findFirstOrThrow({ where: { name: "Oats and banana" } });
+  expect(row).toMatchObject({ meal: "Breakfast", source: "meal", calories: 514 });
 });
 
 test("a visitor without a session is asked to connect Strava", async ({ page, context }) => {

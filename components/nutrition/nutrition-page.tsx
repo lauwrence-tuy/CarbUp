@@ -6,6 +6,7 @@ import { PageShell } from "@/components/carbon/page-shell";
 import { TodayTag, WeekBar } from "@/components/carbon/week-bar";
 import { BarcodeScanner } from "./barcode-scanner";
 import { CustomFoodForm } from "./custom-food-form";
+import { DescribeMeal } from "./describe-meal";
 import {
   addDays,
   createLocalNoonDate,
@@ -378,6 +379,11 @@ export function NutritionPage({
                       onCancelEdit={() => setEditingCustomFood(null)}
                     />
                     <BarcodeScanner onFoodFound={handleScannedFood} />
+                    <DescribeMeal
+                      selectedMeal={selectedMeal}
+                      onSelectMeal={setSelectedMeal}
+                      onLog={(entry) => void foodLog.addEntry(entry)}
+                    />
                   </div>
                   <FoodPicker
                     heading={listHeading}
