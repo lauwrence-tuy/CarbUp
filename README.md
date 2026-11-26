@@ -190,6 +190,30 @@ pnpm eval:meals --live --record   # call the API and save outputs for CI
 Changing the prompt or schema means bumping `MEAL_PARSER_VERSION` and
 re-recording, or the recorded eval in CI fails.
 
+## Fueling coach
+
+The dashboard's **Fueling coach** card shows the selected day's carb and
+protein targets for the training done, and **Explain my day** asks Claude to
+put them into words.
+
+- **The math stays in code** (`lib/fueling.ts`). Carbs follow the
+  sports-nutrition g/kg bands by training time: rest or under 1 h 3–5,
+  1–1.5 h 5–7, 1.5–4 h 6–10, 4 h+ 8–12, one band higher on a very hard short
+  day. Protein is 1.6 g/kg. A long or hard ride adds a recovery snack (1 g/kg
+  carbs, 0.3 g/kg protein), and rides over an hour get carbs per hour (30–60 g,
+  or 60–90 g past 2.5 h). Without a weight in Settings it assumes 70 kg and
+  says so.
+- **Claude only explains** (`lib/ai/fueling-coach.ts`,
+  `app/api/ai/fueling-coach/route.ts`). The server rebuilds the plan from the
+  stored rides, food and weight, and sends only those numbers (no ride or food
+  names). An answer that quotes any figure the plan doesn't contain is thrown
+  away.
+- **It always answers.** With no API key, past the rate limit or spend cap, or
+  when an answer is rejected, the same numbers come back as plain sentences
+  from `templateCoach`. The meal guardrails apply under their own `kind`:
+  same-plan cache, 20 live calls an hour and 60 a day, and the shared monthly
+  budget.
+
 ## Settings
 
 The `/settings` page lets a connected user save:

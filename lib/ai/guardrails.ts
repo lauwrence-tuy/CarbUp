@@ -27,6 +27,19 @@ export function startOfMonthUtc(now: Date) {
 
 export type GuardrailBlock = { status: 429 | 503; error: string };
 
+/** How a feature names itself in limit messages, and what to do instead. */
+export type GuardrailCopy = {
+  /** Plural, e.g. "meal descriptions". */
+  noun: string;
+  /** What the user can do instead, e.g. "Search for foods instead." */
+  instead: string;
+};
+
+const MEAL_PARSE_COPY: GuardrailCopy = {
+  noun: "meal descriptions",
+  instead: "Search for foods instead"
+};
+
 /**
  * Whether this user may make another live call: the per-user rate limits,
  * then the app-wide monthly spend cap. Returns null when the call may go ahead.
@@ -34,8 +47,11 @@ export type GuardrailBlock = { status: 429 | 503; error: string };
 export async function checkLiveCallAllowed(
   userId: string,
   kind: string,
-  now = new Date()
+  now = new Date(),
+  copy: GuardrailCopy = MEAL_PARSE_COPY
 ): Promise<GuardrailBlock | null> {
+  const noun = copy.noun.charAt(0).toUpperCase() + copy.noun.slice(1);
+
   for (const limit of RATE_LIMITS) {
     const count = await prisma.aiRequest.count({
       where: {
@@ -49,7 +65,7 @@ export async function checkLiveCallAllowed(
     if (count >= limit.max) {
       return {
         status: 429,
-        error: `You've reached the limit of ${limit.max} meal descriptions per ${limit.label}. Search for foods instead, or try again later.`
+        error: `You've reached the limit of ${limit.max} ${copy.noun} per ${limit.label}. ${copy.instead}, or try again later.`
       };
     }
   }
@@ -62,7 +78,7 @@ export async function checkLiveCallAllowed(
   if ((spent._sum.costMicroUsd ?? 0) >= monthlyBudgetMicroUsd()) {
     return {
       status: 503,
-      error: "Meal descriptions are paused until next month. Search for foods instead."
+      error: `${noun} are paused until next month. ${copy.instead}.`
     };
   }
 

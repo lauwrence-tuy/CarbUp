@@ -22,6 +22,10 @@ export type CalendarDay = {
   calories: number;
   load: number;
   activityCount: number;
+  /** Total moving minutes across the day's activities. */
+  trainingMinutes: number;
+  /** The longest single activity's moving minutes. */
+  longestRideMinutes: number;
   isToday: boolean;
 };
 
