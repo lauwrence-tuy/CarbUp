@@ -2,6 +2,7 @@ import { NutritionPage } from "@/components/nutrition/nutrition-page";
 import { StravaLoginRequiredPage } from "@/components/strava/strava-login-required-page";
 import { sumActivityCaloriesByDate } from "@/lib/activity-calories";
 import { getLocalDateKey } from "@/lib/date";
+import { summarizeTrainingByDate, toWeightKg } from "@/lib/fueling";
 import {
   frequentFoodsFromLogs,
   projectFood,
@@ -17,6 +18,8 @@ export const dynamic = "force-dynamic";
 type ActivityRow = {
   startDate: Date;
   calories: number | null;
+  movingTime: number | null;
+  sufferScore: number | null;
 };
 
 type FoodLogRow = Parameters<typeof groupFoodLogsByDate>[0][number];
@@ -40,10 +43,12 @@ export default async function NutritionRoute() {
         select: {
           maintenanceCalories: true,
           goalAdjustment: true,
+          weight: true,
+          units: true,
           activities: {
             where: { startDate: { gte: activitiesFrom } },
             orderBy: { startDate: "desc" },
-            select: { startDate: true, calories: true }
+            select: { startDate: true, calories: true, movingTime: true, sufferScore: true }
           },
           foodLogs: {
             where: { dateKey: { gte: historyStartKey } },
@@ -102,6 +107,8 @@ export default async function NutritionRoute() {
     <NutritionPage
       baseCalories={user?.maintenanceCalories ?? 0}
       activityCaloriesByDate={activityCaloriesByDate}
+      trainingByDate={summarizeTrainingByDate(activities)}
+      weightKg={toWeightKg(user.weight, user.units)}
       initialLogsByDate={groupFoodLogsByDate(foodLogs)}
       initialSavedMeals={savedMeals.map(savedMealRowToRecord)}
       initialRecentFoods={recentFoodsFromLogs(foodLogs)}

@@ -23,7 +23,7 @@ import type { NutritionTotals } from "@/components/nutrition/nutrition-diary-sto
 import {
   getCalorieBalance,
   getDailyCalorieTarget,
-  getMacroTargets,
+  getDayMacroTargets,
   resolveBaseCalories
 } from "@/lib/nutrition-targets";
 import { buildFuelingPlan } from "@/lib/fueling";
@@ -122,13 +122,6 @@ export function DashboardBody({
     goalAdjustment
   });
   const { remaining, over } = getCalorieBalance(target, totals.calories);
-  const macroTargets = getMacroTargets(target);
-  const macros = [
-    { label: "Carbs", eaten: totals.carbs, target: macroTargets.carbs, bar: "cu-bar-carbs" },
-    { label: "Protein", eaten: totals.protein, target: macroTargets.protein, bar: "cu-bar-protein" },
-    { label: "Fat", eaten: totals.fat, target: macroTargets.fat, bar: "cu-bar-fat" }
-  ];
-
   const fuelingPlan = buildFuelingPlan({
     weightKg,
     trainingMinutes: selectedDay?.trainingMinutes ?? 0,
@@ -138,6 +131,13 @@ export function DashboardBody({
     proteinEaten: totals.protein,
     isToday
   });
+  // Same carb and protein targets as the fueling coach below.
+  const macroTargets = getDayMacroTargets(target, fuelingPlan);
+  const macros = [
+    { label: "Carbs", eaten: totals.carbs, target: macroTargets.carbs, bar: "cu-bar-carbs" },
+    { label: "Protein", eaten: totals.protein, target: macroTargets.protein, bar: "cu-bar-protein" },
+    { label: "Fat", eaten: totals.fat, target: macroTargets.fat, bar: "cu-bar-fat" }
+  ];
 
   const meals = mealsByDate[selectedKey] ?? {};
   const loggedCount = mealOrder.reduce((total, meal) => total + (meals[meal.name]?.length ?? 0), 0);

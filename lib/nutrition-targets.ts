@@ -21,6 +21,22 @@ export function getMacroTargets(targetCalories: number) {
 }
 
 /**
+ * A day's macro targets: carbs and protein from the training-based fueling
+ * plan (g/kg, the same numbers the fueling coach shows), fat from its share
+ * of the calorie target.
+ */
+export function getDayMacroTargets(
+  targetCalories: number,
+  fueling: { carbs: { targetG: number }; protein: { targetG: number } }
+) {
+  return {
+    carbs: fueling.carbs.targetG,
+    protein: fueling.protein.targetG,
+    fat: getMacroTargets(targetCalories).fat
+  };
+}
+
+/**
  * A day's calorie target: maintenance (or the default when unset) plus that
  * day's activity calories plus the goal adjustment (0 to -750).
  */

@@ -3,6 +3,7 @@ import {
   DEFAULT_TARGET_CALORIES,
   getCalorieBalance,
   getDailyCalorieTarget,
+  getDayMacroTargets,
   getEffectiveGoalAdjustment,
   getMacroTargets,
   resolveBaseCalories
@@ -25,6 +26,14 @@ describe("getMacroTargets", () => {
 
   it("never returns negative grams", () => {
     expect(getMacroTargets(-500)).toEqual({ protein: 0, carbs: 0, fat: 0 });
+  });
+});
+
+describe("getDayMacroTargets", () => {
+  it("takes carbs and protein from the fueling plan and fat from calories", () => {
+    const fueling = { carbs: { targetG: 560 }, protein: { targetG: 110 } };
+
+    expect(getDayMacroTargets(4243, fueling)).toEqual({ carbs: 560, protein: 110, fat: 141 });
   });
 });
 
